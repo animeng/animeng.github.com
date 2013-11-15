@@ -3,8 +3,8 @@
 # ----------------------- #
 
 url: http://animeng.github.com
-title: My Octopress First Blog
-subtitle: A blogging framework for hackers.
+title: 碧海蓝天
+subtitle: 走自己的路，让别人说去吧
 author: animeng
 simple_search: http://google.com/search
 description:
@@ -58,10 +58,10 @@ default_asides: [asides/recent_posts.html, asides/weibo.html, asides/github.html
 # ----------------------- #
 
 # Github repositories
-github_user:animeng
-github_repo_count: 0
-github_show_profile_link: true
-github_skip_forks: true
+# github_user:animeng
+# github_repo_count: 0
+# github_show_profile_link: true
+# github_skip_forks: true
 
 # Twitter
 # twitter_user:
@@ -101,9 +101,9 @@ facebook_like: false
 # Weibo
 weibo_uid: 1952865647
 weibo_verifier: bbf78df1
-# weibo_fansline: 0   # 粉丝显示多少行
-# weibo_show: true    # 是否显示最近微博内容
-# weibo_pic: true     # 是否显示微博中的图片
-# weibo_skin: 10      # 使用哪种配色风格，数字为从1开始的微博秀风格序号
+weibo_fansline: 0   # 粉丝显示多少行
+weibo_show: true    # 是否显示最近微博内容
+weibo_pic: true     # 是否显示微博中的图片
+weibo_skin: 10      # 使用哪种配色风格，数字为从1开始的微博秀风格序号
 
 # 其它内容....
