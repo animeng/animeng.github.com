@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "my first article"
+title: "如何使用Makdown"
 date: 2014-03-6 15:23
 comments: true
 categories: 
