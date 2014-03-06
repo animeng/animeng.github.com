@@ -6,8 +6,9 @@ comments: true
 categories: 
 ---
 
-Markdown 编辑阅读器
-**Markdown** 记录思想和分享知识提供更专业的工具。
+**Markdown** 
+记录思想和分享知识的工具。
+
 您可以使用Makrdown：
 
 > * 整理知识，学习笔记
@@ -60,7 +61,7 @@ if __name__ == '__main__':
 
 示例：
 
-这是去往 [本人博客](http://ghosertblog.github.com) 的链接。
+这是去往 [一个markdown的博客](http://ghosertblog.github.com) 的链接。
 
 ### 4. 在行末加两个空格表示换行
 
