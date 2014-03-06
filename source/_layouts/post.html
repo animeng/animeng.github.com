@@ -31,13 +31,16 @@ single: true
     <div id="disqus_thread" aria-live="polite">{% include post/disqus_thread.html %}</div>
   </section>
 {% endif %} -->
+
 {% if site.duoshuo_comments==true %}
 <section>
 <h1>Add a comment</h1>
-{% include post/duoshuo_thread.html %}
+<div id="duoshuo_thread" aria-live="polite">{% include post/duoshuo_thread.html %}</div>
 </section>
 {% endif %}
+
 </div>
+
 {% unless page.sidebar == false %}
 <aside class="sidebar">
   {% if site.post_asides.size %}
