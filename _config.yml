@@ -98,15 +98,15 @@ google_analytics_tracking_id: UA-45780384-1
 # Facebook Like
 facebook_like: false
 
-#duoshuo
-duoshuo_comments:true
-duoshuo_short_name:animeng
-duoshuo_asides_num:5
-duoshuo_asides_avatars:1
-duoshauo_asides_time:1
-duoshuo_asides_title:1
-duoshuo_asides_admin:0
-duoshuo_asides_length:32
+# duoshuo
+duoshuo_comments: true
+duoshuo_short_name: animeng
+duoshuo_asides_num: 5
+duoshuo_asides_avatars: 1
+duoshauo_asides_time: 1
+duoshuo_asides_title: 1
+duoshuo_asides_admin: 0
+duoshuo_asides_length: 32
 
 # Weibo
 weibo_uid: 1952865647
