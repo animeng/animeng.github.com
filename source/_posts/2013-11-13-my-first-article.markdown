@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
 这是去往 [一个markdown的博客](http://ghosertblog.github.com) 的链接。
 
-### 4. 在行末加两个空格表示换行
+### 4. 在行末加两个空格然后回车表示换行
 
 示例：
 
