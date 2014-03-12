@@ -81,7 +81,7 @@ pull命令常见的错误
 出现这个错误一般是因为有文件已经提交到本地仓库了，所以本地仓库和远程的无法同步了。这样就需要先通过push操作，把本地仓库的东西提交给远程，这样才可以同步。这里解释下什么叫fast-forward，假如我们从A分支又开了一个B分支，然后在B分支上修改了东西，但是A分支没做任何修改，假如此时A分支要合并B分支的内容，因为B的分支的Parent commit就是A的HEAD，所以这两个分支唯一的差别就是B之后的修改，所以不会有任何的冲突，只要A分支把HEAD移动到B分支的HEAD上就可以了，这就叫fast-forward。很显然non-fast-forward就说明了远端的分支的parent commit和你本地的HEAD不相同所以很可能是本地的提交没有push到远端造成的。
 
 2. push操作 (语法git push  服务器   本地分支：远程分支)    
-git pull orgin develop:develop    
+git push orgin develop:develop    
 这个命令跟pull有的相反的意思，是把本地仓库所有改变的内容，放置到远程仓库中，相当于把本地仓库的内容同步到远程仓库了。    
 push命令常见的错误    
 > ! [rejected]        master     -> master  (non-fast-forward)     
