@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>第十一章 性能 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2012/06/03/animation-12.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="第十一章 性能">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2012/06/03/animation-12.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">第十一章 性能</h1>
+  
+  <span class="post-meta">06月 03日, 2012</span><br>
+  
+  <span class="post-meta small">5 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>核心动画在设计的时候就考虑了性能。它首先是层级别的呈现，并且设计运行在小型的设备上（iphone和itouch），这些设备内存有限，并且cpu和gpu不如桌面电脑上的强大，核心动画是被设计的比较高效的，但是并不意味着你就可以在代码中随便用。</p>
+
+<p>任何复杂的系统都会考虑性能的问题。幸运的是核心动画在处理复杂动画时，已经帮你处理的很多性能问题，你也需要改善一下代码让基于核心动画的应用程序具有更好的性能提升。</p>
+
+<p>这一章展示给你的是，如何来充分利用核心动画。本章的开始会有一些指南。这些都是你应该记住的，当你做核心动画的程序时，你应该通过这些指南精炼你的代码。然后你会了解到如何平衡GPU，怎么用多线程的动画，并且使用CATiledLayer呈现大的图像给用户，使你的应用程序不至于图像太大而陷入困境。</p>
+
+<h2 id="硬件加速">硬件加速</h2>
+
+<p>核心动画的一个重要的好处就是它利用了mac的硬件的优点。先前，开发者需要在应用上做动画时，动画产生需要在CPU上，并且会耗掉cpu的循环，这样就会使程序慢。制作用户界面动画会消耗大量的时间，通常还要涉及到OpenGL或其他的一些技术与图形处理单元（GPU）的工作。使用核心动画，你会能够自由的使用硬件加速。你仅仅需要做的就是定义一个动画，开启它，让它运行。你不必担心装载到GPU中，因为核心动画都帮你自动处理了。</p>
+
+<p>当您在设计用户界面时，要牢记。那些你认为是一个复杂的动画，但是放到GPU上执行可能微不足道。 GPU是专门来做屏幕上矩形的移动，三维空间转化等。只有当GPU的限制产生时，我们开始看到性能下降。</p>
+
+<h2 id="最小原则">最小原则</h2>
+
+<p>下面的段落所呈现的原则，都是你需要在做核心动画时，需要牢记的规则。</p>
+
+<h3 id="避免幕后渲染">避免幕后渲染</h3>
+
+<p>不管你是在桌面应用程序还是在touch设备上，你需要限制你的绘制，仅仅当这些区域对于用户可见时再绘制。幸运的是，-drawRect:方法只有当矩形区域为脏时，才会传递过来，因此你可以精确的控制每个循环的绘画次数。</p>
+
+<h3 id="限制滤镜和阴影">限制滤镜和阴影</h3>
+
+<p>滤镜和阴影需要耗费大量的时间来计算和渲染在核心动画上。因而，建议尽量保持小并且有可能的话，避免上述的情况。这有一些技巧：</p>
+
+<p>尤其是滤镜的情况，它可能要渲染一个静态的，临时的图像。在动画假设被渲染时，这个静态的图像可能被使用来代替需要动画渲染的层。当动画完成时，渲染的层就被交换到了后面。虽然这不能被应用到所有的情况，这也会产生性能的优化。这些动作可以通过在最上层调用-drawInContext来创建这个用来交换的静态图片。</p>
+
+<p>阴影也是代价很高的。因为他们属性部分透明的层，它需要大量的计算，来决定每个像素（因为每个像素都需要计算，直到有不透明的层遇到。如果阴影重叠的话，就增加了消耗。考虑限制只有最外层的阴影，并允许内层不产生任何阴影。参见“最小alpha混合”在本章的后面。</p>
+
+<h3 id="明智的使用变换">明智的使用变换</h3>
+
+<p>转换提供了一个很好的方式，给用户一个视觉感受，应用程序怎么改变并且变成了什么样。从窗口滑出或者滑入的方式，给用户了一个明显的视觉感触。然而例如要转换滤镜和阴影话，这是对性能的一个很大考验。</p>
+
+<p>因而，在设计应用程序时，你应该考虑在可视层中有多少转换或者它们应该转换多快。</p>
+
+<h3 id="避免嵌套转换">避免嵌套转换</h3>
+
+<p>作为核心动画的强大之处，可以彼此同时转换多个层。例如，你可以在一些层中转换层中所有z轴。然而，要注意到这些转换都是实时执行的，没有缓存。因而，当你移动或者让层做动画时，这个层有了很多层的转换，每个转换都需要动画重新计算它们的帧。</p>
+
+<p>为了增加性能，避免使用多层级的转换，当动画运行时。</p>
+
+<h3 id="限制透明度的混合">限制透明度的混合</h3>
+
+<p>前面讨论了嵌套转换，透明度混合也是实时计算的。当一个层是部分透明时，透明部分的动画就要在动画帧中重新计算。记住这些，当动画层中有透明时，尽量减少计算。滑动层之后的层是透明的会导致极大的性能消耗。</p>
+
+<p>幸运的是，有个方法可以找到那个层有透明度混合，从而移除它。对于iphone这种有限的资源它是非常有用的。来核对透明度混合，启动iphone下的应用程序，使用instruments。在里面增加核心动画instrument。</p>
+
+<p>当你的应用程序在iphone上运行时并且你也附带instrument到程序上，那么转换到核心动画的instruments上，颜色混合层就会展示如图12-1.</p>
+
+<p><img src="/images/animation-12-1.png" alt="图 12-1 颜色混合层的指令转换" /></p>
+
+<p>只要运行，你立马就可以看到效果。整个iphone程序被分成红色和绿色。事实上，这里没用应用程序运行，你可以看到iphone主屏幕的效果，如图12-2</p>
+
+<p><img src="/images/animation-12-2.png" alt="12-2 颜色混合层模式在iphone上" /></p>
+
+<p>当可用时，不同的颜色混合就会展示不同的颜色，因此你能快速的定位到应用程序那些有问题。绿色罩住的区域是没有颜色混合的，而红色的是有的。目标就是来减少红色区域。例如，在TransparentCocoaTouch应用程序中，你可以看到所有的UILabel对象都有一个透明背景，如图12-3</p>
+
+<p><img src="/images/animation-12-3.png" alt="图 12-3 iphone颜色混合模式开启" /></p>
+
+<p>当你检查你的代码时，你就会看到那些区域是有问题的。这里看-initWithFrame:reuseIdentifier:中的CustomTableViewCell对象，问题就在这里，看清单12-1</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="nf">initWithFrame</span><span class="p">:(</span><span class="n">CGRect</span><span class="p">)</span><span class="nv">frame</span> <span class="nf">reuseIdentifier</span><span class="p">:(</span><span class="n">NSString</span><span class="o">*</span><span class="p">)</span><span class="nv">ident</span> <span class="p">{</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">self</span> <span class="o">=</span> <span class="p">[</span><span class="nf">superinitWithFrame</span><span class="p">:</span><span class="n">frame</span> <span class="nf">reuseIdentifier</span><span class="p">:</span><span class="n">ident</span><span class="p">]))</span> <span class="k">return</span> <span class="nb">nil</span><span class="p">;</span>
+  <span class="n">UIView</span> <span class="o">*</span><span class="n">contentView</span> <span class="o">=</span> <span class="p">[</span><span class="n">self</span> <span class="nf">contentView</span><span class="p">];</span>
+  <span class="n">imageView</span> <span class="o">=</span> <span class="p">[[</span><span class="n">UIImageView</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithFrame</span><span class="p">:</span><span class="n">CGRectMake</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">)];</span>
+  <span class="p">[</span><span class="n">imageView</span> <span class="nf">setContentMode</span><span class="p">:</span><span class="n">UIViewContentModeScaleAspectFit</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">contentView</span> <span class="nf">addSubview</span><span class="p">:</span><span class="n">imageView</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">imageView</span> <span class="nf">release</span><span class="p">];</span>
+
+  <span class="n">titleLabel</span> <span class="o">=</span> <span class="p">[[</span><span class="n">UILabel</span> <span class="nf">alloc</span><span class="p">]</span><span class="nf">initWithFrame</span><span class="p">:</span><span class="n">CGRectZero</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">titleLabel</span> <span class="nf">setFont</span><span class="p">:[</span><span class="n">UIFontbold</span> <span class="nf">SystemFontOfSize</span><span class="p">:</span><span class="mi">14</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]];</span>
+  <span class="p">[</span><span class="n">titleLabel</span> <span class="nf">setBackgroundColor</span><span class="p">:[</span><span class="n">UIColor</span> <span class="nf">clearColor</span><span class="p">]];</span>
+  <span class="p">[</span><span class="n">contentView</span> <span class="nf">addSubview</span><span class="p">:</span><span class="n">titleLabel</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">titleLabel</span> <span class="nf">release</span><span class="p">];</span>
+
+  <span class="n">descriptionLabel</span> <span class="o">=</span> <span class="p">[[</span><span class="nf">UILabelalloc</span><span class="p">]</span> <span class="nf">initWithFrame</span><span class="p">:</span><span class="n">CGRectZero</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">descriptionLabel</span> <span class="nf">setNumberOfLines</span><span class="p">:</span><span class="mi">0</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">descriptionLabel</span> <span class="nf">setFont</span><span class="p">:[</span><span class="n">UIFont</span> <span class="nf">systemFontOfSize</span><span class="p">:</span><span class="mi">6</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]];</span>
+  <span class="p">[</span><span class="n">descriptionLabel</span> <span class="nf">setBackgroundColor</span><span class="p">:[</span><span class="n">UIColor</span> <span class="nf">clearColor</span><span class="p">]];</span>
+  <span class="p">[</span><span class="n">contentView</span> <span class="nf">addSubview</span><span class="p">:</span><span class="n">descriptionLabel</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">descriptionLabel</span> <span class="nf">release</span><span class="p">];</span>
+
+  <span class="p">[[</span><span class="n">NSNotificationCenter</span> <span class="nf">defaultCenter</span><span class="p">]</span> <span class="nf">addObserver</span><span class="p">:</span><span class="n">self</span> <span class="nf">selector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="n">imageUpdated</span><span class="o">:</span><span class="p">)</span>
+  <span class="nl">name:kImageDownloadCompleteobject:</span><span class="nb">nil</span><span class="p">];</span>
+  <span class="k">return</span> <span class="n">self</span><span class="p">;</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>就像你看到的，UILabel对象，titleLabel和descriptionLabel，两个的背景颜色都是被设定为[UIColor clearColor]，引起了颜色混合的发生。为了纠正这些，改变UIColor和整个UITableViewCell的背景颜色一样。这就减少了透明度的混合，提高了性能，如清单12-2.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="nf">initWithFrame</span><span class="p">:(</span><span class="n">CGRect</span><span class="p">)</span><span class="nv">framereuseIdentifier</span><span class="o">:</span><span class="p">(</span><span class="n">NSString</span><span class="o">*</span><span class="p">)</span><span class="n">ident</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="n">self</span> <span class="o">=</span> <span class="p">[</span><span class="nf">superinitWithFrame</span><span class="p">:</span><span class="n">frame</span> <span class="nf">reuseIdentifier</span><span class="p">:</span><span class="n">ident</span><span class="p">]))</span> <span class="k">return</span> <span class="nb">nil</span><span class="p">;</span>
+  <span class="n">UIView</span> <span class="o">*</span><span class="n">contentView</span> <span class="o">=</span> <span class="p">[</span><span class="n">self</span> <span class="nf">contentView</span><span class="p">];</span>
+  <span class="n">imageView</span> <span class="o">=</span> <span class="p">[[</span><span class="n">UIImageView</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithFrame</span><span class="p">:</span><span class="n">CGRectMake</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">)];</span>
+  <span class="p">[</span><span class="n">imageView</span> <span class="nf">setContentMode</span><span class="p">:</span><span class="n">UIViewContentModeScaleAspectFit</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">contentView</span> <span class="nf">addSubview</span><span class="p">:</span><span class="n">imageView</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">imageView</span> <span class="nf">release</span><span class="p">];</span>
+
+  <span class="n">titleLabel</span> <span class="o">=</span> <span class="p">[[</span><span class="n">UILabel</span> <span class="nf">alloc</span><span class="p">]</span><span class="nf">initWithFrame</span><span class="p">:</span><span class="n">CGRectZero</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">titleLabel</span> <span class="nf">setFont</span><span class="p">:[</span><span class="nf">UIFontboldSystemFontOfSize</span><span class="p">:</span><span class="mi">14</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]];</span>
+  <span class="p">[</span><span class="n">titleLabel</span> <span class="nf">setBackgroundColor</span><span class="p">:[</span><span class="n">UIColor</span> <span class="nf">whiteColor</span><span class="p">]];</span>
+  <span class="p">[</span><span class="n">contentView</span> <span class="nf">addSubview</span><span class="p">:</span><span class="n">titleLabel</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">titleLabel</span> <span class="nf">release</span><span class="p">];</span>
+
+  <span class="n">descriptionLabel</span> <span class="o">=</span> <span class="p">[[</span><span class="nf">UILabelalloc</span><span class="p">]</span> <span class="nf">initWithFrame</span><span class="p">:</span><span class="n">CGRectZero</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">descriptionLabel</span> <span class="nf">setNumberOfLines</span><span class="p">:</span><span class="mi">0</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">descriptionLabel</span> <span class="nf">setFont</span><span class="p">:[</span><span class="n">UIFont</span> <span class="nf">systemFontOfSize</span><span class="p">:</span><span class="mi">6</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]];</span>
+  <span class="p">[</span><span class="n">descriptionLabel</span> <span class="nf">setBackgroundColor</span><span class="p">:[</span><span class="n">UIColor</span> <span class="nf">whiteColor</span><span class="p">]];</span>
+  <span class="p">[</span><span class="n">contentView</span> <span class="nf">addSubview</span><span class="p">:</span><span class="n">descriptionLabel</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">descriptionLabel</span> <span class="nf">release</span><span class="p">];</span>
+
+  <span class="p">[[</span><span class="nf">NSNotificationCenterdefaultCenter</span><span class="p">]</span> <span class="nf">addObserver</span><span class="p">:</span><span class="n">self</span> <span class="nf">selector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="n">imageUpdated</span><span class="o">:</span><span class="p">)</span>
+  <span class="nl">name:kImageDownloadCompleteobject:</span><span class="nb">nil</span><span class="p">];</span>
+  <span class="k">return</span> <span class="n">self</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>清单 12-2</p>
+
+<h3 id="平铺层">平铺层</h3>
+
+<p>核心动画有一个强大的功能，使您可以快速查看应用程序的详细图像。CATileLayer是被设计成来展示大图像，但是不用把整个图像导入到内存中，因而引起了性能的提升。</p>
+
+<p>为了演示CATiledLayer这个有用的特征，打开TiledLayers示例应用程序。在这个应用程序中一个很大的图像(6064*4128)是被导入并且还具有放大缩小的能力。正常情况下，一个很大的图像是被导入到内存中，这样会引起性能问题。然而，通过导入图像到CATiledLayer中，核心动画来控制所有的内存问题。核心动画会装载图像需要展示的一部分而非整个图像。你需要配置的就是在CATileLayer上给它一些细节的东西，就是根据尺寸来指定缩放的等级。</p>
+
+<p>在TiledLayer应用程序中，一个简单的CATileLayer是在主窗口中初始化并且分配了一个NSSegmentedControl来管理缩放等级。结果窗口展示如图12-4</p>
+
+<p><img src="/images/animation12-4.png" alt="图 12-4 平铺层应用" /></p>
+
+<p>当界面是被设计时，构造CATiledLayer在-awakfromNib方法中，如清单12-3</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">awakeFromNib</span> <span class="p">{</span>
+  <span class="n">NSString</span> <span class="o">*</span><span class="n">imagePath</span> <span class="o">=</span><span class="p">[[</span><span class="n">NSBundle</span> <span class="nf">mainBundle</span><span class="p">]</span> <span class="nf">pathForResource</span><span class="p">:</span><span class="err">@”</span><span class="n">BigSpaceImage</span><span class="err">”</span> <span class="nf">ofType</span><span class="p">:</span><span class="err">@”</span><span class="n">png</span><span class="err">”</span><span class="p">];</span>
+  <span class="n">NSData</span> <span class="o">*</span><span class="n">data</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSDatadata</span> <span class="nf">WithContentsOfFile</span><span class="p">:</span><span class="n">imagePath</span><span class="p">];</span>
+  <span class="n">image</span> <span class="o">=</span> <span class="p">[[</span><span class="n">CIImage</span> <span class="nf">imageWithData</span><span class="p">:</span><span class="n">data</span><span class="p">]</span> <span class="nf">retain</span><span class="p">];</span>
+  <span class="n">tiledLayer</span> <span class="o">=</span> <span class="p">[</span><span class="nf">CATiledLayerlayer</span><span class="p">];</span>
+  <span class="p">[</span><span class="nf">tiledLayersetBounds</span><span class="p">:</span><span class="n">CGRectMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">6064</span><span class="p">,</span> <span class="mi">4128</span><span class="p">)];</span>
+  <span class="kt">float</span> <span class="n">midX</span> <span class="o">=</span><span class="n">NSMidX</span><span class="p">(</span><span class="n">NSRectFromCGRect</span><span class="p">([[</span><span class="n">view</span> <span class="nf">layer</span><span class="p">]</span> <span class="nf">frame</span><span class="p">]));</span>
+  <span class="kt">float</span> <span class="n">midY</span> <span class="o">=</span><span class="n">NSMidY</span><span class="p">(</span><span class="n">NSRectFromCGRect</span><span class="p">([[</span><span class="n">view</span> <span class="nf">layer</span><span class="p">]</span> <span class="nf">frame</span><span class="p">]));</span>
+  <span class="p">[</span><span class="n">tiledLayer</span> <span class="nf">setPosition</span><span class="p">:</span><span class="n">CGPointMake</span><span class="p">(</span><span class="n">midX</span><span class="p">,</span> <span class="n">midY</span><span class="p">)];</span>
+  <span class="p">[</span><span class="n">tiledLayer</span> <span class="nf">setLevelsOfDetail</span><span class="p">:</span><span class="mi">4</span><span class="p">];</span> <span class="c1">//number of levels [tiledLayersetTileSize:CGSizeMake(256, 256)];</span>
+  <span class="p">[</span><span class="n">tiledLayer</span> <span class="nf">setDelegate</span><span class="p">:</span><span class="n">self</span><span class="p">];</span>
+  <span class="p">[[</span><span class="n">view</span> <span class="nf">layer</span><span class="p">]</span> <span class="nf">addSublayer</span><span class="p">:</span><span class="n">tiledLayer</span><span class="p">];</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+<p>清单 12-3</p>
+
+<p>当应用程序获得图像的路径时，那个路径通过CIImage的调用被导入然后存储起来用。CATileLayer是被初始化然后初始化将要展示的图像边框。下面就定位图像的位置并且配置可用缩放的等级。最后一步就是吧AppDelegate作为代理分配给该层，以便于接收绘图事件。</p>
+
+<p>NSSegmentedControl是绑定在-zoom:方法上，每当segmented control改变状态时就发送事件。选择段的位置是被使用来决定图像目前的缩放比例，在CATileLayer上展示的图像。这些可以通过它的sublayerTransform的CATransform3DMakeScale调用来实现，在段控制器上传递一个x和y的值，清单12-4</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">zoom</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span> <span class="p">{</span>
+  <span class="n">CGFloat</span> <span class="n">zoom</span> <span class="o">=</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span> <span class="o">/</span> <span class="p">([</span><span class="nf">senderselectedSegment</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">);</span>
+  <span class="p">[[</span><span class="n">view</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">setSublayerTransform</span><span class="p">:</span><span class="n">CATransform3DMakeScale</span><span class="p">(</span><span class="n">zoom</span><span class="p">,</span> <span class="n">zoom</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">)];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>清单 12-4</p>
+
+<p>最后你要实现的方法就是CATiledLayer的一个代理。这个方法可以使我们重载-drawInContext:方法，而不用继承CALayer。在默认的-drawInContext:方法实现中，它会寻找一个代理，核对代理是否实现了-drawLayer:inContext:方法。如果这个情况为真，那么-drawLayer:inContext就会被调用，如清单12-5.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">drawLayer</span><span class="p">:(</span><span class="n">CALayer</span><span class="o">*</span><span class="p">)</span><span class="nv">layer</span> <span class="nf">inContext</span><span class="p">:(</span><span class="n">CGContextRef</span><span class="p">)</span><span class="nv">context</span> <span class="p">{</span>
+  <span class="p">[[</span><span class="n">CIContext</span> <span class="nf">contextWithCGContext</span><span class="p">:</span><span class="n">context</span> <span class="nf">options</span><span class="p">:</span><span class="nf">nil</span><span class="p">]</span> <span class="n">drawImage</span><span class="o">:</span><span class="n">imageatPoint</span><span class="o">:</span><span class="n">CGPointMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="n">fromRect</span><span class="o">:</span><span class="n">CGRectMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">6064</span><span class="p">,</span> <span class="mi">4128</span><span class="p">)];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>清单 12-5</p>
+
+<p>这个方法使用了在-awakFromNib中初始化的图像，并且使用了图像尺寸的边框绘制了它到了图像上下文中。应该注意的是，你不需要控制任何的缩放计算，变换等方法。CATileLayer都自动帮你控制了。</p>
+
+<h2 id="这些如何工作">这些如何工作</h2>
+
+<p>CATiledLayer导入图像成快，名字就是由此而来。每个块都响应一个图像的细节，根据你设定的块的尺寸。当你要求某个图像的细节CATileLayer会根据原始的图像，缩放到渴望的尺寸，并且在屏幕上渲染之前，分割它成不同的块。因为这些块都被CATiledlayer缓存下来，所以你可以滚动图像，并且很快的改变图像的细节。</p>
+
+<p>CATiledLayer会缓存足够多的块，而当它也会根据需要扔掉不同的块。如果将来你再次需要他就会再次的生成。这意味着块的呈现是一个异步的过程，那么用户就会看到延时，之后才会绘制到层上。一个很好的例子就是google地图的应用程序，如图12-5.如果你缩放块的等级，图像不会立刻展示，而是有一些网格组成。当块装载完成时，就会代替网格显示出来。</p>
+
+<p><img src="/images/animation12-5.png" alt="图像 12-5 google map应用程序" /></p>
+
+<h2 id="多线程的动画">多线程的动画</h2>
+
+<p>核心动画是线程安全的，因为它是安装多核系统的思想设计的。</p>
+
+<p>这意味着你在多线程中操控核心动画，不会影响到其他的内部数据，这点非常的重要。然而，核心动画有一个地方不是线程安全的，就是当它进入到CALayer的属性中时。</p>
+
+<p>如果你的应用程序在主线程进入到属性中时，又在其他线程中进入到该属性，结果是不确定的。它可能的结果是，要么动画没有效果，要么程序crash。当你要尝试获得一个属性，并且改变它时，你需要先存储属性先前的状态，并且这个行为要加锁，使这个过程具有原子性。如清单12-6</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="p">[</span><span class="n">layer</span> <span class="nf">lock</span><span class="p">]</span>
+  <span class="kt">float</span> <span class="n">opacity</span> <span class="o">=</span> <span class="n">layer</span><span class="p">.</span><span class="n">opacity</span><span class="p">;</span><span class="n">layer</span><span class="p">.</span><span class="n">opacity</span> <span class="o">=</span> <span class="n">opacity</span> <span class="o">+</span> <span class="p">.</span><span class="mi">1</span><span class="p">;</span>
+  <span class="p">[</span><span class="n">layer</span> <span class="nf">unlock</span><span class="p">];</span>
+</code></pre></div></div>
+
+<p>清单 12-6</p>
+
+<p>在这个例子中，[CATransactionlock]用来防止任何其他线程获得锁，会有效的阻碍其他线程。这种序列话的进入到属性中，保证在我们处理的过程中，属性不会被改变。</p>
+
+<p>当需要层工作在多线程中，我们需要注意的如下：</p>
+
+<p>获取一个锁时间太长的话，会让界面停止绘制。因为进入到层是被锁住了，不能在其他线程中进入，系统的其他部分也不能进入直到这个锁被释放了。记住任何时候你锁住了一个层，就要尽快的解锁。</p>
+
+<p>第二个问题是所有线程都遇到的问题，不仅仅是核心动画，那就是死锁。如果你锁住了一个层在一个线程中，这个层需要进入另一个属性，但是这个属性是被另一个线程锁住，那么整个应用程序就会无响应，结果就是程序的crash。</p>
+
+<h3 id="滤镜的多线程">滤镜的多线程</h3>
+
+<p>不像核心动画，核心图像滤镜不是线程安全的。这以为这你应该仅仅在单线程中处理核心图像。然而，也可以通过键值对(KVC)和关键路径在多线程中控制滤镜。例如，如果你有一个层滤镜名字是acme，并且有一个属性叫做job，你可以通过下面的代码进行调整</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="p">[</span><span class="nf">layersetvalue</span><span class="p">:</span><span class="n">myValue</span> <span class="nf">forKeyPath</span><span class="p">:</span><span class="err">@”</span><span class="n">layer</span><span class="p">.</span><span class="n">filters</span><span class="p">.</span><span class="n">acme</span><span class="p">.</span><span class="n">job</span><span class="err">”</span><span class="p">];</span>
+</code></pre></div></div>
+
+<p>这将保证改变是原子的，因而是线程安全的。</p>
+
+<h3 id="线程和运行循环">线程和运行循环</h3>
+
+<p>当核心动画在多线程中工作时，你需要意识到的是在任何线程上调用-setNeedsDisplay，都会给层一个-display的消息。如果标记一个层需要显示，而非在主线程中，那么你就必须等待一个运行循环去确保线程已经运行了-display的方法。如果不这样，-display就从来不被调用，因为线程已经终结了，会引起一些异常的效果。</p>
+
+<p>尽管它是可能在线程中调用-setNeedsDisplay，而不在主线程中。但是这对绘制工作影响很小的，但多数情况下建议使用-performSelectorOnMainThread:方法，让它在主线程中运行。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>这一章，我们看到了关于性能方面的一些建议和策略。但是在处理性能之前，建议先完成代码。不要试着花费大量的时间来优化代码，除非性能的问题已经发生。</p>
+
+<p>这里也建议通过一些记录结果来测试一些潜在的瓶颈。有时候，一个简答的fps(每秒的帧率)记录就可以测试出来瓶颈。利用这些记录，我们就能确定那些性能改变是正确的，代替盲目的找到一些无关紧要的因素。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>第十章 用户交互 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2012/05/18/animation-11.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="第十章 用户交互">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2012/05/18/animation-11.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">第十章 用户交互</h1>
+  
+  <span class="post-meta">05月 18日, 2012</span><br>
+  
+  <span class="post-meta small">9 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>如果用户不能和图形界面进行交互，它存在的意义有何在那？然而，核心动画的API显示，没有直接的方法可以接收用户的交互。</p>
+
+<p>这一章我们焦距于怎么给应用程序增加交互点，尤其是核心动画。下面我们就看鼠标和键盘的输入的交互。</p>
+
+<h2 id="鼠标点击">鼠标点击</h2>
+
+<p>在你的应用程序中，最普通的交互就是具有响应鼠标点击的事件，当用户点击界面上的一些元素时，可以执行默写功能，例如点击保存按钮。通常在Cocoa应用程序中，这类事件是通过NSResponder来控制的。然而，因为核心动画是被设计的尽量轻量级，所以CALayer就没有继承自NSResponder，并且层也不能接收鼠标点击事件。然而，你需要通过NSView来传递这些事件。</p>
+
+<p>当工作在层后面的视图上时，你的应用程序就能在一个NSView上捕获鼠标事件，并且处理他们。然而，我们对整个栈中仅仅有这一个的NSView不是非常感兴趣。因为NSView仅仅是一个接收事件的对象，它必须指出那些层是被点击了，然后该做什么样的动作。</p>
+
+<h2 id="点击测试calayer对象">点击测试CALayer对象</h2>
+
+<p>当应用程序有仅仅一个NSView对象时，所有的用户交互都会在NSView上发生。它接收所有的鼠标和键盘输入，然后需要决定怎么去处理他们。在分离接收的事件之前，我们需要创建一个自定义的NSView来接收事件，并且给它分配一个代理对象，如清单11-1.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#import &lt;Cocoa/Cocoa.h&gt;
+</span><span class="k">@interface</span> <span class="nc">LZContentView</span> <span class="p">:</span><span class="nc">NSView</span> <span class="p">{</span>
+  <span class="n">IBOutlet</span> <span class="n">id</span> <span class="n">delegate</span><span class="p">;</span> 
+<span class="p">}</span>
+<span class="k">@end</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 清单11-1 接收鼠标事件的LZContentView的头文件
+</code></pre></div></div>
+
+<p>继承于NSView的子类增加了一个成员变量delegate。因为这个对象是被分配在Interface builder(一个可视化的图形编辑工具)，它被标记为IBOutlet。只要你想在Interface Builder中绑定一个对象，就不能定义为id类型，我们需要定义为IBOutlet，以便于让Interface Builder知道它。</p>
+
+<p>在NSView的子类中，我们仅仅想要捕获-mouseDown:和-mouseUp:事件，就像清单11-2所示。当被捕获到时，这些事件就被发送到delegate中，那里控制一些其他的交互。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#import "LZContentView.h"
+</span>
+<span class="k">@implementation</span> <span class="nc">LZContentView</span>
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">awakeFromNib</span> <span class="p">{</span>
+<span class="p">}</span>
+<span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">mouseDown</span><span class="p">:(</span><span class="n">NSEvent</span><span class="o">*</span><span class="p">)</span><span class="nv">theEvent</span> <span class="p">{</span>
+  <span class="p">[</span><span class="n">delegate</span> <span class="nf">mouseDown</span><span class="p">:</span><span class="n">theEvent</span><span class="p">];</span> 
+<span class="p">}</span>
+
+<span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">mouseUp</span><span class="p">:(</span><span class="n">NSEvent</span><span class="o">*</span><span class="p">)</span><span class="nv">theEvent</span> <span class="p">{</span>
+  <span class="p">[</span><span class="n">delegate</span> <span class="nf">mouseUp</span><span class="p">:</span><span class="n">theEvent</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">@end</span>
+</code></pre></div></div>
+
+<p>清单11-2 LZContentView实现接收鼠标事件的文件</p>
+
+<h2 id="点击测试">点击测试</h2>
+
+<p>当用户点击一个应用程序时，2个NSEvent对象是被生产。一个事件是当鼠标点击下去的时候是被生成，然后立刻鼠标是被释放。为了跟随这个列子，应用程序也会区别这mouseDown和mouseUp这个两个事件，从而做不同的交互。</p>
+
+<p>当鼠标事件行动时，我们需要做的第一件事就是决定那个层是被点击了。因为在NSView的层级中，不知道有多少个层在里面，所以我们通过位置不能判断那个层是被点击了。幸运的是，CALayer有-hitTest方法，这个方法的设计就是用来解决这个问题。当CGPoint是被传递到根部的CALayer上时，它会返回那个点击点所落在的最深层的CALayer上。这就能使你快速决定那个CALayer是被点击，从而做出响应的反应。</p>
+
+<p>实例应用程序：颜色的改变
+为了演示hit test如何工作，我们创建了一个简单的应用程序，有三个按钮：红，绿和蓝并且伴随着一个颜色的条来显示颜色的改变.</p>
+
+<p><img src="/images/animation-11-1.png" alt="如图11-1." /></p>
+
+<p>这些按钮和颜色条都是用CALayer对象创建的。在这个应用程序的第一个版本，我们决定那个按钮是被按下去，并且响应。</p>
+
+<h2 id="lzbbuttonlayer">LZBButtonLayer</h2>
+
+<p>创建这个应用程序的第一步是创建按钮。按钮是有2个CALayer对象组成的：</p>
+
+<p>主要的层(LZButtonLayer本身)，控制着边框和圆角率(如清单11-3所示)</p>
+
+<p>CATextLayer对象，用来展示文本的(如清单11-4)</p>
+
+<p>头文件如清单11-3，获得CATextLayer子层的引用，可以让你根据需要调整文本的内容。同样我们也需要一个颜色对象的引用。头文件包含了一对get和set方法-string、-setString，这个是用来给CATextLayer设定字符串的。最后要说的是，-setSelected方法通知层被点下去了。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#import &lt;Cocoa/Cocoa.h&gt;
+</span><span class="k">@interface</span> <span class="nc">LZButtonLayer</span> <span class="p">:</span><span class="nc">CALayer</span> <span class="p">{</span>
+<span class="n">__weak</span> <span class="n">CATextLayer</span><span class="o">*</span><span class="n">textLayer</span><span class="p">;</span>
+<span class="n">CGColorRef</span> <span class="n">myColor</span><span class="p">;</span> <span class="p">}</span>
+<span class="k">@property</span> <span class="p">(</span><span class="n">assign</span><span class="p">)</span> <span class="n">CGColorRefmyColor</span><span class="p">;</span>
+<span class="k">-</span> <span class="p">(</span><span class="n">NSString</span><span class="o">*</span><span class="p">)</span><span class="n">string</span><span class="p">;</span>
+<span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">setString</span><span class="p">:(</span><span class="n">NSString</span><span class="o">*</span><span class="p">)</span><span class="nv">string</span><span class="p">;</span> <span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">setSelected</span><span class="p">:(</span><span class="n">BOOL</span><span class="p">)</span><span class="nv">selected</span><span class="p">;</span>
+<span class="k">@end</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>清单 11-3
+</code></pre></div></div>
+
+<p>只要[CALayerlayer]调用了，init的方法就成为了默认的初始化方法，如清单11-4所示。按钮的层重载了默认的初始化方法，并且配置了自己的按钮。当[superinit]完成它的初始化工作时，按钮的背景层通过设定cornerRadius,bounds,borderWidth和borderColor这些配置了。</p>
+
+<p>下一步，textLayer是被初始化。既然textLayer是个自动释放的对象(因为我们没有调用alloc或者copy的方法)，我们就需要引用它。因为我们定义为一个弱引用，我们不能获得它，相反让层的继承树来控制这个引用。通过CATextLayer的初始化，下一步就是来设定层的默认属性，并且给它们在背景层上的正确位置。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#import“LZButtonLayer.h”
+</span> <span class="k">@implementation</span> <span class="nc">LZButtonLayer</span>
+ <span class="k">@synthesize</span> <span class="n">myColor</span><span class="p">;</span>
+<span class="k">-</span> <span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="n">init</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">[</span><span class="n">super</span> <span class="nf">init</span><span class="p">])</span><span class="k">return</span> <span class="nb">nil</span><span class="p">;</span>
+  <span class="p">[</span><span class="nf">selfsetCornerRadius</span><span class="p">:</span><span class="mi">10</span><span class="p">.</span><span class="mi">0</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">self</span> <span class="nf">setBounds</span><span class="p">:</span><span class="n">CGRectMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">24</span><span class="p">)];</span> <span class="p">[</span><span class="n">self</span> <span class="nf">setBorderWidth</span><span class="p">:</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">];</span>
+  <span class="p">[</span><span class="nf">selfsetBorderColor</span><span class="p">:</span><span class="n">kWhiteColor</span><span class="p">];</span>
+  <span class="n">textLayer</span> <span class="o">=</span><span class="p">[</span><span class="n">CATextLayer</span> <span class="nf">layer</span><span class="p">];</span>
+  <span class="p">[</span><span class="nf">textLayersetForegroundColor</span><span class="p">:</span><span class="n">kWhiteColor</span><span class="p">];</span> <span class="p">[</span><span class="n">textLayer</span> <span class="nf">setFontSize</span><span class="p">:</span><span class="mi">20</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+  <span class="p">[</span><span class="nf">textLayersetAlignmentMode</span><span class="p">:</span><span class="n">kCAAlignmentCenter</span><span class="p">];</span> <span class="p">[</span><span class="n">textLayer</span> <span class="nf">setString</span><span class="p">:</span><span class="err">@”</span><span class="n">blah</span><span class="err">”</span><span class="p">];</span>
+  <span class="n">CGRect</span> <span class="n">textRect</span><span class="p">;</span>
+  <span class="n">textRect</span><span class="p">.</span><span class="n">size</span> <span class="o">=</span><span class="p">[</span><span class="n">textLayer</span> <span class="nf">preferredFrameSize</span><span class="p">];</span> <span class="p">[</span><span class="n">textLayer</span> <span class="nf">setBounds</span><span class="p">:</span><span class="n">textRect</span><span class="p">];</span>
+  <span class="p">[</span><span class="nf">textLayersetPosition</span><span class="p">:</span><span class="n">CGPointMake</span><span class="p">(</span><span class="mi">50</span><span class="p">,</span> <span class="mi">12</span><span class="p">)];</span>
+  <span class="p">[</span><span class="nf">selfaddSublayer</span><span class="p">:</span><span class="n">textLayer</span><span class="p">];</span> <span class="k">return</span> <span class="n">self</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>清单 11-4 LZButtonLayer的初始化</p>
+
+<p>-string和-setString方法（如清单11-5所示)获取和传递字符串的值到CATextLayer下面。者提供了一个设置CATextLayer属性的方便方法。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">NSString</span><span class="o">*</span><span class="p">)</span><span class="n">string</span><span class="p">;</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">[</span><span class="n">textLayer</span> <span class="nf">string</span><span class="p">];</span> 
+<span class="p">}</span>
+<span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">setString</span><span class="p">:(</span><span class="n">NSString</span><span class="o">*</span><span class="p">)</span><span class="nv">string</span> <span class="p">{</span>
+  <span class="p">[</span><span class="n">textLayer</span> <span class="nf">setString</span><span class="p">:</span><span class="n">string</span><span class="p">];</span>
+  <span class="n">CGRect</span> <span class="n">textRect</span><span class="p">;</span>
+  <span class="n">textRect</span><span class="p">.</span><span class="n">size</span> <span class="o">=</span> <span class="p">[</span><span class="nf">textLayerpreferredFrameSize</span><span class="p">];</span> 
+  <span class="p">[</span><span class="n">textLayer</span> <span class="nf">setBounds</span><span class="p">:</span><span class="n">textRect</span><span class="p">];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>清单 11-5</p>
+
+<p>-setSelected：方法(清单11-6所示)给用户提供了一个可视的反馈，以便于他们能看到在应用程序上看到点击的效果。为了展示这个效果，我们通过一个布尔变量的控制，在按钮层上增加和移除Core Image的滤镜(CIBoom)。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">setSelected</span><span class="p">:(</span><span class="n">BOOL</span><span class="p">)</span><span class="nv">selected</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">selected</span><span class="p">)</span> <span class="p">{</span>
+    <span class="p">[</span><span class="n">self</span> <span class="nf">setFilters</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+    <span class="k">return</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="n">CIFilter</span> <span class="o">*</span><span class="n">effect</span> <span class="o">=</span> <span class="p">[</span><span class="nf">CIFilterfilterWithName</span><span class="p">:</span><span class="err">@”</span><span class="n">CIBloom</span><span class="err">”</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">effect</span> <span class="nf">setDefaults</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">effect</span> <span class="nf">setValue</span><span class="p">:</span> <span class="p">[</span><span class="nf">NSNumbernumberWithFloat</span><span class="p">:</span> <span class="mi">10</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]</span> <span class="nf">forKey</span><span class="p">:</span> <span class="s">@"inputRadius"</span><span class="p">];</span> 
+  <span class="p">[</span><span class="n">effect</span> <span class="nf">setName</span><span class="p">:</span> <span class="s">@"bloom"</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">self</span> <span class="nf">setFilters</span><span class="p">:</span> <span class="p">[</span><span class="nf">NSArrayarrayWithObject</span><span class="p">:</span><span class="n">effect</span><span class="p">]];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>清单 11-6 setSelected的实现</p>
+
+<h2 id="接口组建interface-builder">接口组建(Interface Builder)</h2>
+
+<p>随着LZButton层已被设计完后，我们需要创建的下一个就是AppDelegate。AppDelegate包含了所有的层；增加他们到窗口的contentView(内容视图)上，并且接收一个代理回调。</p>
+
+<p>我们需要在Interface Builder上做的事情就是改变窗口的contentView到一个LZContentView的实例上。在类型已经被改变后，就绑定contentView的代理给AppDelegate。这样就能够使AppDelegate就收来自contentView的鼠标点击事件了。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">awakeFromNib</span> <span class="p">{</span>
+  <span class="n">NSView</span> <span class="o">*</span><span class="n">contentView</span> <span class="o">=</span> <span class="p">[</span><span class="nf">windowcontentView</span><span class="p">];</span> 
+  <span class="p">[</span><span class="n">contentView</span> <span class="nf">setWantsLayer</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+
+  <span class="n">CALayer</span> <span class="o">*</span><span class="n">contentLayer</span> <span class="o">=</span><span class="p">[</span><span class="n">contentView</span> <span class="nf">layer</span><span class="p">];</span> 
+  <span class="p">[</span><span class="n">contentLayer</span> <span class="nf">setBackgroundColor</span><span class="p">:</span><span class="n">kBlackColor</span><span class="p">];</span>
+
+  <span class="n">redButton</span> <span class="o">=</span> <span class="p">[</span><span class="nf">LZButtonLayerlayer</span><span class="p">];</span> 
+  <span class="p">[</span><span class="n">redButton</span> <span class="nf">setString</span><span class="p">:</span><span class="s">@"Red"</span><span class="p">];</span>
+
+  <span class="p">[</span><span class="nf">redButtonsetPosition</span><span class="p">:</span><span class="n">CGPointMake</span><span class="p">(</span><span class="mi">60</span><span class="p">,</span> <span class="mi">22</span><span class="p">)];</span> 
+  <span class="p">[</span><span class="n">redButton</span> <span class="nf">setMyColor</span><span class="p">:</span><span class="n">kRedColor</span><span class="p">];</span>
+  <span class="p">[</span><span class="nf">contentLayeraddSublayer</span><span class="p">:</span><span class="n">redButton</span><span class="p">];</span>
+
+  <span class="n">greenButton</span> <span class="o">=</span> <span class="p">[</span><span class="nf">LZButtonLayerlayer</span><span class="p">];</span> 
+  <span class="p">[</span><span class="n">greenButton</span> <span class="nf">setString</span><span class="p">:</span><span class="s">@"Green"</span><span class="p">];</span>
+
+  <span class="p">[</span><span class="nf">greenButtonsetPosition</span><span class="p">:</span><span class="n">CGPointMake</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="mi">22</span><span class="p">)];</span> 
+  <span class="p">[</span><span class="n">greenButton</span> <span class="nf">setMyColor</span><span class="p">:</span><span class="n">kGreenColor</span><span class="p">];</span>
+  <span class="p">[</span><span class="nf">contentLayeraddSublayer</span><span class="p">:</span><span class="n">greenButton</span><span class="p">];</span>
+  <span class="n">blueButton</span> <span class="o">=</span> <span class="p">[</span><span class="nf">LZButtonLayerlayer</span><span class="p">];</span> 
+  <span class="p">[</span><span class="n">blueButton</span> <span class="nf">setString</span><span class="p">:</span><span class="s">@"Blue"</span><span class="p">];</span>
+
+  <span class="p">[</span><span class="nf">blueButtonsetPosition</span><span class="p">:</span><span class="n">CGPointMake</span><span class="p">(</span><span class="mi">340</span><span class="p">,</span> <span class="mi">22</span><span class="p">)];</span> 
+  <span class="p">[</span><span class="n">blueButton</span> <span class="nf">setMyColor</span><span class="p">:</span><span class="n">kBlueColor</span><span class="p">];</span>
+  <span class="p">[</span><span class="nf">contentLayeraddSublayer</span><span class="p">:</span><span class="n">blueButton</span><span class="p">];</span>
+  <span class="n">colorBar</span> <span class="o">=</span> <span class="p">[</span><span class="n">CALayer</span> <span class="nf">layer</span><span class="p">];</span>
+  <span class="p">[</span><span class="nf">colorBarsetBounds</span><span class="p">:</span><span class="n">CGRectMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">380</span><span class="p">,</span> <span class="mi">20</span><span class="p">)];</span> 
+
+  <span class="p">[</span><span class="n">colorBar</span> <span class="nf">setPosition</span><span class="p">:</span><span class="n">CGPointMake</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span><span class="mi">100</span><span class="p">)];</span>
+  <span class="p">[</span><span class="n">colorBar</span> <span class="nf">setBackgroundColor</span><span class="p">:</span><span class="n">kBlackColor</span><span class="p">];</span> 
+  <span class="p">[</span><span class="n">colorBar</span> <span class="nf">setBorderColor</span><span class="p">:</span><span class="n">kWhiteColor</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">colorBar</span> <span class="nf">setBorderWidth</span><span class="p">:</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">colorBar</span> <span class="nf">setCornerRadius</span><span class="p">:</span><span class="mi">4</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+
+  <span class="p">[</span><span class="nf">contentLayeraddSublayer</span><span class="p">:</span><span class="n">colorBar</span><span class="p">];</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                    清单 11-7
+</code></pre></div></div>
+
+<p>清单11-7，在-awakeFromNib方法中获取了窗口的contentView的一个引用，并且获得了它背后的层。然后我们就获得了一个contentView层的引用，通过使用它作为剩下UI的root layer(根层)。</p>
+
+<p>当我们有了rootLayer后，下一步就是初始化我们先前创建的LZButtonLayer，并且分配他们颜色，和设定在rootLayer中的位置。当每个按钮是被初始化时，我们就增加他们作为rootlayer的子层。</p>
+
+<p>最后，创建一个普通的CALayer，命名为colorBar，并且增加到rootlayer的子层上。因为colorBar是一个CALayer，它也需要被定义在这里。</p>
+
+<p>图11-1展示了接口布局的样子。接下来，就需要给AppDelegate增加交互代码了，告诉那个层是要响应事件。开始做这件事，我们需要把hittest抽象出来，因为很多地方需要用到。这能够是你重用代码，避免项目中代码的重复。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">LZButtonLayer</span><span class="o">*</span><span class="p">)</span><span class="n">buttonLayerHit</span> <span class="p">{</span>
+
+  <span class="n">NSPoint</span> <span class="n">mouseLocation</span> <span class="o">=</span><span class="p">[</span><span class="n">NSEvent</span> <span class="nf">mouseLocation</span><span class="p">];</span>
+  <span class="n">NSPoint</span> <span class="n">translated</span> <span class="o">=</span> <span class="p">[</span><span class="nf">windowconvertScreenToBase</span><span class="p">:</span><span class="n">mouseLocation</span><span class="p">];</span> 
+  <span class="n">CGPoint</span> <span class="n">point</span> <span class="o">=</span><span class="n">NSPointToCGPoint</span><span class="p">(</span><span class="n">translated</span><span class="p">);</span>
+  <span class="n">CALayer</span> <span class="o">*</span><span class="n">rootLayer</span> <span class="o">=</span> <span class="p">[[</span><span class="nf">windowcontentView</span><span class="p">]</span> <span class="nf">layer</span><span class="p">];</span>
+  <span class="n">id</span> <span class="n">hitLayer</span> <span class="o">=</span> <span class="p">[</span><span class="nf">rootLayerhitTest</span><span class="p">:</span><span class="n">point</span><span class="p">];</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">[</span><span class="nf">hitLayerisKindOfClass</span><span class="p">:[</span><span class="n">LZButtonLayer</span> <span class="nf">class</span><span class="p">]])</span> <span class="p">{</span>
+    <span class="n">hitLayer</span> <span class="o">=</span> <span class="p">[</span><span class="nf">hitLayersuperlayer</span><span class="p">];</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">[</span><span class="nf">hitLayerisKindOfClass</span><span class="p">:[</span><span class="n">LZButtonLayer</span> <span class="nf">class</span><span class="p">]])</span> <span class="p">{</span>
+      <span class="k">return</span> <span class="nb">nil</span><span class="p">;</span> 
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="n">hitLayer</span><span class="p">;</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>清单 11-8 AppDelegate中-buttonLayerHit的实现
+</code></pre></div></div>
+
+<p>当进入mouseLocation时，它会返回给我们本地屏幕坐标系的x和y值。这个坐标系不是我们应用程序使用的坐标系，因此我们需要转换他们到我们应用程序使用的坐标系，就要要用到了NSWindow和NSView类中的一个方法。因为CALayer对象处理的是CGPoints而不是NSPoints，所以我们需要改变窗口坐标系返回的NSRect，让它成为CGRect。</p>
+
+<p>现在我们有了正确的鼠标坐标，我们需要发现那个层是在鼠标上。通过在rootlayer上调用-hitTest:方法会返回鼠标所在的最深层。</p>
+
+<p>Deepest layer(最深层)被定义为，在点到的位置，它没有了任何子层。例如，如果你点击LZButtonLayer上的text，通过在它上面调用-hitTest:方法CATextLayer就会被返回，因为CATextLayer在包含CGpoint的位置上没有了子层。但是，如果按钮的边缘是被点击，那么LZButtonLayer自己会被返回。最后，如果背景跟层是被点击，那么rootlayer就会被返回。如图11-2.</p>
+
+<p><img src="/images/animation-11-2.png" alt="图 11-2 hit test" /></p>
+
+<p>然而我们关心的是，是否用户在LZButtonLayer上点击了。用户会想，我点击到了LZButtonLayer上，但是事实上点击到了它的子层上。因而，一个额外的匹配需要增加。如果点击层不是一个LZButtonLayer类，那么我们就检查层的父层看它是否是LZButtonLayer。如果点击的层是，那么的他的父层就返回。如果点击层和它的父层都不是那么就返回nil。</p>
+
+<p>随着hit test的方法被定义，下面该来控制mouseup和mouseDown的事件响应方法了，如清单11-9.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">mouseDown</span><span class="p">:(</span><span class="n">NSEvent</span><span class="o">*</span><span class="p">)</span><span class="nv">theEvent</span><span class="p">;</span> <span class="p">{</span>
+  <span class="p">[[</span><span class="n">self</span> <span class="nf">buttonLayerHit</span><span class="p">]</span><span class="nf">setSelected</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>清单  11-9</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">mouseUp</span><span class="p">:(</span><span class="n">NSEvent</span><span class="o">*</span><span class="p">)</span><span class="nv">theEvent</span><span class="p">;</span> <span class="p">{</span>
+  <span class="n">LZButtonLayer</span> <span class="o">*</span><span class="n">hitLayer</span> <span class="o">=</span><span class="p">[</span><span class="n">self</span> <span class="nf">buttonLayerHit</span><span class="p">];</span> 
+  <span class="p">[</span><span class="n">hitLayer</span> <span class="nf">setSelected</span><span class="p">:</span><span class="nb">NO</span><span class="p">];</span>
+  <span class="p">[</span><span class="nf">colorBarsetBackgroundColor</span><span class="p">:[</span><span class="n">hitLayer</span> <span class="nf">myColor</span><span class="p">]];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>清单 11-10</p>
+
+<p>当mouseDown事件是被接收时，我们需要告诉选择按钮，它是被选中了，这样就改变它的呈现。因为-buttonLayerHit方法返回LZButtonLayer或则nil，我们就可以通过调用-setSelected:方法，如清单11-10.</p>
+
+<h3 id="监控鼠标">监控鼠标</h3>
+
+<p>上面的代码离开就暴露出一个问题。如果鼠标按钮是在LZButtonLayer上被按下，然后松开在其他地方，那么前面的按钮仍然被选择。糟糕的是，如果一个按钮被按下，然后松开在另一个按钮上，这样第一个按钮会被选择，另一个也会被选择。</p>
+
+<p>为了解决这个问题，我们需要重新定义mouseUp和mouseDown方法，如清单11-11.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">mouseDown</span><span class="p">:(</span><span class="n">NSEvent</span><span class="o">*</span><span class="p">)</span><span class="nv">theEvent</span><span class="p">;{</span>
+<span class="n">LZButtonLayer</span> <span class="o">*</span><span class="n">layer</span> <span class="o">=</span> <span class="p">[</span><span class="nf">selfbuttonLayerHit</span><span class="p">];</span> <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">layer</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+<span class="n">selectedButton</span> <span class="o">=</span> <span class="n">layer</span><span class="p">;</span>
+<span class="p">[</span><span class="nf">selectedButtonsetSelected</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+<span class="n">NSRect</span> <span class="n">buttonRect</span> <span class="o">=</span><span class="n">NSRectFromCGRect</span><span class="p">([</span><span class="n">selectedButton</span> <span class="nf">frame</span><span class="p">]);</span>
+<span class="n">buttonDownTrackingArea</span> <span class="o">=</span><span class="p">[[</span><span class="n">NSTrackingArea</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithRect</span><span class="p">:</span><span class="nf">buttonRectoptions</span><span class="p">:(</span><span class="n">NSTrackingMouseEnteredAndExited</span> <span class="o">|</span> <span class="n">NSTrackingActiveInActiveApp</span> <span class="o">|</span><span class="n">NSTrackingEnabledDuringMouseDrag</span> <span class="o">|</span> <span class="n">NSTrackingAssumeInside</span><span class="p">)</span> <span class="n">owner</span><span class="o">:</span><span class="n">selfuserInfo</span><span class="o">:</span><span class="nb">nil</span><span class="p">];</span>
+<span class="p">[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span><span class="nf">addTrackingArea</span><span class="p">:</span><span class="n">buttonDownTrackingArea</span><span class="p">];</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  清单 11-11 更新了AppDelegate mouseDown的实现
+</code></pre></div></div>
+
+<p>关键的问题是我们需要决定什么时候鼠标离开了按钮。然而，在整个窗口上，不停的跟踪鼠标的位置是一个繁琐的事件，因此你需要这样做。我们尽可能的少的跟踪鼠标。为了完成这个功能，增加一个NSTrackingArea到contentView上，当鼠标mouseDown事件是被接收时，然后我们就限制NSTrackingArea到被按下按钮的矩形区域上。</p>
+
+<p>AppDelegate是被设定在NSTrackingArea这个区域上，无论何时只要鼠标退出或者进入这个区域都会通知AppDelegate，前提是应用程序要处于活动状态。我们也会告知NSTrackingArea去假设我们一开始就在矩形区域中，以便于第一时间可以接收到鼠标退出的事件。</p>
+
+<p>另外增加一个NSTrackingArea，我们也会保留一个指向按下按钮的指针。这个指针是被用来控制选择状态的开关，从而达到控制mouseup的事件。</p>
+
+<p>新增的-mouseDown方法会引起另外两个方法调用-mouseExited:和-mouseEntered:.定义如清单11-12.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">mouseExited</span><span class="p">:(</span><span class="n">NSEvent</span><span class="o">*</span><span class="p">)</span><span class="nv">theEvent</span><span class="p">{</span>
+<span class="p">[</span><span class="nf">selectedButtonsetSelected</span><span class="p">:</span><span class="nb">NO</span><span class="p">];</span> <span class="p">}</span>
+<span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">mouseEntered</span><span class="p">:(</span><span class="n">NSEvent</span><span class="o">*</span><span class="p">)</span><span class="nv">theEvent</span> <span class="p">{</span>
+<span class="p">[</span><span class="nf">selectedButtonsetSelected</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 清单11 -12
+</code></pre></div></div>
+
+<p>在增加了这些方法后，按钮会根据鼠标的进入到它的区域，来判断是选择还是不被选择。这给用户的视觉反馈就是，鼠标被按下去的时候，还有机会取消掉。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">mouseUp</span><span class="p">:(</span><span class="n">NSEvent</span><span class="o">*</span><span class="p">)</span><span class="nv">theEvent</span> <span class="p">{</span>
+  <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">selectedButton</span><span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+  <span class="p">[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span><span class="nf">removeTrackingArea</span><span class="p">:</span><span class="n">buttonDownTrackingArea</span><span class="p">];</span> 
+  <span class="p">[</span><span class="n">selectedButton</span> <span class="nf">setSelected</span><span class="p">:</span><span class="nb">NO</span><span class="p">];</span>
+
+  <span class="n">LZButtonLayer</span> <span class="o">*</span><span class="n">hitLayer</span> <span class="o">=</span><span class="p">[</span><span class="n">self</span> <span class="nf">buttonLayerHit</span><span class="p">];</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="n">hitLayer</span> <span class="o">!=</span><span class="n">selectedButton</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">selectedButton</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="k">return</span><span class="p">;</span> 
+  <span class="p">}</span>
+  <span class="n">CGColorRefnewBackgroundColor</span><span class="p">;</span>
+  <span class="k">if</span><span class="p">(</span><span class="n">CGColorEqualToColor</span><span class="p">([</span><span class="n">colorBar</span> <span class="nf">backgroundColor</span><span class="p">],</span> <span class="p">[</span><span class="n">selectedButton</span> <span class="nf">myColor</span><span class="p">]))</span> <span class="p">{</span>
+    <span class="n">newBackgroundColor</span> <span class="o">=</span><span class="n">kBlackColor</span><span class="p">;</span> 
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="n">newBackgroundColor</span> <span class="o">=</span><span class="p">[</span><span class="n">selectedButton</span> <span class="nf">myColor</span><span class="p">];</span> 
+  <span class="p">}</span>
+  <span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">animation</span> <span class="o">=</span><span class="p">[</span><span class="n">CABasicAnimation</span> <span class="nf">animationWithKeyPath</span><span class="p">:</span><span class="s">@"backgroundColor"</span><span class="p">];</span>
+  <span class="p">[</span><span class="nf">animationsetFromValue</span><span class="p">:(</span><span class="n">id</span><span class="p">)[</span><span class="n">colorBar</span> <span class="nf">backgroundColor</span><span class="p">]];</span> 
+  <span class="p">[</span><span class="nf">animationsetToValue</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="n">newBackgroundColor</span><span class="p">];</span> 
+  <span class="p">[</span><span class="n">animation</span> <span class="nf">setRemovedOnCompletion</span><span class="p">:</span><span class="nb">NO</span><span class="p">];</span>
+  <span class="c1">//[animationsetDelegate:self];</span>
+  <span class="p">[</span><span class="nf">animationsetAutoreverses</span><span class="p">:</span><span class="nb">NO</span><span class="p">];</span>
+
+  <span class="p">[</span><span class="n">colorBar</span> <span class="nf">addAnimation</span><span class="p">:</span><span class="nf">animationforKey</span><span class="p">:</span><span class="s">@"colorChange"</span><span class="p">];</span> 
+  <span class="p">[</span><span class="n">colorBar</span> <span class="nf">setBackgroundColor</span><span class="p">:</span><span class="n">newBackgroundColor</span><span class="p">];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>清单 11-13
+</code></pre></div></div>
+
+<p>这些改变就要求mouseup的时候，做一些复杂的处理了。首先，如果我们之前没有选择任何按钮，我们就立刻忽略这个事件。这就防止了这个偶发事件，在按钮是被按下的时候，鼠标移动到了按钮上。</p>
+
+<p>下面，移除各宗区域事件，停止了mouseEntered和mouseExisted事件。现在鼠标已经放下去了，没必要再跟踪这些事件了。</p>
+
+<p>下一步就是发现是否鼠标是按在了同一个LZButtonLayer上。我们做这些，通过查询在鼠标下面的LZButtonLayer按钮。如果它不是我们开始的按钮，我们通过设定selectedButton为nil从而忽略它。这就防止了用户按下一个按钮但是在另外一个按钮松开的错误。</p>
+
+<p>在所有的逻辑检查完成后，就设定颜色条的背景颜色。当做这些时，首先检查背景颜色是否已经是按钮的颜色了。如果是，背景颜色就设定成黑色。否则设定成按钮的颜色。</p>
+
+<p>现在，当应用程序运行时，不仅仅颜色条会随着按钮的按下改变，而且我们还能取消按钮被按下的状态，通过移动鼠标出去，并且释放鼠标。</p>
+
+<h3 id="键盘事件">键盘事件</h3>
+
+<p>键盘和鼠标事件都是相似的。就像鼠标事件一样，仅仅NSResponder对象可以接收键盘事件。然而，不像鼠标事件，键盘事件没有点的信息，并且通过被传递到目前的第一响应者。在颜色例子程序中，窗口是第一响应者。因为我们想要接收和处理键盘事件，我们首先要使LZContentView可以接收第一响应的状态。我们通过重载-acceptsFirstResponder方法实现，如清单11-14.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">BOOL</span><span class="p">)</span><span class="n">acceptsFirstResponder</span><span class="p">{</span>
+  <span class="k">return</span> <span class="nb">YES</span><span class="p">;</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>清单 11-14</p>
+
+<p>就像清单11-14中mouseUp和mouseDown事件一样，我们想要控制键盘事件在代理上，代替直接在视图上。因而，-keyUp:方法传递事件到代理上，如清单11-15.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">keyUp</span><span class="p">:(</span><span class="n">NSEvent</span><span class="o">*</span><span class="p">)</span><span class="nv">theEvent</span> <span class="p">{</span>
+  <span class="p">[</span><span class="n">delegate</span> <span class="nf">keyUp</span><span class="p">:</span><span class="n">theEvent</span><span class="p">];</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>清单 11-15
+</code></pre></div></div>
+
+<p>返回到AppDelegate，我们需要在开始时，给contentView第一响应状态，以便于一开始就可以接收鼠标事件。为了做这些，需要在-awakeFromNib中调用[window setFirstResponder:contentView]方法。</p>
+
+<p>现在事件是被传递到我们想要的地方了，该如何处理他们那。当-keyUp:事件是被触发时，我们想要基于被按下按键设定背景颜色。如清单11-16.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">keyUp</span><span class="p">:(</span><span class="n">NSEvent</span><span class="o">*</span><span class="p">)</span><span class="nv">theEvent</span> <span class="p">{</span>
+
+  <span class="n">CGColorRef</span> <span class="n">newColor</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">([[</span><span class="nf">theEventcharactersIgnoringModifiers</span><span class="p">]</span> <span class="nf">isEqualToString</span><span class="p">:</span><span class="s">@"r"</span><span class="p">])</span> <span class="p">{</span>
+    <span class="n">newColor</span> <span class="o">=</span> <span class="n">kRedColor</span><span class="p">;</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">([[</span><span class="nf">theEventcharactersIgnoringModifiers</span><span class="p">]</span> <span class="nf">isEqualToString</span><span class="p">:</span><span class="s">@"g"</span><span class="p">])</span> <span class="p">{</span>
+    <span class="n">newColor</span> <span class="o">=</span> <span class="n">kGreenColor</span><span class="p">;</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">([[</span><span class="nf">theEventcharactersIgnoringModifiers</span><span class="p">]</span> <span class="nf">isEqualToString</span><span class="p">:</span><span class="s">@"b"</span><span class="p">])</span> <span class="p">{</span>
+    <span class="n">newColor</span> <span class="o">=</span> <span class="n">kBlueColor</span><span class="p">;</span>
+  <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+    <span class="p">[</span><span class="n">super</span> <span class="nf">keyUp</span><span class="p">:</span><span class="n">theEvent</span><span class="p">];</span>
+    <span class="k">return</span><span class="p">;</span> 
+  <span class="p">}</span>
+  <span class="k">if</span><span class="p">(</span><span class="n">CGColorEqualToColor</span><span class="p">([</span><span class="n">colorBar</span> <span class="nf">backgroundColor</span><span class="p">],</span> <span class="n">newColor</span><span class="p">))</span> <span class="p">{</span> 
+    <span class="n">newColor</span> <span class="o">=</span><span class="n">kBlackColor</span><span class="p">;</span>
+  <span class="p">}</span>
+  <span class="p">[</span><span class="nf">colorBarsetBackgroundColor</span><span class="p">:</span><span class="n">newColor</span><span class="p">];</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>清单 11-16
+</code></pre></div></div>
+
+<p>我们可以测试下这个三个按键r,g和b。如果将要来的事件不能匹配这3个按键，我们就忽略这个事件，传给上一层响应链，然后就返回此方法。如果它匹配了，我们就看目前的颜色是不是要设定的颜色，不是就设定，是的就去掉这个颜色。</p>
+
+<h2 id="层后面的视图">层后面的视图</h2>
+
+<p>到目前为止，我们讨论的整个用户接口使用的是核心动画，通过一个简单的root的视图支持它。另外一个情况是工作在背后的视图是不同于单独的一个层。</p>
+
+<p>不像单一的NSView设计，后面的视图都是NSResponder的子类。因而，它们可能在更底层的等级上就可以接收鼠标和键盘事件。然而，你需要考虑这些事情，当增加用户交互在层上的时候，并且背后是视图时。</p>
+
+<h3 id="键盘的输入">键盘的输入</h3>
+
+<p>前面提到过，因为键盘的输入没有点的概念，应用程序需要保持跟踪那个NSResponder是键盘事件的接受者。这些通过响应链可以做。当我们开发自定义的NSView的对象时，我们需要意识到响应链并且正确的控制它。如果我们接收了一个事件，但是我们不需要控制它，我们需要传递给下一个响应链，以便于潜在的父类链可以控制它。如果你不传递这些事件，我们就可能中断了某些事件像键盘快捷键，等等。</p>
+
+<h3 id="鼠标的坐标系">鼠标的坐标系</h3>
+
+<p>鼠标事件比键盘事件更容易控制。当一个自定义的NSView接收鼠标事件时，它要保证属于NSView或者它的子类。然而，坐标系是否需要转换需要关心。就像前面清单11-8讨论过的，[NSEvent mouseLocation]返回的是屏幕的坐标系。这首先需要转变坐标系到窗口的坐标系上，然后再转换到接收事件的视图上。因为每个NSResponder都有它内部的格子，在响应点击之前我们需要我们工作在正确的坐标系上。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>这一章介绍了在核心动画环境中捕捉用户输入的概念。使用本章提到的概念，你可以建立一个复杂的用户体验。</p>
+
+<p>尽管利用层后面的视图，更容易开发交互接口。你也可以创建整个接口在单独的层上，或者建立一个自定义的层，通过传递给它鼠标和按键事件，这样就允许他们用轻量级的方法控制需要展现的东西了。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

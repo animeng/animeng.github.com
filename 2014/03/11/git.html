@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>git的使用 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2014/03/11/git.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="git的使用">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2014/03/11/git.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">git的使用</h1>
+  
+  <span class="post-meta">03月 11日, 2014</span><br>
+  
+  <span class="post-meta small">3 minute read</span>
+</div>
+
+<article class="post-content">
+  <h2 id="什么是-git">什么是 Git</h2>
+
+<p>Git类似于svn的版本控制工具。</p>
+
+<h3 id="git出现的原因">Git出现的原因</h3>
+
+<p>由于Linux内核开源项目有着为数众广的参与者。绝大多数的Linux核维护工作都花在了提交补丁和保存归档的繁琐事务上，为了满足这个功能的需求就应运而生了Git。</p>
+
+<h3 id="git相关资料">Git相关资料</h3>
+
+<p><a href="http://git-scm.com/book/zh/">Pro git</a> 这本书是目前git的官方权威图书，里面详解了git历史，用途以及作用。</p>
+
+<p>下面就介绍下初学git者，应该怎么了解git</p>
+
+<h2 id="如何搭建git环境">如何搭建git环境</h2>
+
+<p>环境搭建这里不再赘述网络上有很多教程，官网中也有相关的教程。<a href="http://git-scm.com/book/zh/%E8%B5%B7%E6%AD%A5-%E5%AE%89%E8%A3%85-Git">如何安装git</a>
+git环境搭建好后，需要客户端生成一个公钥文件，然后增加公钥文件到服务器。
+这样客户端就可以访问服务器的仓库了。如果不提供公钥文件，那么客户端就要输入服务器的密码了。
+什么是公钥和私钥哪？下面来介绍下。</p>
+
+<h3 id="什么是公钥和私钥">什么是公钥和私钥</h3>
+
+<p>简单的说就是，用公钥加密的数据，只能用私钥解密，反之用私钥加密的数据，只能用公钥解密。
+至于公钥和私钥是需要一定的算法规则才能生成，
+这里我举一个实际的例子。比如小明写信给朋友小红，
+但是为了在信邮递过程中，不被别人看到。他可以这样做，让小红利用一定的规则生成2把钥匙，一把是公钥，一把是私钥。首先小红可以给
+小明一把公钥，然后写完信后，小明用被给的公钥加密自己的信，这样给了小红后，小红就可以用自己的私钥进行解密。这个过程就相当于服务器给客户端传输数据。至于刚才讲的利用一定的规则，就是非对称加密的规则，需要用到数论中的知识，想要详细了解可以学习下<a href="http://zh.wikipedia.org/zh-cn/RSA%E5%8A%A0%E5%AF%86%E6%BC%94%E7%AE%97%E6%B3%95">RSA加密演算法</a>。</p>
+
+<h3 id="git公钥和私钥如何生成">git公钥和私钥如何生成</h3>
+
+<p>Mac和Linux用户直接用下面的命令生成：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ ssh-keygen
+</code></pre></div></div>
+
+<p>然后进入的.ssh目录下，.pub文件就是公钥文件</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ cd ~/.ssh
+$ ls
+</code></pre></div></div>
+
+<p>然后把公钥文件加入到服务器上的authorized_keys文件中，命令如下:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>$ cat xx.pub &gt;&gt; authorized_keys
+</code></pre></div></div>
+
+<p>mac下推荐一个开源的图形化git工具sourcetree
+windows用户需要安装git的客户端生成公钥下面有2个教程：
+1 <a href="http://www.xbc.me/install-git-on-windows/">安装git命令行工具</a>
+2 <a href="http://blog.csdn.net/spring21st/article/details/11222795">安装git图形界面工具</a>
+ps:以上2中方法，都要生成公钥文件，加入到服务器，客户端才能访问服务器。
+git的基本搭建方法介绍完之后，重点来看下git的命令如何使用的</p>
+
+<h2 id="git命令的使用">git命令的使用</h2>
+
+<p>下面就介绍几个最常用的命令，以及遇到的问题</p>
+
+<h3 id="git-clone-gitxxxxxxxgit">git clone git@xxxx:xxx.git</h3>
+
+<p>这条命令是从服务器上把代码仓库拉下来的，然后clone到本地的文件夹下面，会有一个.git的文件夹，这个文件夹是隐藏的，里面放置的都是版本库的控制信息。这里先提前说下使用git一定要理解2个仓库的概念，一个是本地的一个是远程的。下面几条命令我们就会介绍这两个概念。这里先说下使用这条命令经常遇到的问题</p>
+
+<ol>
+  <li>当使用这条命令后出现如下错误：</li>
+</ol>
+
+<blockquote>
+  <p>ssh: connect to host xxxx port 22: Connection refused
+fatal: Could not read from remote repository.
+这说明你clone的服务器无法访问
+R access for xxxx DENIED
+(Or there may be no repository at the given path. Did you spell it correctly?)
+fatal: Could not read from remote repository.
+代表你没有权限访问服务器，或者服务上不存在这个仓库</p>
+</blockquote>
+
+<ol>
+  <li>当输入命令后，需要你输入密码，这说明上一步说的git公钥文件没有加入到服务器上，或者客户端的私钥文件git无法访问</li>
+</ol>
+
+<h3 id="git-pull-和-push命令">git pull 和 push命令</h3>
+
+<ol>
+  <li>pull操作 (语法git pull  服务器   本地分支：远程分支)  <br />
+git pull orgin develop:develop  <br />
+origin这个字段表明的就是git服务器的地址，可以在git的config中进行配置,该文件一般在用户目录下.gitconfig。这里是具体的配置方法：<a href="http://git-scm.com/book/zh/%E8%B5%B7%E6%AD%A5-%E5%88%9D%E6%AC%A1%E8%BF%90%E8%A1%8C-Git-%E5%89%8D%E7%9A%84%E9%85%8D%E7%BD%AE">git配置</a>。这里的本地分支和远程分支，就对应着本地仓库和远程仓库。其实pull操作就相当于把远程仓库的所有数据取下来，然后同步到本地。  <br />
+pull操作相当于2步骤，首先会获取服务器的所有索引，然后跟本地的索引合并。相当于fetch和merge操作，之后会了解fetch和merge命令。  <br />
+pull命令常见的错误
+    <blockquote>
+      <p>! [rejected]        master     -&gt; master  (non-fast-forward)  <br />
+出现这个错误一般是因为有文件已经提交到本地仓库了，所以本地仓库和远程的无法同步了。这样就需要先通过push操作，把本地仓库的东西提交给远程，这样才可以同步。这里解释下什么叫fast-forward，假如我们从A分支又开了一个B分支，然后在B分支上修改了东西，但是A分支没做任何修改，假如此时A分支要合并B分支的内容，因为B的分支的Parent commit就是A的HEAD，所以这两个分支唯一的差别就是B之后的修改，所以不会有任何的冲突，只要A分支把HEAD移动到B分支的HEAD上就可以了，这就叫fast-forward。很显然non-fast-forward就说明了远端的分支的parent commit和你本地的HEAD不相同所以很可能是本地的提交没有push到远端造成的。</p>
+    </blockquote>
+  </li>
+  <li>push操作 (语法git push  服务器   本地分支：远程分支)  <br />
+git push orgin develop:develop  <br />
+这个命令跟pull有的相反的意思，是把本地仓库所有改变的内容，放置到远程仓库中，相当于把本地仓库的内容同步到远程仓库了。  <br />
+push命令常见的错误
+    <blockquote>
+      <p>! [rejected]        master     -&gt; master  (non-fast-forward)   <br />
+其实上面已经解释过这个错误的产生的原因了。这里push正好和pull的意思相反。是本地的Parent commit和远端的HEAD不相同，也就是远端可能产生了新的提交，所以需要你pull远端的提交，合并好后，在push改变。这里要注意的是pull的时候，如果出现冲突，需要使用git mergetool来合并冲突，我们这篇文章的最后会讲解，如何merge冲突的文件</p>
+    </blockquote>
+  </li>
+  <li>根远程仓库操作相关的命令
+检出仓库：$ git clone git://github.com/jquery/jquery.git  <br />
+查看远程仓库：$ git remote -v  <br />
+添加远程仓库：$ git remote add [name] [url]  <br />
+删除远程仓库：$ git remote rm [name]  <br />
+修改远程仓库：$ git remote set-url –push[name][newUrl]  <br />
+拉取远程仓库：$ git pull [remoteName] [localBranchName]  <br />
+推送远程仓库：$ git push [remoteName] [localBranchName]</li>
+</ol>
+
+<h3 id="git用来提交本地仓库的命令">git用来提交本地仓库的命令</h3>
+<p>git status 可以用来查看文件的状态，git版本下的文件有一种文件叫Untracked files，是表示该文件有过用户操作，做了修改，但是没有加入到需要提交的列表中。说到这里就要提到git add命令了，这个命令就是用来把Untracked files变成tracked files，然后就可以使用git commit提交到本地仓库了。这里你就了解了如果需要提交一个文件到本地仓库需要做的操作有那些了。
+另外还要说下git版本控制下，可以使用忽略文件，这个是用来把文件加入到忽略列表中的，被加入的文件git版本控制器就不会对这个文件做任何的跟踪处理，也就是无论这个文件怎么变化，都不会有上面提到的这些状态。
+例如：忽略一些文件、文件夹不提交
+在仓库根目录下创建名称为“.gitignore”的文件，写入不需要的文件夹名或文件，每个元素占一行即可。</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>target
+bin
+*.db
+</code></pre></div></div>
+
+<h3 id="git-分支和标签的操作">git 分支和标签的操作</h3>
+<p>下面我引用了一篇博客，这里面已经对branch和tag的常见操作，和遇到的问题做了详细的描述。<a href="http://www.cnblogs.com/springbarley/archive/2012/11/03/2752984.html">博客原文</a></p>
+<blockquote>
+  <p>1 分支(branch)操作相关命令
+查看本地分支：$ git branch  <br />
+查看远程分支：$ git branch -r  <br />
+创建本地分支：$ git branch [name] —-注意新分支创建后不会自动切换为当前分支  <br />
+切换分支：$ git checkout [name]  <br />
+创建新分支并立即切换到新分支：$ git checkout -b [name]  <br />
+删除分支：$ git branch -d [name] —- -d选项只能删除已经参与了合并的分支，对于未有合并的分 支是无法删除的。如果想强制删除一个分支，可以使用-D选项  <br />
+合并分支：$ git merge [name] —-将名称为[name]的分支与当前分支合并  <br />
+创建远程分支(本地分支push到远程)：$ git push origin [name]  <br />
+删除远程分支：$ git push origin :heads/[name]  <br />
+我从master分支创建了一个issue5560分支，做了一些修改后，使用git push origin     master提交，但是显示的结果却是’Everything up-to-date’，发生问题的原因是git push origin master 在没有track远程分支的本地分支中默认提交的master分支，因为master分支默认指向了origin master 分支，这里要使用git push origin issue5560：master 就可以把issue5560推送到远程的master分支了。  <br />
+如果想把本地的某个分支test提交到远程仓库，并作为远程仓库的master分支，或者作为另外一个名叫test的分支，那么可以这么做。  <br />
+$ git push origin test:master         // 提交本地test分支作为远程的master分支//好像只写这一句，远程的github就会自动创建一个test分支  <br />
+$ git push origin test:test              // 提交本地test分支作为远程的test分支
+如果想删除远程的分支呢？类似于上面，如果:左边的分支为空，那么将删除:右边的远程的分支。  <br />
+$ git push origin :test              // 刚提交到远程的test将被删除，但是本地还会保存的，不用担心</p>
+</blockquote>
+
+<blockquote>
+  <p>2 版本(tag)操作相关命令
+查看版本：$ git tag  <br />
+创建版本：$ git tag [name]  <br />
+删除版本：$ git tag -d [name]  <br />
+查看远程版本：$ git tag -r  <br />
+创建远程版本(本地版本push到远程)：$ git push origin [name]  <br />
+删除远程版本：$ git push origin :refs/tags/[name]</p>
+</blockquote>
+
+<h3 id="git-merge-操作">git merge 操作</h3>
+<p>这个是用来合并代码的操作。这里我需要说一下，如果该命令执行完，然后提示有冲突文件无法解决时，这就需要亲自来合并代码了。git mergetool就可以用来启动合并工具来完成这个工作。这个命令可以在git的config文件中进行配置。下面是贴出来我的配置：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>[user]
+name = animeng
+email = animeng@gmail.com
+[core]
+excludesfile = /Users/animeng/.gitignore_global
+editor = /usr/bin/vim
+[merge]
+tool = extMerge
+[mergetool "extMerge"]
+cmd = extMerge \"$BASE\" \"$LOCAL\" \"$REMOTE\" \"$MERGED\"
+trustExitCode = false
+[diff]
+external = extDiff
+[difftool "sourcetree"]
+cmd = opendiff \"$LOCAL\" \"$REMOTE\"
+path =
+[mergetool "sourcetree"]
+cmd = /Applications/SourceTree.app/Contents/Resources/opendiff-w.sh \"$LOCAL\" \"$    REMOTE\" -ancestor \"$BASE\" -merge \"$MERGED\"
+trustExitCode = true
+</code></pre></div></div>
+
+<p>这里我说下合并的这条命令，我用extmerge这个工具作为例子 extMerge "$BASE" "$LOCAL" "$REMOTE" "$MERGED"。其中base就相当于文件的parent commit也就是说在修改之前最初相同的那个文件。既然是冲突肯定是远程有别人修改的内容被提交了，本地没有更新，那么LOCAL是代表本地修改的文件，REMOTE就是远程的文件，而MERGED就是代表要合并后的文件了。那么一旦出现冲突如何合并哪？首先我们要了解下出现冲突后，如果git不能解决，那么这个MERGED的文件长什么样子那？如下：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1 This is git merge file
+2 &lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+3 =======
+4 There is a confict content
+5 need confict
+6 &gt;&gt;&gt;&gt;&gt;&gt;&gt; 3b0f0b65c7ae2eec59467faea13acdf38cbdbbd4
+7 The conflict content is coming
+8 hello conflict
+9 Tell users to how to use git
+</code></pre></div></div>
+
+<p>我们来看冲突的文件的BASE文件</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1 This is git merge file
+2 There is a confict content
+3 The conflict content is coming
+4 Tell users to how to use git 
+</code></pre></div></div>
+
+<p>再来看下远程的文件</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1 This is git merge file
+2 There is a confict content
+3 need confict
+4 The conflict content is coming
+5 Tell users to how to use git 
+</code></pre></div></div>
+
+<p>最后是本地的文件</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>1 This is git merge file
+2 The conflict content is coming
+3 hello conflict
+4 Tell users to how to use git 
+</code></pre></div></div>
+
+<p>可以看出来«««&lt;HEAD表明冲突开始的位置，»»»&gt; 3b0f0b65c7ae2eec59467faea13acdf38cbdbbd4表示冲突结束的位置，用户就需要把这些冲突合并了，然后移除这些冲突的符号后，就表明合并完毕，然后提交就可以了。再push到服务器上，就解决了冲突了。</p>
+
+<h3 id="git-reset-和-revert的区别">git reset 和 revert的区别</h3>
+
+<ol>
+  <li>git revert是用一次新的commit来回滚之前的commit，git reset是直接删除指定的commit。</li>
+  <li>在回滚这一操作上看，效果差不多。但是在日后继续merge以前的老版本时有区别。因为git revert是用一次逆向的commit“中和”之前的提交，因此日后合并老的branch时，导致这部分改变不会再次出现，但是git reset是之间把某些commit在某个branch上删除，因而和老的branch再次merge时，这些被回滚的commit应该还会被引入。</li>
+  <li>git reset 是把HEAD向后移动了一下，而git revert是HEAD继续前进，只是新的commit的内容和要revert的内容正好相反，能够抵消要被revert的内容。</li>
+</ol>
+
+<p>这里我需要说明下，在reset之后，只是HEAD改变了，但是文件的内容还是没有改变，需要使用checkout把文件内容也恢复，这样提交就不会有冲突了。</p>
+
+<p>最后有一个练习git命令的一个很好的网站，有兴趣可以练习下。<a href="http://pcottle.github.io/learnGitBranching/">git 命令学习网站</a></p>
+
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

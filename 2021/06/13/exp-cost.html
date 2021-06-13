@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>经验的成本 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2021/06/13/exp-cost.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="经验的成本">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2021/06/13/exp-cost.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">经验的成本</h1>
+  
+  <span class="post-meta">06月 13日, 2021</span><br>
+  
+  <span class="post-meta small">3 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>最近想对博客的源码做自动化的CI，原本想着使用github的workflow配置，提交博客源码后让github自动编译发布博客。不过由于还要部署一些其他的内容，所以索性就想着自己写个github的webhook，当提交博客源码时，服务器运行CI工具，顺便发布下自己部署的其他服务。</p>
+
+<p>做这个事情本身并不难，其实只要在github上把博客源码的仓库，增加一个webhook，然后服务器后台部署自己的CI工具就行了。在做这个事情之前，突然想到，自己一直从事的是客户端的开发。服务器部署的经验比较少，做这个事情大概要花多久时间哪？然后就尝试从网上看一些教程和文章，从网上一些描述来讲，做这个事情可能只需要花费1到2个小时的时间。然后在做这个事情的过程中，我就记录了解决整个问题的过程和时间。对比下花费的时间和精力。下面我就逐个描述下当时解决问题的过程。</p>
+
+<h2 id="docker环境">Docker环境</h2>
+
+<p>部署服务自然少不了使用Docker。然后自己就根据博客使用的环境开始写DockerFile了。因为博客用的jekyll框架，自然需要ruby的环境。凭借自己之前仅记的一些Docker知识，自然的写了下面这行代码<code class="highlighter-rouge">FROM ruby:2.7.0</code>,然后又想着还需要node环境，然后DockerFile代码就变成这样子了。</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+FROM ruby:2.7.0
+FROM node:latest
+
+</code></pre></div></div>
+
+<p>如果了解Docker工作原理的自然就懂了，跟在FROM后面所有的指令，都是在FROM这层镜像环境上做的。所以当DockerFile执行到 <code class="highlighter-rouge">RUN bundle install</code>时候，就报错说没有找到bundle命令。最开始自己还没有意识到时这个错误，然后就开始查找Docker下ruby环境的相关错误，然后本地写了DockerFile增加如下代码:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+FROM ruby:2.7.0
+RUN <span class="nb">mkdir</span> <span class="nt">-p</span> /home/blogsource
+WORKDIR /home/blogsource
+COPY <span class="nb">.</span> /home/blogsource
+RUN bundle <span class="nb">install</span>
+
+</code></pre></div></div>
+
+<p>发现都是正确的，然后对比源码才发现可能是FROM指令的问题，然后仔细查询了FROM指令用法，发现Docker17.05老的版本只支持一条FROM指令，新的Docker版本支持多条。但是Docker只会部署最后一条FROM指令的环境。下面就引用下网上的Docker学习的一些资料.</p>
+<blockquote>
+  <p>多个 FROM 指令并不是为了生成多根的层关系，最后生成的镜像，仍以最后一条 FROM 为准，之前的 FROM 会被抛弃，那么之前的FROM 又有什么意义呢？每一条 FROM 指令都是一个构建阶段，多条 FROM 就是多阶段构建，虽然最后生成的镜像只能是最后一个阶段的结果，但是，能够将前置阶段中的文件拷贝到后边的阶段中，这就是多阶段构建的最大意义。</p>
+</blockquote>
+
+<p>这是我犯的第一个错误，等我解决完这个问题，大概消耗了1个多小时的时间。(PS 由于自己服务器带宽比较小，每次运行Docker拉取镜像时间很久大概要10分钟，也是浪费时间的一个原因)。</p>
+
+<h2 id="cmd命令的使用">CMD命令的使用</h2>
+
+<p>开心的解决完第一个问题，然后又开始了编译Docker镜像。其实我心里早有准备不可能有这么顺利的，果然控制台又开始报错了，看下我写的DockerFile.</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+FROM ruby:2.7.0
+RUN <span class="nb">mkdir</span> <span class="nt">-p</span> /home/blogsource
+WORKDIR /home/blogsource
+COPY <span class="nb">.</span> /home/blogsource
+RUN bundle <span class="nb">install
+</span>CMD <span class="o">[</span> <span class="s2">"cd"</span>, <span class="s2">"_nodejs/"</span> <span class="o">]</span>
+
+RUN curl <span class="nt">-sL</span> https://deb.nodesource.com/setup_14.x | bash -<span class="se">\</span>
+  <span class="o">&amp;&amp;</span> apt-get <span class="nb">install</span> <span class="nt">-qq</span> <span class="nt">--no-install-recommends</span> nodejs <span class="se">\</span>
+  <span class="o">&amp;&amp;</span> npm <span class="nb">install</span> <span class="se">\</span>
+</code></pre></div></div>
+
+<p>这是我犯的第二个错误，想当然的以为CMD命令就可以把工作目录转到nodejs的文件夹中，然后安装node环境。环境安装完后运行<code class="highlighter-rouge">npm install</code> 就报错说找不到package文件。然后当时就想，是不是CMD命令的问题就用了下面的方法重新试了下。</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+RUN curl <span class="nt">-sL</span> https://deb.nodesource.com/setup_14.x | bash -<span class="se">\</span>
+  <span class="o">&amp;&amp;</span> apt-get <span class="nb">install</span> <span class="nt">-qq</span> <span class="nt">--no-install-recommends</span> nodejs <span class="se">\</span>
+  <span class="o">&amp;&amp;</span> <span class="nb">cd</span> ./_nodejs/ <span class="se">\</span>
+  <span class="o">&amp;&amp;</span> npm <span class="nb">install</span> <span class="se">\</span>
+
+</code></pre></div></div>
+
+<p>发现这样子安装就没有问题了，然后就查询了下CMD和RUN命令的用法，下面的差异就是关键点。</p>
+
+<blockquote>
+  <p>CMD 指令：类似于 RUN 指令，用于运行程序，但二者运行的时间点不同；CMD 在docker run 时运行，而非docker build;</p>
+</blockquote>
+
+<p>看到这里就明白了，在安装环境的时候用RUN指令，而真正运行容器的时候采用CMD，这两点的差别就造成了这个问题。还好这个问题也就浪费了半小时的时间。接下来看下个问题吧。</p>
+
+<h2 id="docker运行问题">Docker运行问题</h2>
+
+<p>终于编译Docker文件没有问题了，但是发现Docker容器只要运行就退出一直显示 <code class="highlighter-rouge">exit(0)</code>。当时着实没有了思路，感觉编译的过程都正确为啥运行不了那。就通过 <code class="highlighter-rouge">docker exec</code>进入到容器中，执行<code class="highlighter-rouge">nmp start</code>发现没有问题啊。于是开始查找下了docker退出的原因，关键字自然是exit(0),然后很快找到了下面的答案.</p>
+
+<blockquote>
+  <p>之前介绍容器的时候曾经说过，Docker 不是虚拟机，容器就是进程。既然是进程，那么在启动容器的时候，需要指定所运行的程序及参数。CMD 指令就是用于指定默认的容器主进程的启动命令的。</p>
+</blockquote>
+
+<p>看到这里自己就有点明白了，查看了下自己写的DockerFile的脚本代码，<code class="highlighter-rouge">CMD ["nohup","npm","start"]</code>发现为了让node在后台运行，自己特意加了nohup，反而是弄巧成拙，造成Docker容器运行完就自动退出了。</p>
+
+<p>其实解决这个问题花了自己蛮久的时间，一直把Docker当成了虚拟机的概念在想这个逻辑，Docker本质上还是一个进程，只是使用了linux用户定义分组的能力，如果知道这个前提就不容易犯错了。这看起来和苹果的沙盒原有异曲同工之妙，也正是这个错误的认知，自己决定之后一定要看下Docker源码的逻辑，看一下Docker设计的方式。</p>
+
+<h2 id="git配置问题">Git配置问题</h2>
+
+<p>前面的三个问题，其实已经花了自己咖啡馆一下午的时间了。然后编译运行Docker，发现没有问题了。就去github，打开了webhook的设置，配置上去后，按照文档把nodejs的代码写好了，逻辑很简单如下:</p>
+
+<div class="language-javascript highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">req</span><span class="p">.</span><span class="nx">body</span><span class="p">[</span><span class="dl">'</span><span class="s1">commits</span><span class="dl">'</span><span class="p">];</span>
+<span class="kd">var</span> <span class="nx">message</span> <span class="o">=</span> <span class="nx">result</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+<span class="kd">var</span> <span class="nx">command</span> <span class="o">=</span> <span class="nx">message</span><span class="p">[</span><span class="dl">'</span><span class="s1">message</span><span class="dl">'</span><span class="p">];</span>
+<span class="k">if</span> <span class="p">(</span><span class="nx">command</span> <span class="o">==</span> <span class="dl">'</span><span class="s1">publish</span><span class="dl">'</span><span class="p">)</span> <span class="p">{</span>
+    <span class="nx">res</span><span class="p">.</span><span class="nx">status</span><span class="p">(</span><span class="mi">200</span><span class="p">).</span><span class="nx">send</span><span class="p">(</span><span class="dl">'</span><span class="s1">receive success start publish...</span><span class="dl">'</span><span class="p">);</span>
+    <span class="nx">execute</span><span class="p">(</span><span class="dl">'</span><span class="s1">cd .. &amp;&amp; git pull origin master &amp;&amp; ./publish.sh</span><span class="dl">'</span><span class="p">,</span><span class="kd">function</span> <span class="p">(</span><span class="nx">error</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">error</span> <span class="o">==</span> <span class="kc">null</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">'</span><span class="s1">publish successful</span><span class="dl">'</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="nx">error</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">});</span>
+<span class="p">}</span>
+<span class="kd">function</span> <span class="nx">execute</span><span class="p">(</span><span class="nx">command</span><span class="p">,</span><span class="nx">callback</span><span class="p">)</span> <span class="p">{</span>
+  <span class="kd">var</span> <span class="nx">process</span> <span class="o">=</span> <span class="nx">require</span><span class="p">(</span><span class="dl">'</span><span class="s1">child_process</span><span class="dl">'</span><span class="p">);</span>
+  <span class="nx">process</span><span class="p">.</span><span class="nx">exec</span><span class="p">(</span><span class="nx">command</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">error</span><span class="p">,</span> <span class="nx">stdout</span><span class="p">,</span> <span class="nx">stderr</span><span class="p">)</span> <span class="p">{</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">stdout:</span><span class="dl">"</span><span class="o">+</span><span class="nx">stdout</span><span class="p">);</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">stderr:</span><span class="dl">"</span><span class="o">+</span><span class="nx">stderr</span><span class="p">);</span>
+      <span class="nx">console</span><span class="p">.</span><span class="nx">log</span><span class="p">(</span><span class="dl">"</span><span class="s2">error:</span><span class="dl">"</span><span class="o">+</span><span class="nx">error</span><span class="p">);</span>
+      <span class="nx">callback</span><span class="p">(</span><span class="nx">error</span><span class="p">);</span>
+  <span class="p">});</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>然后就提交了下github的源码，看了下Docker运行的日志，发现git没有权限的报错，然后自己想了下，Docker是按照group用户的概念隔离进程的，那自然不能重用服务器上的sshkey了，那在Docker镜像build的时候应该把sshkey文件复制进去，至此完整的DockerFile代码就如下:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>FROM ruby:2.7.0
+USER root
+
+<span class="c">#在image中创建文件夹</span>
+RUN <span class="nb">mkdir</span> <span class="nt">-p</span> /home/blogsource
+<span class="c"># 将工程下所有文件拷贝到文件夹中</span>
+COPY <span class="nb">.</span> /home/blogsource
+
+<span class="c">#使用RUN命令执行npm install安装工程依赖库</span>
+SHELL <span class="o">[</span><span class="s2">"/bin/bash"</span>, <span class="s2">"-o"</span>, <span class="s2">"pipefail"</span>, <span class="s2">"-c"</span><span class="o">]</span>
+RUN bundle <span class="nb">install</span> <span class="se">\</span>
+  <span class="o">&amp;&amp;</span> curl <span class="nt">-sL</span> https://deb.nodesource.com/setup_14.x | bash -<span class="se">\</span>
+  <span class="o">&amp;&amp;</span> apt-get update <span class="nt">-qq</span> <span class="se">\</span>
+  <span class="o">&amp;&amp;</span> apt-get <span class="nb">install</span> <span class="nt">-qq</span> <span class="nt">--no-install-recommends</span> nodejs <span class="se">\</span>
+  <span class="o">&amp;&amp;</span> apt-get clean <span class="se">\</span>
+  <span class="o">&amp;&amp;</span> <span class="nb">cd</span> ./_nodejs/ <span class="se">\</span>
+  <span class="o">&amp;&amp;</span> npm <span class="nb">install</span> <span class="se">\</span>
+  <span class="o">&amp;&amp;</span> <span class="nb">mkdir</span> /root/.ssh <span class="se">\</span>
+  <span class="o">&amp;&amp;</span> <span class="nb">cp</span> <span class="nt">-r</span> ./gitconfig/<span class="k">*</span> /root/.ssh/ <span class="se">\</span>
+  <span class="o">&amp;&amp;</span> git config <span class="nt">--global</span> user.email <span class="s2">"animeng68@gmail.com"</span> <span class="se">\</span>
+  <span class="o">&amp;&amp;</span> git config <span class="nt">--global</span> user.name <span class="s2">"mengtnt"</span>
+<span class="c">#暴露给主机的端口号</span>
+EXPOSE 9999
+<span class="c">#执行npm start命令，启动Node工程</span>
+WORKDIR /home/blogsource/_nodejs
+CMD <span class="o">[</span> <span class="s2">"npm"</span>, <span class="s2">"start"</span> <span class="o">]</span>
+</code></pre></div></div>
+
+<p>自此终于把博客自动化ci的工具搭建成功了，自己记录了下时间大概花了8小时左右才完成。我相信如果是一个Docker运维很有经验的人，搞这些源码，可能只需要1到2个小时就能部署和调试完成，我这里很多时间都是浪费在解决问题上了。这本质上就是经验的成本。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>所以何为经验，就是在某个领域解决问题的效率。拿上面的例子，如果是一个经验不丰富的人，可能要花费3倍于经验丰富的人，才能解决这个问题，这个就是生产效率的问题。试问企业更愿意雇佣那种人，显而易见如果企业用1个月就可以赚到3个月的钱时，就愿意拿3倍工资招聘一个经验丰富的人，而不会用平均的工资水平招聘一个经验不足的人。</p>
+
+<p>对于企业来讲，生产效率是他们立于不败之地的重要手段。很多工具的发明也正是为了提升生产效率。所以作为打工人的我们要考虑，为什么企业要用你，自己的价值何在？工作的时候，一些重复的劳动，就要想有没有什么办法可以做自动化。这不仅节省了企业的成本，重要的是也让自己学到了经验，那将来其他公司也很乐于雇佣你，因为你帮企业提高了生产力，企业就更乐意拿高于没经验人的工资来聘用你。所以在职场上，要不断的增加自己解决问题的经验，然后树立自己的核心竞争力，这样才能立于不败之地。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

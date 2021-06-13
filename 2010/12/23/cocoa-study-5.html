@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>五 Foundation框架中常用类的介绍 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2010/12/23/cocoa-study-5.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="五 Foundation框架中常用类的介绍">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2010/12/23/cocoa-study-5.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">五 Foundation框架中常用类的介绍</h1>
+  
+  <span class="post-meta">12月 23日, 2010</span><br>
+  
+  <span class="post-meta small">2 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>其实学习任何语言的道理都一样，首先要学习语言的基础语法，了解了这种语言语法的独特之处。之后就要学习针对这种语言开发出来的框架，正如牛顿曾讲过的，“我正是站在巨人的肩膀上，才能有现在的成就”。如果什么都从基础做起，那搞IT的岂不是都要学习怎么写机器码了，说不定搞硬件都要去中国大西北的稀土矿中挖矿去了。所以在软件开发中能够很好的利用框架的作用，显然可以降低你开发的难度，提高开发的质量。因为这些框架毕竟都是经过千锤百炼出来的。学习cocoa的Foundation框架中的类，最好的途径就是查阅apple的开发文档，这些东西都是靠平时用来积累的，并不是你看了几篇文章就能熟练掌握其中的用法的，所以我对这些类的常见的用法就不加说明，只是针对某些类那种用法容易出错，来一一说明，</p>
+
+<p>NSString 、NSMutableString类
+    cocoa把字符串处理封装到NSString类中了，这个类提供了字符串处理的常用方法，详细请见apple develop document。在这里你要了解到NSString类的那些特征那，下面请看一段代码：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">   </span> <span class="n">NSString</span> <span class="o">*</span><span class="n">temp</span> <span class="o">=</span><span class="p">[[</span><span class="n">NSString</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithString</span><span class="p">:</span><span class="s">@"test"</span><span class="p">];</span>
+<span class="err">   </span> <span class="c1">//NSLog(@"%d",[temp retainCount]);</span>
+<span class="err">   </span> <span class="p">[</span><span class="n">temp</span> <span class="nf">release</span><span class="p">];</span>
+
+<span class="err">   </span> <span class="c1">//NSLog(@"%d",[temp retainCount]);</span>
+
+<span class="err">   </span> <span class="n">NSMutableString</span> <span class="o">*</span><span class="n">str</span><span class="o">=</span><span class="p">[[</span><span class="n">NSMutableString</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithString</span><span class="p">:</span><span class="n">temp</span><span class="p">];</span>
+<span class="err">   </span> <span class="p">[</span><span class="n">str</span> <span class="nf">appendFormat</span><span class="p">:</span><span class="s">@"NSString"</span><span class="p">];</span>
+<span class="err">   </span> <span class="n">NSLog</span><span class="p">(</span><span class="s">@"%@"</span><span class="p">,</span><span class="n">str</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>你猜NSLog会输出什么，是我们想要的testNSString么？有兴趣的可以在xcode中创建一个控制台程序，把上面的代码复制进去，可以看到确实是我们预期的结果。学习过objective c内存管理的肯定就会有疑问了，temp已经释放了，为什么str中还能和temp中的字符串拼接那？</p>
+
+<p>为了揭开NSString这个类的秘密，首先把代码中被注释的那两句话，在程序中一同运行。那么retainCount又是什么那？引用计数，这个你不会没有听过吧，那你就要再好好学习下objective c的内存管理了。程序再次运行时，你会发现控制台中会输出两个-1，也就是alloc和release根本就没有起到任何作用，难道NSString类不适用于objective c的内存管理么？显然不是，原因就在于NSString类中的字符串都定义在常量区，常量区并不是程序员为对象在内存中申请的空间，而是编译起给一些变量分配的空间，所以说你根本无法取得它的引用计数，因为这个字符串的分配，根本不受你的控制，完全是编译起去控制的。所以你看到的都是－1。那么如果给NSMutableString类型的str取retainCount那答案会是什么哪？有兴趣的可以实验下，应该是1。因为NSMutableString虽说它初始化的字符串在常量区，但是NSMutalbeString不像NSString简单的存取字符串的信息，它还要存取字符串的容量以及一些其他信息供字符串扩展，所以自然和NSString就不太一样了。具体NSMutableString是怎么实现的那就要问问apple的工程师了。</p>
+
+<p>NSArray NSMutableString类
+    首先还是先看段代码，眼见为实，代码可以说明一切。假如你有两个类Person和Animal那么你就可以写如下的代码，来访问你定义再array对象中的实例了：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">   </span> <span class="n">Person</span> <span class="o">*</span><span class="n">aMan</span> <span class="o">=</span> <span class="p">[[</span><span class="n">Person</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+
+<span class="err">   </span> <span class="n">Animal</span> <span class="o">*</span><span class="n">dog</span><span class="err">  </span> <span class="o">=</span> <span class="p">[[</span><span class="n">Animal</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+
+<span class="err">   </span> <span class="n">NSArray</span> <span class="o">*</span><span class="n">aryMammal</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSArray</span> <span class="nf">arrayWithObjects</span><span class="p">:</span><span class="n">aMan</span><span class="p">,</span><span class="n">dog</span><span class="p">]];</span>
+
+<span class="err">   </span> <span class="p">[</span><span class="n">aMan</span> <span class="nf">release</span><span class="p">];</span>
+
+<span class="err">   </span> <span class="p">[</span><span class="n">dog</span> <span class="nf">release</span><span class="p">];</span>
+
+<span class="err">   </span> <span class="k">for</span><span class="p">(</span><span class="n">id</span> <span class="n">someThing</span> <span class="k">for</span> <span class="n">aryMammal</span><span class="p">)</span>
+
+<span class="err">   </span> <span class="p">{</span>
+
+<span class="err">        </span> <span class="n">NSLog</span><span class="p">(</span><span class="s">@"%@"</span><span class="p">,</span> <span class="p">[</span><span class="n">someThing</span> <span class="nf">getName</span><span class="p">]];</span><span class="err"> </span> <span class="c1">//假如说你定义的类有这个方法可以获得对象的名字</span>
+
+<span class="err">   </span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>按照我们学过的objective c内存管理的理论分析的话，程序会在for循环中，抛出一个不能识别的selector发向一个实例的异常。但是你可以运行一下，程序非常的正常，没有任何的异常。这又是什么原因哪？先不急着看下面的分析，你可以用上面的策略retainCount来看下对象aMan和dog的变化。之后你就很容易发现问题在哪里了。下面还是为一些不愿动手的同志，分析一下结果吧。如果照上面所说的在NSArray后面用retainCount来获取aMan和dog的的引用计数的，你会发现这两个实例的retainCount都变成了2，自然release之后对象还是没有销毁的。所以由这里可以推测出我们向一个容器里面放对象的时候，对象的引用计数会自动加1，apple工程师这样设计就可以大大减少程序崩溃的可能性。</p>
+
+<p>    下面来看下NSMutableArray的一些特征。当你想要遍历一个NSMutableArray的时候，然后找到某个特殊的对象，用另外一个对象替代这个对象的时候，代码如下：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">  </span> <span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="err">   </span> <span class="k">for</span><span class="p">(</span><span class="n">id</span> <span class="n">temp</span> <span class="k">in</span> <span class="n">mutableAry</span><span class="p">)</span>
+
+<span class="err">  </span> <span class="p">{</span>
+
+<span class="err">       </span> <span class="k">if</span><span class="p">([</span><span class="n">temp</span> <span class="nf">equal</span><span class="p">:</span><span class="n">aObject</span><span class="p">])</span>
+
+<span class="err">           </span> <span class="p">[</span><span class="n">mutableAry</span> <span class="nf">replaceObjectAtIndex</span><span class="p">:</span><span class="n">i</span> <span class="nf">withObject</span><span class="p">:</span><span class="n">aObject</span><span class="p">];</span>
+
+<span class="err">       </span> <span class="n">i</span><span class="o">++</span><span class="p">;</span>
+
+<span class="err">  </span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>这样的代码可以运行么？答案是只要你的程序进到了if语句里面，下次执行for循环的时候程序就会崩溃，报出的错误是bad access，在之后的博客里我会和大家一块分享下，xcode程序运行中的常见错误。下面就来分析下这种错误的原因吧。 用for(id temp in mutableArray)的时候，切记不能在for循环中为mutableArray添加任何东西，因为for循环在开始的时候，会把array中的所有数据都放到一个stack中，stack中存着array中对象的指针。如果你改变了array中的对象，原来对象的指针就销毁了，而stack中仍然存着这个指针，访问的时候程序会bad access从而crash。</p>
+
+<p>    下面再来看下NSArray的一个特殊的用法，就是在数组中放置dictionary的时候，数组同样可以用valueForKey的方法来访问dictionary中的value。代码演示如下：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err"> </span> <span class="err"> </span> <span class="n">NSDictionary</span> <span class="o">*</span><span class="n">dic1</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSDictionary</span> <span class="nf">dictionaryWithObjectsAndKeys</span><span class="p">:</span><span class="s">@"1"</span><span class="p">,</span><span class="s">@"sky"</span><span class="p">,</span><span class="nb">nil</span><span class="p">];</span>
+<span class="err">  </span> <span class="err"> </span><span class="n">NSDictionary</span> <span class="o">*</span><span class="n">dic2</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSDictionary</span> <span class="nf">dictionaryWithObjectsAndKeys</span><span class="p">:</span><span class="s">@"2"</span><span class="p">,</span><span class="s">@"zhiwei"</span><span class="p">,</span><span class="nb">nil</span><span class="p">];</span>
+
+<span class="err">   </span> <span class="n">NSDictionary</span> <span class="o">*</span><span class="n">dic3</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSDictionary</span> <span class="nf">dictionaryWithObjectsAndKeys</span><span class="p">:</span><span class="s">@"1"</span><span class="p">,</span><span class="s">@"mengtnt"</span><span class="p">,</span><span class="nb">nil</span><span class="p">];</span>
+<span class="err">   </span> <span class="n">NSMutableArray</span> <span class="o">*</span><span class="n">ary</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSMutableArray</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+<span class="err">  </span> <span class="err"> </span><span class="p">[</span><span class="n">ary</span> <span class="nf">insertObject</span><span class="p">:</span><span class="n">dic1</span> <span class="nf">atIndex</span><span class="p">:</span><span class="mi">0</span><span class="p">];</span>
+<span class="err">  </span> <span class="err"> </span><span class="p">[</span><span class="n">ary</span> <span class="nf">insertObject</span><span class="p">:</span><span class="n">dic2</span> <span class="nf">atIndex</span><span class="p">:</span><span class="mi">0</span><span class="p">];</span>
+<span class="err">  </span> <span class="err"> </span><span class="p">[</span><span class="n">ary</span> <span class="nf">insertObject</span><span class="p">:</span><span class="n">dic3</span> <span class="nf">atIndex</span><span class="p">:</span><span class="mi">0</span><span class="p">];</span>
+<span class="err">  </span> <span class="err"> </span><span class="n">NSString</span> <span class="o">*</span><span class="n">str</span> <span class="o">=</span> <span class="p">[[</span><span class="n">ary</span> <span class="nf">valueForKey</span><span class="p">:</span><span class="s">@"1"</span><span class="p">]</span> <span class="nf">objectAtIndex</span><span class="p">:</span><span class="mi">1</span><span class="p">];</span>
+<span class="err">   </span> <span class="n">NSLog</span><span class="p">(</span><span class="s">@"%@"</span><span class="p">,</span><span class="n">str</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>在从array中取得dictionary的value的时候，切记要指定index因为数组中的dictionary可能有好多key为1的数据，它会根据index位置获得正确的数据，如果上面的程序这样写NSString *str = [[ary valueForKey:@”1”] objectAtIndex:0];那么str中应该存取的就是mengtnt，而如果objectAtIndex:2 那结果会输出一个Null。默认情况下如果在相应的位置没有这个dictionary的key，编译器会自动给这个位置加一个NSNull的对象，大家可不要搞混了，NSNull也是个对象，也是继承自NSObject，千万不能把它当作nil处理。只不过apple为了在集合类中表示空对象而定义的一个类，因为不可能在集合中随便插入nil对象。这样就可以避免程序随便的进入nil对象，而造成程序异常。。</p>
+
+<p>    好了时间不早了，也就先介绍下这两个主要的类吧，以后再和大家分享其他类的学习心得吧！</p>
+
+<p><a href="https://blog.csdn.net/mengtnt/article/details/6094722">原文链接</a></p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

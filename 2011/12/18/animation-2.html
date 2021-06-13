@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>第一章 什么是核心动画 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2011/12/18/animation-2.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="第一章 什么是核心动画">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2011/12/18/animation-2.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">第一章 什么是核心动画</h1>
+  
+  <span class="post-meta">12月 18日, 2011</span><br>
+  
+  <span class="post-meta small">2 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>核心动画是你能够为不同类型的应用程序开发复杂的动画。你可以在窗口中简单的活动下一个视图，或者你可以在一个击杀类的游戏中，通过层创建1000个精灵展现到屏幕上。在这一章里，我们介绍核心动画背后的一些基本概念。我们会一瞥视图和层，确保你理解动画在层和视图上面做了什么。开始，我们会讨论动画和坐标系，之后会认识核心动画的基类，层即CALayer这个类，以及这些类的协议。</p>
+
+<h2 id="动画和笛卡尔坐标">动画和笛卡尔坐标</h2>
+
+<p>当你熟悉了核心动画，在程序中开始使用它时，你会发现不管是在mac os中，还是在iphone中，动画是多么的容易。事实上动画不总是那么容易的。在有核心动画之前，如果你要做一个动画，你需要理解一些像双缓冲这样非常复杂的概念，如果你想给你的动画运用在更深的场景中，还需要要了解平面几何的知识。核心动画抽象了所有这些方式。以前的方法，如果你想让一个精灵穿过屏幕，你需要创建一个离屏的图形上下文，画你的精灵在上下文中，把离屏的图形上下文和目前屏幕显示的内容交换，然后再移动精灵的位置，画并且再交换离屏的图形上下文，之后重复这个工作。</p>
+
+<p>虽然这个过程不是十分的可怕，但是对开发者来说也是一个挑战，然而核心动画就完全消除了这些麻烦。核心动画同样去创建一个包含精灵的层，只需要简单的调用-setPosition就可以了。在这一章你将了解到，一个层的位置就是这个层的中心点在父坐标空间中的位置。然后那又是什么意思那？</p>
+
+<p>核心动画使用了三角几何学中的标准笛卡尔级。X轴的值是横坐标，Y轴的值是纵坐标。当命名一个点时，X总是第一个值，因此一个点的值为25,35意思就是x=25和y=35.不同于标准笛卡尔级的是，你仅仅使用坐标系中右上部分正数的点。这就意味着屏幕的左下角是0,0.屏幕的右上角是高和宽，这里高和宽倚赖屏幕的分辨率。在15英寸的macbook pro上，这个值是1440,900.例如，你创建了一个精灵，并且想要从坐标0,0点移动。你可以在创建的时候设置这个精灵的位置0,0，然后调用setPostion（CGPointMake（1440,900）），那么精灵层将会运动到屏幕的右上角。当然，这需要精灵在一个覆盖在整个屏幕的视图上面，因为如果没有视图做依托，层是没有办法展现的。</p>
+
+<h2 id="不同的坐标系">不同的坐标系</h2>
+
+<p>你应该记住，当你要在视图中放置一个层时，不同的坐标系统方法就不同。如果在windows平台上，你有在坐标系中绘制的经验的话，你可能就会感到混乱。因为windows上，坐标原点0,0在屏幕的左上角，而不是左下角。</p>
+
+<h2 id="你的免费午餐">你的免费午餐</h2>
+
+<p>都说没有免费的午餐，但是当你使用核心动画时，你不仅仅能得到午餐，而且还能得到饮料和一些应得的东西。例如，所有的绘制动作都是利用opengl在场景的后台发生。然而，你不需要知道任何关于Opengl如何利用显卡进行加速处理的。这些都被核心动画抽象过了。如果你想了解更多opengl的具体细节，在OS X上，你可以使用CAOpenGLLayer。截至这本书出来之前，在IPhone上使用Opengl是不容易的，但是不久也会出来相应的东西的。层和层后面的视图也会给你很多性能的提升。</p>
+
+<p>在核心动画中，另一个免费的是所有的动画都发生在后台的线程中。这意味这，用户界面不会因为动画而被阻塞。为了使用核心动画，你可不必成为多线程的专家！其实，就是你从来没有使用过多线程，你也不用注意太多。你仅仅需要在层或者视图上，设置animatable的属性，然后观看动画的发生就可以了。</p>
+
+<h2 id="什么是层">什么是层</h2>
+
+<p>CALayer类和它的子类代表层，对于基于核心动画的应用程序，它是最基础的一块。所有的核心动画层在视图上都提供了一个轻量级的层。这里是苹果API文档描述的CALayer类：</p>
+
+<p>对于层树对象来说，CALayer是一个模型类。它封装了位置，尺寸和定义你坐标系中的几何转换属性。它也封装了持续时间和步调，并且它的动画实现了CAMediaTiming协议，这个协议定义了一个层的时间空间。</p>
+
+<p>这里要注意到说的“模型对象”。如果你熟悉模型-视图-控制器（MVP）设计模式的话，这里你可能会困惑于，核心动画是拥有视图特性的，应该属于MVC中的视图部分才更有意义。事实上，视图是OS X中的NSView和iphone中的UIView类，在这些视图中，层是存储需要绘制的东西。CALayer简单的包含了一些数据模型，这些数据一般是和层相关联的属性，例如背景颜色，边框宽度，位置，尺寸，转换属性等等。</p>
+
+<p>基于你应用程序的需要，核心动画提供了大量的不同层，这些层可以帮助你完成不同的功能。例如，如果你想播放一个电影，你不想手动的获取电影所有的帧，展示在层的内容区域中，因为这样你将耗费大量的开支，并且你的电影也不能流畅的播放。相反，你应该自然的想到使用QTMovieLayer，这个层很好的抽象了电影回放展示。你需要做的全部就是给QTMovieLayer提供影像文件在磁盘的路径，然后这个层就控制剩下的东西了。图1-1展示了核心动画层的继承树和它们属于哪个框架。</p>
+
+<p><img src="/images/animation-1.gif" alt="图1" /></p>
+
+<p>图1-1显示，在核心动画的工具包中有很多有用的层，这里有每个层简单的解释：</p>
+
+<h3 id="calayer">CALayer</h3>
+
+<p>这是所有核心动画层继承的基类。</p>
+
+<h3 id="catextlayer">CATextLayer</h3>
+
+<p>这个层提供了一个显示字符串的便捷方法。正如其他层一样，你不仅可以指定所有的布局信息，你也可以指定文本，字体，字体大小和背景颜色属性，这个层使用这些属性绘制文本。如果你指定了NSAtrributedString，这些其他属性字段都会被忽略。这个层仅仅在OS X上可用。</p>
+
+<h3 id="cascrolllayer">CAScrollLayer</h3>
+
+<p>这个层能够使你滚动到一个视图可视范围外的区域。</p>
+
+<h3 id="catitledlayer">CATitledLayer</h3>
+
+<p>这个层能够缩放和平移一个视图可视范围外的区域。</p>
+
+<h3 id="caopengllayer">CAOpenGLLayer</h3>
+
+<p>这个层提供了用OpenGL渲染的快捷方式。我们会在第八章深入讲解。“OpenGL Layer”这个层仅仅在OS X上可用。</p>
+
+<h3 id="caeagllayer">CAEAGLLAyer</h3>
+
+<p>这个层提供了一个在IPhone上用OpenGL渲染的方法。这个层仅仅在Iphone上可用。</p>
+
+<h3 id="qtmovielayer">QTMovieLayer</h3>
+
+<p>这个层能够使你在基于核心动画的应用程序中，方便的播放多媒体影像文件。因为它是一个核心动画层，所以你可以给这个层增加其他的层到它的子层属性中，这样就能在播放影像视频时，组合其他的画面。我们会在第七章深入讲解“QUickTime Layers”。这个层在OS X上可用。</p>
+
+<h3 id="qtcapturelayer">QTCaptureLayer</h3>
+
+<p>这个层是利用连接你电脑的相机，达到捕获视频和即时回放的目的。你可以使用iSight(可视摄聊天像头)和多功能视频，例如DV，来捕获视频。真正的视频捕获是通过QuickTime类实现的，但是QTCaptureLayer能够使你实时的看到你连接的相机目前的帧。我们会在第七章深入讲解这个层。这个层仅仅在OS X上可用。</p>
+
+<h3 id="qccompositionlayer">QCCompositionLayer</h3>
+
+<p>这个层能够使你回放一个Quartz（苹果下一种绘图引擎）组件来作为你的核心动画应用程序的一部分。它能够让你使用键值编码（Key-value coding）来控制Quartz组件。我们在第九章深入讲解此层。这个层仅仅在OS X上可用。</p>
+
+<p>从Mac OS X10.6雪豹和iphone OS 3.0，这些增加的层都是可用的：</p>
+
+<h3 id="cashapelayer">CAShapeLayer</h3>
+
+<p>这个层让你能够根据你定义的路径，创建任意的形状。我们将在第十章深入了解这个层“Other Useful Layers”</p>
+
+<h3 id="cagradientlayer">CAGradientLayer</h3>
+
+<p>这个层提供了一个便捷的显示渐近梯度的方法。你可以定义多种颜色和断点，在断点处，你可以转换成你指定的不同颜色。我们将在第十章相信讲解此层。</p>
+
+<h3 id="careplicatorlayer">CAReplicatorLayer</h3>
+
+<p>根据你指定的参数，这个层会复制你增加到层上的子层。我们将在第十章相信讲解。</p>
+
+<h2 id="层是用来干什么的">层是用来干什么的</h2>
+
+<p>层为创建复杂的动画提供了一个详细周到的组件，或者说是构件。动画有两种基本的类别：</p>
+
+<p>视图动画，当你想给用户界面一个视觉提示时，主要使用这个动画</p>
+
+<p>层动画，这个动画在应用内容和功能性上普遍使用。</p>
+
+<p>有时在用户界面接口上，你想要使用层。然而，这种方式不会普遍使用的，因为层不能够接受像点击，按下的事件。如果你想要在层上处理一些信息，你需要在背后的视图层捕获这些事件，然后传递给这个层。</p>
+
+<p>想象下，一个iphone下的太空入侵游戏。当你倾斜设备的一边时，你创建的飞船精灵会在视图的底部移动。这个精灵在它自己的层上被绘制。在背后的视图上，当一个加速事件是被接受时，你传递这个事件到该层上，然后调用setPosition方法来移动到它应该到达的位置。你也可能要接收一个轻拍的事件，以便于发射光电雷打击入侵者。还有一些精灵存在于他们自己的层上。</p>
+
+<p>你会看到，在一个游戏里积聚很多数量的层是多么的快！在这种应用程序里，层是一个恰当的选择，因为他们是轻量级的，并且执行效率高。你当然可以用视图替换层，也能很好的执行。然而，当这些东西（层或者视图）在屏幕上达到一定程度时，在视图上使用层，你会获得更好的性能。当然OS X会比在Iphone上有更少的问题，但是保证你的应用程序轻量、高效总是一个好的方案。</p>
+
+<h2 id="动画和层">动画和层</h2>
+
+<p>在核心动画中，时间无处不在。当你需要一个层有动画属性时，你需要考虑动画的时长，如何动，是否要返回到初始的值，以及在动画其间属性应该有多少个不同的值（基础动画与关键帧动画）。通过设定动画属性的值，可以让你指定动画的不同属性。然而，这些值都不能被层本身指派，而是在CAAnimation这个对象或者它的子类中，CABasicAnimation、CAKeyframeAnimation里指派的。</p>
+
+<p>再次重申，在MVC设计模式中，层是一个模型对象，而不是一个视图对象。层包含了如下的属性：位置，轮廓，颜色等等。简单的说，尽管一个动画只要描述动画本身，但是你设定的动画属性也关系到你正在做动画的层。你可以通过调用addAnimation:forKeyPath这个方法，来增加动画对象到层中，这样就能触发动画了。同样的，你可以通过调用removeAnimation:forKeyPath来停止一层中的动画，不过在默认情况下，动画运行完毕就回自动的执行以上行为。</p>
+
+<h2 id="动画步调">动画步调</h2>
+
+<p>像前面提到的，核心动画给你了大量的免费函数。假如你不用核心动画做动画，你需要使用一个循环来迭代属性的值。通常都是用线性的改变来循环迭代的。也就是说动画是恒速的。动画的每一步，就是走了总增量的一个子增量。在核心动画中，默认的动画是渐进渐出的。这里的意思是，动画开始的时候慢，然后在中间加速，之后当靠近目的地的时候再减速。这个渐进的概念让动画更接近自然平滑，然而一个线性的动画更多的是一个静态的感觉，因为这些属性的变化都是恒定的。</p>
+
+<p>当你提到动画步调时，会发现核心动画设定是多么的快捷。核心动画的步调功能，满足了很多的应用的需求。这些步调功能包括：</p>
+
+<p>线性，是用来给你一个相对静态的感觉。</p>
+
+<p>渐进，你的动画缓慢进入，然后加速离开。</p>
+
+<p>渐出，动画全速进入，然后减速的到达目的地。</p>
+
+<p>渐进渐出，你的动画缓慢的进入，中间加速，然后减速的到达目的地。这个是默认的动画行为。</p>
+
+<p>你只需简单的指定这些步调函数，所有的计算都会自动的做出。然而，如果你想到得到更多的步调控制，你通过使用关键帧动画，指定一个时间函数和次数的数组。关于动画的步调。在第四章中可以了解更多。</p>
+
+<h2 id="数学我将告诉你这里没有数学">数学？我将告诉你这里没有数学</h2>
+
+<p>当你第一次接触核心动画时，你可能会想需要使用一些三角函数进行一些复杂的缩放和旋转变换。幸运的是这些都不需要。缩放和旋转一些很多其他属性，都只需一点代码就能搞定。你只需要指定这些属性的开始值和结束值，然后剩下的就可以交给核心动画了。</p>
+
+<p>在我的核心动画的博客里，我解释过怎么去缩放一簇层。我也提及了仪表盘的效果。我最近实现了这个仪表盘的效果。当增加一个小工具到仪表盘上时，人们往往好奇这些链锁反应的效果。我的意思就是，当你使用一个键或者点击，调出仪表盘时，你看到的那个效果，不过这个也依赖于你Mac操作系统的配置。当你打开仪表盘时，小工具似乎是渐变的飞向了你屏幕的四周。当你关闭时，这些小工具会渐渐的飞离。</p>
+
+<p>起初，我打算为每一个层配置一个缩放的方程，之后我发现核心动画层使用了一个继承树，并且逐层的影响它的子层。这意味着你仅仅把一簇子层增加到一个更大的父层上，然后简单的缩放父层，所有的子层都回自动的缩放。你可以通过下面的代码完成这个效果表1-1.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">doItIn</span><span class="o">:</span><span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">duration</span>
+
+<span class="p">{</span>
+
+<span class="c1">// Set the animation duration</span>
+
+<span class="p">[[</span><span class="n">NSAnimationContext</span> <span class="nf">currentContext</span><span class="p">]</span> <span class="nf">setDuration</span><span class="p">:</span><span class="n">duration</span><span class="p">];</span>
+
+<span class="k">if</span><span class="p">(</span> <span class="n">scaleUp</span> <span class="p">)</span>
+
+<span class="p">{</span>
+
+<span class="c1">// Scale everything (x, y, and z) by a factor of</span>
+
+<span class="c1">// factor (static variable) and reduce the opacity</span>
+
+<span class="n">CATransform3D</span> <span class="n">transform</span> <span class="o">=</span> <span class="n">CATransform3DMakeScale</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span>
+
+<span class="n">factor</span><span class="p">,</span>
+
+<span class="n">factor</span><span class="p">);</span>
+
+<span class="p">[</span><span class="n">mainLayer</span> <span class="nf">setTransform</span><span class="p">:</span><span class="n">transform</span><span class="p">];</span>
+
+<span class="n">mainLayer</span><span class="p">.</span><span class="n">opacity</span> <span class="o">=</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">;</span>
+
+<span class="n">scaleUp</span> <span class="o">=</span> <span class="nb">NO</span><span class="p">;</span>
+
+<span class="p">}</span>
+
+<span class="k">else</span>
+
+<span class="p">{</span>
+
+<span class="c1">// Scale the rect back down to the original and bring up</span>
+
+<span class="c1">// the opacity</span>
+
+<span class="n">CATransform3D</span> <span class="n">transform</span> <span class="o">=</span> <span class="n">CATransform3DMakeScale</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span>
+
+<span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span>
+
+<span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">);</span>
+
+<span class="p">[</span><span class="n">mainLayer</span> <span class="nf">setTransform</span><span class="p">:</span><span class="n">transform</span><span class="p">];</span>
+
+<span class="n">mainLayer</span><span class="p">.</span><span class="n">opacity</span> <span class="o">=</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">;</span>
+
+<span class="n">scaleUp</span> <span class="o">=</span> <span class="nb">YES</span><span class="p">;</span>
+
+<span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这个表展示的仅仅是父层的转换。增加子层也是非常的简单，我已经在博客中提供了这章代码的资源，你可以看下完整的代码如何实现这个效果。</p>
+
+<p>对于许多人来说，使用复杂的数学是头疼的，但是作为苹果免费的午餐，使用核心动画你不需要知道很多数学方面的知识。你仅仅需要知道基本的四则运算。它就是这么简单。</p>
+
+<h2 id="核心动画和iphone">核心动画和Iphone</h2>
+
+<p>你读这本书，可能因为想要做Iphone应用程序下的动画。我特地写了一个章节在Iphone上使用核心动画，以帮助你理解和桌面应用的一些不同，这些不同很小，你通常都可以在Iphone上使用同样的代码。下面的几章中，你会了解到更多核心动画的特性，之后再讨论iphone上和桌面上不同才更有意义。不过在某些特殊层的章节，我们就不讨论iphone了，因为这些层在iphone上不可用。</p>
+
+<h2 id="示例工程的注意事项">示例工程的注意事项</h2>
+
+<p>这本书中所有的示例工程都有一个主应用程序的代理类。在OS X上，我们使用名字AppDelegate创建这个类。在Iphone工程中，工程模板帮我们自动创建了这个应用程序代理，名字是<project_name>AppDelegate，其中<project_name>就是你项目的名字。</project_name></project_name></p>
+
+<p>在OS X上代码主要是放在AppDelegate这个类里。而在Iphone里，代码主要放在了视图控制器类中（view Contrller），这个控制器主要是用来控制视图的开发的，在应用程序启动时，应用程序的代理会安装这些类。尽管都很重要，但是还是有点微小的差别。</p>
+
+<h2 id="在os-x上安装xcode工程">在OS X上安装Xcode工程</h2>
+
+<p>当你在Xcode3.1版本或者更早的版本上创建工程，工程模板不会为你自动的创建应用程序的代理类，在Xcode 3.2或者之后的版本都会自动创建的。尽管增加一个代理类并不困难，但是当你不利用任何模板代码时，你要知道如何从最开始创建一个工程。你可以使用下面的步骤去创建一个应用程序代理和增加一个QuartZCore框架，这个框架提供了核心动画的类。</p>
+
+<ol>
+  <li>
+    <p>在Xcode中，按shift-command-N，然后在工程模板对话框中选择Cocoa Application。</p>
+  </li>
+  <li>
+    <p>命名工程，然后点击保存。</p>
+  </li>
+  <li>
+    <p>展开框架组，按住Control建点击框架的子组，然后选择Add -&gt; New File.</p>
+  </li>
+  <li>
+    <p>在结果对话框中，导航到/System/Library/Frameworks和选择QuartzCore.framework。点击增加和当提示时再次增加</p>
+  </li>
+  <li>
+    <p>按住Control点击Class group，选择add-&gt;New File.</p>
+  </li>
+  <li>
+    <p>在新文件模板窗口中，在Cocoa组选择Objective-c类点击Next。</p>
+  </li>
+  <li>
+    <p>命名文件为AppDelegate.m然后确保也创建了AppDelegate.h。点击完成。</p>
+  </li>
+  <li>
+    <p>选择Appdelegate.h 用代码编辑器打开，导入QuartzCore框架并且在你的XIB文件上，为窗口创建一个插座：</p>
+  </li>
+</ol>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#import &lt;QuartzCore/QuartzCore.h&gt;
+</span>
+<span class="k">@interface</span> <span class="nc">AppDelegate</span> <span class="p">:</span> <span class="nc">NSObject</span>
+
+<span class="p">{</span>
+
+<span class="n">IBOutlet</span> <span class="n">NSWindow</span> <span class="o">*</span><span class="n">window</span><span class="p">;</span>
+
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<ol>
+  <li>选择AppDelegate.m，然后打开，增加下面的代码，给你的窗口视图开启层：</li>
+</ol>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">@implementation</span> <span class="nc">AppDelegate</span>
+
+<span class="p">(</span><span class="nl">void</span><span class="p">)</span><span class="n">awakeFromNib</span><span class="p">;</span>
+
+<span class="p">{</span>
+
+<span class="p">[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">setWantsLayer</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+
+<span class="p">}</span>
+
+<span class="k">@end</span>
+</code></pre></div></div>
+
+<ol>
+  <li>
+    <p>在Resource group下，双击MainMenu.xib打开。</p>
+  </li>
+  <li>
+    <p>从Library模板中，拖一个NSObject对象到MainMenu.xib中，然后重命名为AppDelegate。你需要在图标视图中重命名这个对象。点击一次是选择这个对象。暂停再点击一次就可以编辑了。然后就重命名这个对象</p>
+  </li>
+  <li>
+    <p>确保你的AppDelegate对象是被选择。在对象检查器中，点击定义的tab并且改变类的区域到AppDelegate</p>
+  </li>
+  <li>
+    <p>在MainMenu.xib中，在File’s Owner上左键，然后拖动链接到AppDelegate对象上，选择代理。</p>
+  </li>
+  <li>
+    <p>在MainMenu.xib中，左键AppDelegate和拖动链接到window对象。选择window。</p>
+  </li>
+  <li>
+    <p>保存XIB文件，返回Xcode。</p>
+  </li>
+</ol>
+
+<p>在OS X上，这些是基础的去创建工程的步骤。利用这个模板，你可以在AppDelegate类中增加action和outlets，然后链接到XIB里。我们整本书都会基于这种工程。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>在Mac OS上，核心动画是一个巨大的革命。其他的操作系统一直在模仿，但是从来未超越。核心动画免费的提供给我们是一件令人兴奋的事。需要一个好的想法，仅仅一点努力，你就能做出一个令人惊讶的应用程序。核心动画给予的超出了你的期望，并且我们也希望在接下来的版本中，看到更加令人兴奋的特性。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

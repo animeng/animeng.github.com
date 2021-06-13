@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>NSThread使用总结 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2011/09/13/pome-5.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="NSThread使用总结">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2011/09/13/pome-5.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">NSThread使用总结</h1>
+  
+  <span class="post-meta">09月 13日, 2011</span><br>
+  
+  <span class="post-meta small">1 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>如果对线程了解不够清楚，在项目就使用线程，会给开发带来很多问题。所以在iphone的项目中使用线程，最好先学习Apple的线程开发向导。以下是自己开发过程中，使用线程遇到的问题，以及解决的方法。
+第一个问题，为什么要使用线程。在解决这个问题之前，要先了解什么是线程。在官方的线程开发文档中有明确的定义：</p>
+<blockquote>
+  <p>Threads are a relatively lightweight way to implement multiple paths of execution inside of an application.( 线程是一个相对轻量级的，在应用程序内部，实现执行的多条路径的方式。)</p>
+</blockquote>
+
+<p>通俗的讲就是， 程序中的函数调用是一步一步执行的，而线程可以让多个函数同时调用，根据内核程序的调度，在不同的时间执行不同的函数，结果就像是程序在执行的过程中同时开通了多条路径，而如果没有线程，程序只能走一条路径。所以线程就自然有下面的两个优点：</p>
+
+<ol>
+  <li>
+    <p>多线程可以提高应用程序的响应能力，也就是，有了多线程应用程序才能一边在后台处理数据，一边还能接受用户的输入响应。否则只能等数据处理完，才能接受用户的输入响应。</p>
+  </li>
+  <li>
+    <p>在多核系统中，多线程能够提高应用程序的实时行动。因为多线程可以安排程序多条执行路径，所以在多核环境下，每个核同时可以执行不同路径的代码，这样就提高了应用程序的执行能力，同时也缩短了执行时间。</p>
+  </li>
+</ol>
+
+<p>那么已经可以下结论了，之所以使用多线程，无非是2个原因。</p>
+
+<ol>
+  <li>
+    <p>为了使应用程序在处理数据的同时，不影响用户对应用程序的正常操作，就要使用多线程。否则用户只能等待数据处理完毕，这往往是人们无法忍受的。</p>
+  </li>
+  <li>
+    <p>如果应用程序中有大量的IO中断（譬如文件的读写，网络的访问…）,以及用户的大量输入，这样处理器为了等待这些中断，就会处于空闲状态。而多线程恰恰可以利用了这些空闲状态，让应用程序做一些必要的计算，可以大大提升应用程序的执行效率。</p>
+  </li>
+</ol>
+
+<p>网络下载是程序设计中经常遇到的问题，根据前面的介绍，会发现这里就需要用到多线程。因为用户在程序从网络上下载数据的过程，不可能等待数据到达。那么就针对这个实例，来说明第二个问题如何使用线程。</p>
+
+<p>解决第二个问题之前，要引入一个概念Run Loops。可能在做windows及linux线程开发的过程中，没有听过这个概念。所以这里非常有必要解释以下，其实根据官方文档的解释，我们可以完全理解Run loop的用途，以及它和线程的关系。</p>
+
+<blockquote>
+  <p>A run loop is a piece of infrastructure used to manage events arriving asynchronously on a thread.( 一个Run loop是在线程中管理事件异步到达的基础设备)</p>
+</blockquote>
+
+<p>这里就有一个问题了，什么是异步到达。这里有个例子可以形象的表述这个问题。假如你饿了想吃东西了，你可能会亲自出去一趟，到某个便利店买点东西，然后吃掉。还有一个方法就是，你打电话给某个便利店帮你送一份外卖，这是你只需要在家里等外卖的人，通知你就可以了。第二个方法就是所谓的异步。所以转到计算机程序设计里面，异步就是当主程序中执行某个方法的时候，主程序不需要知道这个方法什么时候执行完，而是这个方法执行完的时候通知主程序就可以了。</p>
+
+<p>根据上面的介绍，你会发现在线程中，常常会有2中不同的方式执行线程中的代码。第一个，把你要执行的所有的代码都写入到线程中，这样自然写入的代码执行完毕，线程同时就结束了。而第二种方式 是你在线程中开启了一个方法，这个方法可能是你开的另外一个线程，你不知道这个方法什么时候执行完，需要这个方法执行完时，通知你的主线程，那么主线程怎么知道什么时候应该结束那？这里就必须要用到run loop。Run loop正如他字面意思一样，就是提供一个循环，就是当有异步输入源的时候，就等待异步输入源的结束。一个Run loop也就是当没有事情要做的时候，它就使线程进入休眠，有事情做的时候就开启线程。所以你完全可以自己写代码按照Run loop的思想，实现线程中的异步输入源的控制。官方API也解释了Run loop的使用要求：</p>
+<blockquote>
+  <p>You are not required to use a run loop with any threads you create
+but doing so can provide a better experience for the use.
+Run loops make it possible to create long-lived threads that use a minimal amount of resources. 
+Because a run loop puts its thread to sleep when there is nothing to do,
+it eliminates the need for polling, which wastes CPU cycles and prevents the processor itself from sleeping
+and saving power.(你不必要求创建的每个线程都使用run loop，但是如果你这样做了，能够给使用者提供一个很好的经历。Run loops使创建一个长期生存的线程而使用很少的资源成为可能性。因为当线程没事可做的时候，一个run loop可以使线程休眠。同时，也取消了线程状态切换的需求，减少了CPU时间片，同时放置处理器休眠，并且节约了能量)</p>
+</blockquote>
+
+<p>这里你就明白了为何苹果的工程师要为线程提供一个Run loop那，就是为了减少线程在等待异步时间的时候，对资源的消耗。所以如果理解了Run loop,线程如何使用就显而易见了。下面的实例代码就是线程如何处理异步输入源的，以及Run loop在其中的作用：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">asynchronousSource</span><span class="p">{</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="n">NSLog</span><span class="p">(</span><span class="s">@"asynchronous input source run"</span><span class="p">);</span>
+
+    <span class="p">}</span>
+
+    <span class="p">[[</span><span class="n">NSThread</span> <span class="nf">currentThread</span><span class="p">]</span> <span class="nf">cancel</span><span class="p">];</span>
+
+<span class="p">}</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="kr">thread</span><span class="p">{</span>
+
+    <span class="n">NSAutoreleasePool</span> <span class="o">*</span><span class="n">pool</span><span class="o">=</span><span class="p">[[</span><span class="n">NSAutoreleasePool</span> <span class="nf">alloc</span><span class="p">]</span><span class="nf">init</span><span class="p">];</span>
+
+    <span class="p">[</span><span class="n">self</span> <span class="nf">performSelector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="n">asynchronousSource</span><span class="p">)</span> <span class="nf">withObject</span><span class="p">:</span><span class="nb">nil</span> <span class="n">afterDelay</span><span class="o">:</span><span class="mi">1</span><span class="p">];</span>
+
+    <span class="n">NSLog</span><span class="p">(</span><span class="s">@"me"</span><span class="p">);</span>
+
+    <span class="n">BOOL</span> <span class="n">done</span> <span class="o">=</span> <span class="nb">NO</span><span class="p">;</span>
+
+    <span class="k">do</span><span class="p">{</span>
+
+        <span class="c1">// Start the run loop but return after each source is handled.</span>
+
+        <span class="n">SInt32</span>    <span class="n">result</span> <span class="o">=</span> <span class="n">CFRunLoopRunInMode</span><span class="p">(</span><span class="n">kCFRunLoopDefaultMode</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">YES</span><span class="p">);</span>
+
+        <span class="c1">// If a source explicitly stopped the run loop, or if there are no</span>
+
+        <span class="c1">// sources or timers, go ahead and exit.</span>
+
+        <span class="k">if</span> <span class="p">((</span><span class="n">result</span> <span class="o">==</span> <span class="n">kCFRunLoopRunStopped</span><span class="p">)</span> <span class="o">||</span> <span class="p">(</span><span class="n">result</span> <span class="o">==</span> <span class="n">kCFRunLoopRunFinished</span><span class="p">))</span>
+
+            <span class="n">done</span> <span class="o">=</span> <span class="nb">YES</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">([</span><span class="n">_myThread</span> <span class="nf">isCancelled</span><span class="p">])</span> <span class="p">{</span>
+
+            <span class="n">done</span> <span class="o">=</span> <span class="nb">YES</span><span class="p">;</span>
+
+<span class="n">NSLog</span><span class="p">(</span><span class="s">@"thread exit"</span><span class="p">);</span>
+
+        <span class="p">}</span>
+
+        <span class="c1">// Check for any other exit conditions here and set the</span>
+
+        <span class="c1">// done variable as needed.</span>
+
+    <span class="p">}</span>
+
+    <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">done</span><span class="p">);</span>
+
+<span class="c1">//    while (done) {</span>
+
+<span class="c1">//        [[NSRunLoop currentRunLoop] runUntilDate:[NSDate dateWithTimeIntervalSinceNow:1]];</span>
+
+<span class="c1">//        if ([_myThread isCancelled]) {</span>
+
+<span class="c1">//            finish = NO;</span>
+
+<span class="c1">//            NSLog(@"thread exit");</span>
+
+<span class="c1">//        }</span>
+
+<span class="c1">//    }</span>
+
+    <span class="p">[</span><span class="n">pool</span> <span class="nf">release</span><span class="p">];</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里Run loop是使用官方提供的core function中的函数实现的，而注释掉的代码是使用cocoa中的函数实现。如果要了解这两种实现方法，可以在API文档中找到详细的例子，这里不再赘余。</p>
+
+<p><a href="https://blog.csdn.net/mengtnt/article/details/6772811">原文链接</a></p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

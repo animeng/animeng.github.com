@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>第七章 视频层 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2012/03/11/animation-7.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="第七章 视频层">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2012/03/11/animation-7.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">第七章 视频层</h1>
+  
+  <span class="post-meta">03月 11日, 2012</span><br>
+  
+  <span class="post-meta small">10 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>这一章来关注QTMoviLayer，一个轻量级的核心动画的层，它提供了一个方法，可以利用QTKit框架中的QTMovie对象来播放音频和视频电影。</p>
+
+<p>我们也会关注QTCaptureLayer，一个轻量级的核心动画层，它提供了一个框架，那个框架可以捕获图像设备的帧，例如捕获现在的mac电脑中都有的视频摄像头中的图像信息。创建捕获会话是最困难的部分，但在你设置了这个部分后，你可以使用任何你想要捕捉图像的摄像机的图像层。</p>
+
+<p>QuickTime层提供了所有你需要的，比基于视图的部分具有更高水平的功能。这一章展示给你，利用QuickTime技术，通过使用层你可以获得多少东西。</p>
+
+<h2 id="利用qtmovielayer工作">利用QTMovieLayer工作</h2>
+
+<p>QTMovieLayer的API是简单的。对于一个QTMovieLayer仅仅有三个独立的条目：</p>
+
+<p>+layerWithMovie:</p>
+
+<p>-initWithMovie:</p>
+
+<p>-movie</p>
+
+<p>前两个是初始化层的，第三个是初始化层后，用来得到QTMovie对象的引用。另外其他的特性都可以简单的通过父类CALayer获得。</p>
+
+<p>来自QTKit包的QTMovie对象提供了一些你需要的影视控制，例如回放，擦洗，快进等等。不同的是QTMovie没有提供可视的元素，而QTMovieView则提供了。并且，你还需要绑定你的行动到出口例如滑动块和按钮。在QTMovie中可用的行动方法如表7-1.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>方法</th>
+      <th>描述</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>-autoplay</td>
+      <td>Autoplay和play做同样的事情，除了它是利用流媒体的。只有足够的数据可用时，它才开始播放影视</td>
+    </tr>
+    <tr>
+      <td>- play</td>
+      <td>开始影视播放</td>
+    </tr>
+    <tr>
+      <td>- stop</td>
+      <td>停止影视播放</td>
+    </tr>
+    <tr>
+      <td>- gotoBeginning</td>
+      <td>在QTMovie对象中，设定currentTime字段为QTMoviZero，然后开始播放。</td>
+    </tr>
+    <tr>
+      <td>- gotoEnd</td>
+      <td>在QTMovie对象中，设定currentTime字段为影视的时间段。</td>
+    </tr>
+    <tr>
+      <td>- gotoNextSelectionPoint</td>
+      <td>如果一些选择点是被设定，设置currentTime字段到选择的点上。</td>
+    </tr>
+    <tr>
+      <td>- gotoPreviousSelectionPoint</td>
+      <td>如果一个选择点是被设定，并且这个选择点的时间早于currentTime字段记录的时间，那么就设定currentTime字段到选择点的时间。</td>
+    </tr>
+    <tr>
+      <td>- gotoPosterFrame</td>
+      <td>在QTMovie对象中，设定currentTime字段到预览帧的时间。如果没有预览帧指定，currentTime就设定影像的开始时间。</td>
+    </tr>
+    <tr>
+      <td>- setCurrentTime</td>
+      <td>在QTMovie对象中，设定currentTime字段，使用QTTime对象，你指定它作为参数。</td>
+    </tr>
+    <tr>
+      <td>- stepBackward</td>
+      <td>回退一帧，同事currentTime字段也被改变。</td>
+    </tr>
+    <tr>
+      <td>- stepForward</td>
+      <td>快进一帧。currentTime字段同时被改变。</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>你可以简单的创建一个IBAction的方法在控制器中，在IBAction方法中，调用上面的方法。看即将来到的部分，”增加基础的播放控制”，来看看是怎么做的。</p>
+
+<h3 id="创建一个简单的基于qtmovielayer的层">创建一个简单的基于QTMovieLayer的层</h3>
+
+<p>这一章的例子程序叫做层上的影视播放器(在合作网站上有实例代码)，我们创建了一个应用程序的代理类，叫做AppDelegate，我们在interface Builder中连接这个控制器对象。带着这些设定，AppDelegate类给了我们一个实体的入口来创建和展示QTMovieLayer。在这个工程中，我们增加了QuartzCore框架和QTKit框架。它是定位在/Developer/SDKs/MacOSX10.6.sdk/System/Library/Frameworks/QTKit.framework这个目录下，前提是要安装了开发工具。</p>
+
+<p>如果你想播放一个电影，你需要在apDelegate中简单的实现playback在-awakeFromNib方法中，代码如清单7-1。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">awakeFromNib</span><span class="p">;</span> <span class="p">{</span>
+<span class="p">[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span><span class="nf">setWantsLayer</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+<span class="n">NSString</span> <span class="o">*</span><span class="n">moviePath</span> <span class="o">=</span><span class="p">[[</span><span class="n">NSBundle</span> <span class="nf">mainBundle</span><span class="p">]</span>
+<span class="nl">pathForResource:</span><span class="err">@”</span><span class="n">stirfry</span><span class="err">”</span><span class="nf">ofType</span><span class="p">:</span><span class="err">@”</span><span class="n">mov</span><span class="err">”</span><span class="p">];</span>
+<span class="n">movie</span> <span class="o">=</span> <span class="p">[</span><span class="nf">QTMoviemovieWithFile</span><span class="p">:</span><span class="n">moviePath</span> <span class="nf">error</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+<span class="k">if</span><span class="p">(</span> <span class="n">movie</span> <span class="p">)</span> <span class="p">{</span>
+<span class="n">QTMovieLayer</span> <span class="o">*</span><span class="n">layer</span> <span class="o">=</span><span class="p">[</span><span class="n">QTMovieLayer</span> <span class="nf">layerWithMovie</span><span class="p">:</span><span class="n">movie</span><span class="p">];</span>
+<span class="p">[</span><span class="nf">layersetFrame</span><span class="p">:</span><span class="n">NSRectToCGRect</span><span class="p">([[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">bounds</span><span class="p">])];</span>
+<span class="p">[[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">addSublayer</span><span class="p">:</span><span class="n">layer</span><span class="p">];</span>
+<span class="p">[</span><span class="n">movie</span> <span class="nf">play</span><span class="p">];</span>
+<span class="p">}</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  清单 7-1 简单的实现影视播放
+</code></pre></div></div>
+
+<p>代码的开始，通过用-setWansLayer方法通知窗口的contentView它后面应该放置层。下面就从主要的包中实例化一个QTMovie对象。如果视频是合法的，我们就用QTMovieLayer初始化它。下面代码，就是设定层的帧的框架大小为内容视图的框架大小，并且增加层作为内容视图的子层。然后开始视频的播放。就这样。这是你需要在QTMovieLayer上播放视频的全部的步骤。话说回来，如果我们不给于一些方法来控制回放，它就不是一个非常有用的播放器。</p>
+
+<h3 id="增加一些基础的播放控制">增加一些基础的播放控制</h3>
+
+<p>现在我们有了基础影视层的创建，下面要做的事就是为视图增加一些控制，使我们在影视中可以播放，暂停和回放或者快进。在interface builder中，增加一个按钮来开始和停止，并且伴随2个按钮，一个用来快进一帧，一个用来后退一帧。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">togglePlayback</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span><span class="p">;</span>
+<span class="p">{</span> <span class="k">if</span><span class="p">(</span> <span class="p">[</span><span class="n">movie</span> <span class="nf">rate</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span> <span class="p">)</span>
+<span class="p">[</span><span class="n">movie</span> <span class="nf">stop</span><span class="p">];</span>
+<span class="k">else</span>
+<span class="p">[</span><span class="n">movie</span> <span class="nf">play</span><span class="p">];</span>
+<span class="p">}</span>
+<span class="k">-</span><span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">stepBack</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span><span class="p">;</span> <span class="p">{</span>
+<span class="p">[</span><span class="n">movie</span> <span class="nf">stepBackward</span><span class="p">];</span>
+<span class="p">[</span><span class="n">self</span> <span class="nf">updateSlider</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span> <span class="p">}</span>
+<span class="k">-</span><span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">stepForward</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span><span class="p">;</span> <span class="p">{</span>
+<span class="p">[</span><span class="n">movie</span> <span class="nf">stepForward</span><span class="p">];</span>
+<span class="p">[</span><span class="n">self</span> <span class="nf">updateSlider</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span> <span class="p">}</span>
+<span class="k">-</span><span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">goToBeginning</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span><span class="p">;</span> <span class="p">{</span>
+<span class="p">[</span><span class="n">movie</span> <span class="nf">gotoBeginning</span><span class="p">];</span>
+<span class="p">[</span><span class="n">self</span> <span class="nf">updateSlider</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span> <span class="p">}</span>
+<span class="k">-</span><span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">goToEnding</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span><span class="p">;</span> <span class="p">{</span>
+<span class="p">[</span><span class="n">movie</span> <span class="nf">gotoEnd</span><span class="p">];</span>
+<span class="p">[</span><span class="n">self</span> <span class="nf">updateSlider</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>      清单 7-2 控制按钮的实现
+</code></pre></div></div>
+
+<p>这些行动都是连接了我们在InterfaceBuilder中创建的按钮。图7-1展示了基础控制按钮的截屏。</p>
+
+<p><img src="/images/animation-7-1.gif" alt="图 7-1 播放控制按钮" /></p>
+
+<p>当你运行工程时，注意到我们在interface builder中增加到窗口的按钮不可见。问题是按钮是被影视层盖住了。需要把按钮都放在前面，增加影视层到根层，方法就是通过调用-insertSublayer:atIndex把它放到第0个位置。最后，我们就需要改变-awakFromNib中-addSublayer中的调用了，如下：</p>
+
+<p>[[[windowcontentView] layer] insertSublayer:layer atIndex:0];</p>
+
+<p>现在，如果你运行工程，按钮都是在视频的上面了，能够使你点击和控制视频了。</p>
+
+<h3 id="使用滑动块跟踪进度和改变帧">使用滑动块跟踪进度和改变帧</h3>
+
+<p>为了完成我们的基础播放器功能，我们给interface增加了一个滑块，滑块就提供了一个播放的进度条，在视频的顶端还展示了播放的时间。首先，在Xcode中创建一个行动来控制滑块的改变，如清单7-3.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">sliderMoved</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span><span class="p">;{</span>
+<span class="kt">long</span> <span class="kt">long</span> <span class="n">timeValue</span> <span class="o">=</span><span class="n">movieDuration</span><span class="p">.</span><span class="n">timeValue</span> <span class="o">*</span> <span class="p">[</span><span class="n">slider</span> <span class="nf">doubleValue</span><span class="p">];</span>
+<span class="p">[</span><span class="nf">moviesetCurrentTime</span><span class="p">:</span><span class="n">QTMakeTime</span><span class="p">(</span><span class="n">timeValue</span><span class="p">,</span>
+<span class="n">movieDuration</span><span class="p">.</span><span class="n">timeScale</span><span class="p">)];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                清单 7-3 实现滑块的行动
+</code></pre></div></div>
+
+<p>滑块有一个0.0的最小值和1.0的最大值。在interface Builder中，通过鼠标点击选择滑块设置这些值，然后在检测器属性中设定滑块的最小值和最大值。滑块的值提供了一个小数的值，这个小数的值是视频总时间的值乘以目前的值。然后就可以根据滑块改变的位置设定QTMovie对象的当前时间了。为了做这些，需要调用QTMakeTime函数根据你计算的总时间来构造QTTime结构体，然后通过-setCurrentTime传递给视频。这就可以使QTMovieLayer更新视图到目前的帧。</p>
+
+<p>为了获得滑块目前的值(在Interface Builder中指定的0.0和1.0之间的值)，你需要在AppDelegate中创建一个SSlider的接口，在头文件中增加如下的行：</p>
+
+<p>IBOutletNSSlider *slider;</p>
+
+<p>在InterfaceBuilder中，为窗口增加一个NSSlider的控制器，然后从AppDelegate到滑块控制器上做一个连接到代理的-sliderMoved这个行动上。图7-2和7-3演示了怎么在InterfaceBuilder中来拖拽这些连接。</p>
+
+<p><img src="/images/animation-7-2.gif" alt="图 7-2 从AppDelegate到滑块上拖拽连接" /></p>
+
+<p><a href="/images/animation-7-3.gif">图7-3 从滑块到AppDelegate上拖拽连接</a></p>
+
+<p>为了更新滑块目前的位置，只要播放视频时，开启一个定时器就可以实现更新了。为了做这些，更新-togglePlayback行动，代码如清单7-4.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">togglePlayback</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span><span class="p">;</span> <span class="p">{</span>
+<span class="k">if</span><span class="p">(</span> <span class="p">[</span><span class="n">movie</span> <span class="nf">rate</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span> <span class="p">)</span> <span class="p">{</span>
+<span class="p">[</span><span class="n">movie</span> <span class="nf">stop</span><span class="p">];</span>
+<span class="p">[</span><span class="n">timer</span> <span class="nf">invalidate</span><span class="p">];</span> <span class="p">}</span>
+<span class="k">else</span>
+<span class="p">{</span>
+<span class="p">[</span><span class="n">movie</span> <span class="nf">play</span><span class="p">];</span>
+<span class="n">timer</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSTimer</span> <span class="nf">scheduledTimerWithTimeInterval</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mo">02</span>
+<span class="nl">target:selfselector:</span><span class="k">@selector</span><span class="p">(</span><span class="nf">updateSlider</span><span class="p">:)</span> <span class="n">userInfo</span><span class="o">:</span><span class="nb">NULL</span>
+<span class="nl">repeats:</span><span class="nb">YES</span><span class="p">];</span>
+<span class="p">}</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                         清单 7-4 实现定时器
+</code></pre></div></div>
+
+<p>无论影视什么时候播放，实例变量timer都会被实例化。当影视是被停止时，我们需要通过调用-invalidate停止定时器。</p>
+
+<p>定时器的每个滴答都调用-updateSlider。实现selector的代码如清单7-5.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">updateSlider</span><span class="p">:(</span><span class="n">NSTimer</span><span class="o">*</span><span class="p">)</span><span class="nv">theTimer</span><span class="p">;{</span>
+<span class="n">QTTime</span> <span class="n">current</span> <span class="o">=</span> <span class="p">[</span><span class="nf">moviecurrentTime</span><span class="p">];</span> 
+<span class="kt">double</span> <span class="n">value</span> <span class="o">=</span> <span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">current</span><span class="p">.</span><span class="n">timeValue</span> <span class="o">/</span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">movieDuration</span><span class="p">.</span><span class="n">timeValue</span><span class="p">;</span>
+<span class="p">[</span><span class="nf">slidersetDoubleValue</span><span class="p">:</span><span class="n">value</span><span class="p">];</span>
+<span class="p">[</span><span class="n">slider</span> <span class="nf">setNeedsDisplay</span><span class="p">];</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    清单 7-5 实现定时器的回调方法
+</code></pre></div></div>
+
+<p>回调函数中首先获取目前的时间，然后除于影视的总时间，总时间是存储在movieDuration这个实例变量中。这样就返回一个0.0到1.0之间的值，就可以用来给滑块设定了。滑块的值被设定成这个百分比，然后调用-setNeedsDisplay来重绘滑块界面。</p>
+
+<h3 id="增加覆盖的层">增加覆盖的层</h3>
+
+<p>给影视上面覆盖一个层，对于一个QuickTime开发者来说是经常做的一件事。当你使用QTMovieView时，就有点挑战了，因为视图是重量级的并没有提供简单的方法可以增加子视图，来完成这个特点。如果你使用视图，要需要增加一个无边框的子窗口，该窗口包含覆盖层的内容，或者你需要使用OpenGL资源来实现它。这两个解决方案都会增加大量的代码，并使应用程序复杂，因此让我们来看看核心动画如何简单的完成该任务。</p>
+
+<p>为了使用核心动画增加一个覆盖层，需要创建一个继承于CALayer的层，然后在QTMovieLayer上调用-addSublayer。为了演示这些，-awakeFromNib中改变了清单7-1的代码如清单7-6，增加了一个CATextLayer来覆盖到影视上。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">awakeFromNib</span><span class="p">;</span> <span class="p">{</span>
+<span class="p">[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span><span class="nf">setWantsLayer</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+ <span class="n">NSString</span> <span class="o">*</span><span class="n">moviePath</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSBundle</span> <span class="nf">mainBundle</span><span class="p">]</span>
+<span class="nl">pathForResource:</span><span class="err">@”</span><span class="n">stirfry</span><span class="err">”</span><span class="nf">ofType</span><span class="p">:</span><span class="err">@”</span><span class="n">mov</span><span class="err">”</span><span class="p">];</span>
+ <span class="n">movie</span> <span class="o">=</span> <span class="p">[</span><span class="n">QTMovie</span> <span class="nf">movieWithFile</span><span class="p">:</span><span class="nf">moviePatherror</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+<span class="k">if</span><span class="p">(</span> <span class="n">movie</span> <span class="p">)</span> <span class="p">{</span>
+<span class="n">NSRect</span> <span class="n">contentRect</span> <span class="o">=</span> <span class="p">[[</span><span class="nf">windowcontentView</span><span class="p">]</span> <span class="nf">bounds</span><span class="p">];</span>
+<span class="n">QTMovieLayer</span> <span class="o">*</span><span class="n">layer</span> <span class="o">=</span><span class="p">[</span><span class="n">QTMovieLayer</span> <span class="nf">layerWithMovie</span><span class="p">:</span><span class="n">movie</span><span class="p">];</span>
+<span class="p">[</span><span class="n">layer</span> <span class="nf">setFrame</span><span class="p">:</span><span class="n">NSRectToCGRect</span><span class="p">(</span><span class="n">contentRect</span><span class="p">)];</span>
+<span class="n">textLayer</span> <span class="o">=</span> <span class="p">[</span><span class="nf">CATextLayerlayer</span><span class="p">];</span>
+<span class="p">[</span><span class="n">textLayer</span> <span class="nf">setString</span><span class="p">:</span><span class="err">@”</span><span class="n">Do</span> <span class="n">NotTry</span> <span class="n">This</span> <span class="n">At</span> <span class="n">Home</span><span class="o">!</span><span class="err">”</span><span class="p">];</span>
+<span class="p">[</span><span class="nf">textLayersetAlignmentMode</span><span class="p">:</span><span class="n">kCAAlignmentCenter</span><span class="p">];</span>
+<span class="p">[</span><span class="nf">textLayersetFrame</span><span class="p">:</span><span class="n">NSRectToCGRect</span><span class="p">(</span><span class="n">contentRect</span><span class="p">)];</span>
+<span class="p">[</span><span class="nf">layeraddSublayer</span><span class="p">:</span><span class="n">textLayer</span><span class="p">];</span>
+<span class="p">[[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">addSublayer</span><span class="p">:</span><span class="n">layer</span><span class="p">];</span>
+<span class="p">[</span><span class="n">movie</span> <span class="nf">play</span><span class="p">];</span> 
+<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>          清单 7-6 实现覆盖的层
+</code></pre></div></div>
+
+<p>清单7-6增加了实例化CATextLayer的代码，作为QTMovieLayer的子层。文案居中可以通过调用setAlignmentMode:kCAAlignmentCenter来实现。现在开始播放影视，你将会看到文案”Do Not Try This at Home!”展示在框架的顶端。</p>
+
+<p>图7-4 显示了基本的层看起来怎么样。注意到了设定的文案层的框架大小同窗口视图框架的大小一样。这样，文本就展示在图片的最顶端了。</p>
+
+<p><img src="/images/animation-7-4.gif" alt="图 7-4 展示了“Do Not Try This at Home”的覆盖层" /></p>
+
+<p>覆盖一个时间文案的代码</p>
+
+<p>当播放电影时，一个常见的要求就是能在播放的同时看到电影播放的时间。再次，使用核心动画的层，使显示时间文案层的代码变得简单。为了完成这些，第一步在先前的例子中创建一个CATextLayer，然后通过使用-setString更新CATextLayer的字符串显示。</p>
+
+<p>在清单7-5中我们使用了定时器来更新滑块的位置。这里我们同样利用定时器，通过调用获得影视目前的播放时间，来更新文案的内容。</p>
+
+<p>现在创建一个函数叫做-updateTimeStamp来升级时间文案展示的代码，如清单7-7.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">updateTimeStamp</span><span class="p">;</span> <span class="p">{</span>
+<span class="n">NSString</span> <span class="o">*</span><span class="n">time</span> <span class="o">=</span><span class="n">QTStringFromTime</span><span class="p">([</span><span class="n">movie</span> <span class="nf">currentTime</span><span class="p">]);</span>
+<span class="p">[</span><span class="n">textLayer</span> <span class="nf">setString</span><span class="p">:</span><span class="n">time</span><span class="p">];</span> <span class="p">}</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>           清单 7-7 实现时间的更新
+</code></pre></div></div>
+
+<p>下一步，你需要做很少的工作，就可以让时间文案层的代码工作。首先，改变-awakeFromNib的调用，设定文本层开始的字符串时间为0，QTZeroTime，代码展示如清单7-8.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">awakeFromNib</span><span class="p">;</span> <span class="p">{</span>
+<span class="p">[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span><span class="nf">setWantsLayer</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+<span class="n">NSString</span> <span class="o">*</span><span class="n">moviePath</span> <span class="o">=</span><span class="p">[[</span><span class="n">NSBundle</span> <span class="nf">mainBundle</span><span class="p">]</span>
+<span class="nl">pathForResource:</span><span class="err">@”</span><span class="n">stirfry</span><span class="err">”</span><span class="nf">ofType</span><span class="p">:</span><span class="err">@”</span><span class="n">mov</span><span class="err">”</span><span class="p">];</span>
+<span class="n">movie</span> <span class="o">=</span> <span class="p">[</span><span class="nf">QTMoviemovieWithFile</span><span class="p">:</span><span class="n">moviePath</span> <span class="nf">error</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+<span class="k">if</span><span class="p">(</span> <span class="n">movie</span> <span class="p">)</span> <span class="p">{</span>
+<span class="n">NSRect</span> <span class="n">contentRect</span> <span class="o">=</span> <span class="p">[[</span><span class="nf">windowcontentView</span><span class="p">]</span> <span class="nf">bounds</span><span class="p">];</span>
+<span class="n">QTMovieLayer</span> <span class="o">*</span><span class="n">layer</span> <span class="o">=</span><span class="p">[</span><span class="n">QTMovieLayer</span> <span class="nf">layerWithMovie</span><span class="p">:</span><span class="n">movie</span><span class="p">];</span>
+<span class="p">[</span><span class="nf">layersetFrame</span><span class="p">:</span><span class="n">NSRectToCGRect</span><span class="p">(</span><span class="n">contentRect</span><span class="p">)];</span>
+<span class="n">textLayer</span> <span class="o">=</span> <span class="p">[</span><span class="nf">CATextLayerlayer</span><span class="p">];</span>
+<span class="p">[</span><span class="nf">textLayersetString</span><span class="p">:</span><span class="n">QTStringFromTime</span><span class="p">(</span><span class="n">QTZeroTime</span><span class="p">)];</span>
+<span class="p">[</span><span class="nf">textLayersetAlignmentMode</span><span class="p">:</span><span class="n">kCAAlignmentCenter</span><span class="p">];</span>
+<span class="p">[</span><span class="nf">textLayersetFrame</span><span class="p">:</span><span class="n">NSRectToCGRect</span><span class="p">(</span><span class="n">contentRect</span><span class="p">)];</span>
+<span class="p">[</span><span class="nf">layeraddSublayer</span><span class="p">:</span><span class="n">textLayer</span><span class="p">];</span>
+<span class="p">[[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">addSublayer</span><span class="p">:</span><span class="n">layer</span><span class="p">];</span>
+<span class="p">[</span><span class="n">movie</span> <span class="nf">play</span><span class="p">];</span>
+<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>          清单 7-8 设定影视时间的初始化代码
+</code></pre></div></div>
+
+<p>QTZeroTime是QTTime结构体，它代表视频的开始时间。下面，改变定时器设定的-updateSlider方法，如清单7-9所示。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">updateSlider</span><span class="p">:(</span><span class="n">NSTimer</span><span class="o">*</span><span class="p">)</span><span class="nv">theTimer</span><span class="p">;</span> <span class="p">{</span>
+<span class="n">QTTime</span> <span class="n">current</span> <span class="o">=</span> <span class="p">[</span><span class="nf">moviecurrentTime</span><span class="p">];</span>
+<span class="kt">double</span> <span class="n">value</span> <span class="o">=</span><span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">current</span><span class="p">.</span><span class="n">timeValue</span> <span class="o">/</span> <span class="p">(</span><span class="kt">double</span><span class="p">)</span><span class="n">movieDuration</span><span class="p">.</span><span class="n">timeValue</span><span class="p">;</span>
+<span class="p">[</span><span class="nf">slidersetDoubleValue</span><span class="p">:</span><span class="n">value</span><span class="p">];</span> <span class="p">[</span><span class="n">slider</span> <span class="nf">setNeedsDisplay</span><span class="p">];</span>
+<span class="p">[</span><span class="n">self</span> <span class="nf">updateTimeStamp</span><span class="p">];</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>       清单7-9 调用时间间隔的更新
+</code></pre></div></div>
+
+<p>带着这些改变，时间文案层就会随着电影的播放实时的更新。在Xcode中，导入电影播放的例子工程，然后点击build和看一看层的行动。如图7-5展示了运行时的时间文案层的变化。就像你注意的，在正常的情况下时间会更新。</p>
+
+<p><img src="/images/animation-7-5.gif" alt="图 7-5 展示时间层" /></p>
+
+<p>QTMovieLayer和contentsRect</p>
+
+<p>在第二章中，“我们可以做什么动画？”，你看到了所有可用的动画参数。这些参数中最有趣的一个参数contentsRect，这个参数是用来指定你要做的动画需要显示的区域。当关联到QTMovieLayer上时，这个非常有趣的，因为你可以复制QTMovieLayer中的内容给另一个标准的CALayer，然后随着这样做，你可以指定QTMovie的那些部分需要在层内容中显示。</p>
+
+<p>因此你马上会知道怎么的有用。假如你创建了包含了很多格子的独立视频。你就可以使用这个视频的引用然后复制内容到其他CALayers中，然后在每个层中指定视频层的某个要显示的部分。或者你可以吧一个影视分割成很多的格子。图7-6展示了这个应用的一个截图，你可以从合作网站获得演示的工程CopyMovieContents.</p>
+
+<p><img src="/images/animation-7-6.gif" alt="图 7-6 拷贝影视的内容到单独的CAlayers上" /></p>
+
+<p>你看到的格子中的每个区域都是一个独立的CALayers，通过从相同的QTMovieLayer中获得内容。对于这个应用程序，我们创建了一个QTMovieLayer的过上车的影视，影视文件的位置在/System/Library/Compositions/Rollercoaster.mov.</p>
+
+<p>我们之后给我们的视图增加层。然后我们增加我们每个独立的CALayers，这些CALayers都是用内容和contentRect设定的。</p>
+
+<p>实现的代码非常的简单。你给每个CALayer设定影视层的内容，如下面的代码：</p>
+
+<p>[layersetContents:[movieLayer contents]];</p>
+
+<p>然后设定contentsRect来显示你想要的影视层要显示的部分。你设定contentRect字段如下：</p>
+
+<p>[layer setContentsRect:CGRectMake(0.25f,0.25f, 0.25f, 0.25f)];</p>
+
+<p>就像你在第二章中回忆到的，这就造成了CAlayer的内容仅仅显示影视层的1/4,也就是距离左下角高和宽分别为影视层高和宽的1/4。</p>
+
+<p>不过，这些技巧在下面我们要讲的QTCaptureLayer上不能工作。</p>
+
+<h2 id="使用qtcapturelayer">使用QTCaptureLayer</h2>
+
+<p>QTCaptureLayer提供了一个方法，来展示连接在电脑上的视频设备捕获的视频。这些设备包含视频摄像头或者一个通过火线连接的视频摄像头。为了捕获这些视频，你需要设定一个QTCaptureSession，要做2件事：</p>
+
+<p>它要提供一个接口，可以接收捕获到的帧数。</p>
+
+<p>它可以使你保存图像到一个影视文件中，并且控制会话来关闭QTCaptureLayer。</p>
+
+<p>捕获视频最复杂的部分，并不是显示图像到QTCaptureLayer上。而是，设定QTCaptureSession这个对象。这些设定要求一些步骤，包括获取设备，打开设备，增加设备到捕获对话中，以及创建一个视频输出对象来增加行列帧到捕获对话中。</p>
+
+<p>如果你打开例子工程叫做Photo Capture，然后建立工程，将会帮助你理解。当你运行时，你会看到如图7-7中屏幕所示。</p>
+
+<p><img src="/images/animation-7-7.gif" alt="图 7-7 图像捕获窗口的例子工程" /></p>
+
+<p>清单7-10展示了创建QTCaptureSession对象所要的代码。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">initCaptureSession</span><span class="p">;</span> <span class="p">{</span>
+<span class="k">if</span><span class="p">(</span><span class="n">captureSession</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">NSError</span> <span class="o">*</span><span class="n">error</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+<span class="n">captureSession</span> <span class="o">=</span><span class="p">[[</span><span class="n">QTCaptureSession</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+<span class="c1">// This finds a device, suchas an iSight camera</span>
+<span class="n">QTCaptureDevice</span> <span class="o">*</span><span class="n">videoDevice</span><span class="o">=</span> <span class="p">[</span><span class="n">QTCaptureDevice</span> <span class="nf">defaultInputDeviceWithMediaType</span><span class="p">:</span> <span class="n">QTMediaTypeVideo</span><span class="p">];</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">videoDevice</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+<span class="c1">// Try a different device,such as miniDV camcorder</span>
+<span class="n">videoDevice</span> <span class="o">=</span><span class="p">[</span><span class="n">QTCaptureDevice</span> <span class="nf">defaultInputDeviceWithMediaType</span><span class="p">:</span> <span class="n">QTMediaTypeMuxed</span><span class="p">];</span>
+<span class="p">}</span>
+<span class="c1">// No need to continue if wecan’t find a device</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">videoDevice</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span><span class="k">return</span><span class="p">;</span>
+<span class="c1">// Try to open the device</span>
+<span class="p">[</span><span class="nf">videoDeviceopen</span><span class="p">:</span><span class="o">&amp;</span><span class="n">error</span><span class="p">];</span>
+<span class="c1">// No need to continue ifdevice couldn’t be opened</span>
+<span class="k">if</span><span class="p">(</span> <span class="n">error</span> <span class="o">!=</span> <span class="nb">nil</span> <span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+<span class="c1">// Create a device inputobject to add to the capture session</span>
+<span class="n">QTCaptureDeviceInput</span> <span class="o">*</span><span class="n">input</span> <span class="o">=</span><span class="p">[[</span><span class="n">QTCaptureDeviceInput</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithDevice</span><span class="p">:</span><span class="n">videoDevice</span><span class="p">];</span>
+<span class="p">[</span><span class="nf">captureSessionaddInput</span><span class="p">:</span><span class="n">input</span> <span class="nf">error</span><span class="p">:</span><span class="o">&amp;</span><span class="n">error</span><span class="p">];</span>
+<span class="k">if</span><span class="p">(</span> <span class="n">error</span> <span class="o">!=</span> <span class="nb">nil</span> <span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+<span class="c1">// Create video output to addraw frames to the session</span>
+<span class="n">output</span> <span class="o">=</span><span class="p">[[</span><span class="n">QTCaptureDecompressedVideoOutput</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+ <span class="p">[</span><span class="n">captureSession</span> <span class="nf">addOutput</span><span class="p">:</span><span class="nf">outputerror</span><span class="p">:</span><span class="o">&amp;</span><span class="n">error</span><span class="p">];</span>
+<span class="k">if</span> <span class="p">(</span> <span class="n">error</span> <span class="o">!=</span> <span class="nb">nil</span> <span class="p">)</span> <span class="k">return</span><span class="p">;</span>
+<span class="p">[</span><span class="nf">selfsetSession</span><span class="p">:</span><span class="n">captureSession</span><span class="p">];</span>
+<span class="p">}</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>     清单 7-10 初始化捕获会话
+</code></pre></div></div>
+
+<p>这些相互关联的部分代码提供了一些相当神奇的东西。苹果用这些抽象使你能够容易的及时捕获和展示帧。随着QTCaptureSession的创建成功，下一步要做的就是通过QTCaptreDecompressedVideoOutPut的代理对象捕获任意时间的帧。在QTCaptreDecompressedVideoOutPut对象被申请时，设置它的代理给自己如下：</p>
+
+<p>[outputsetDelegate:self];</p>
+
+<p>它能够使你捕获图像文件或者影视对象。下面，让我们更进一步看下QTCaptureLayer是如何在捕获会话中初始化的。</p>
+
+<p>创建和展示QTCaptureLayer</p>
+
+<p>尽管可以通过alloc和init直接创建一个QTCaptureLayer对象，或者用便捷的方法像+layerWithSession，我们还是准备子类化QTCaptureLayer，这样通过在子类的初始化方法中可以让我们隐藏QTCaptureSession的初始化。我们这样做的原因是便于我们封装所有的捕获功能到层上，这样无论应用程序想在哪应用捕获功能时，都能复用这个层。</p>
+
+<p>在图像捕获的实例代码中，我们创建了继承自QTCaptureLayer的子类并且命名它CaptureLayer。清单7-11展示了在初始化时的init代码。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="n">init</span><span class="p">;</span> <span class="p">{</span>
+<span class="n">self</span> <span class="o">=</span> <span class="p">[</span><span class="n">super</span> <span class="nf">init</span><span class="p">];</span>
+<span class="k">if</span><span class="p">(</span> <span class="o">!</span><span class="n">self</span> <span class="p">)</span> <span class="k">return</span> <span class="nb">nil</span><span class="p">;</span>
+<span class="p">[</span><span class="n">self</span> <span class="nf">initCaptureSession</span><span class="p">];</span><span class="k">return</span> <span class="n">self</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>     清单7-11 继承QTCaptureLayer的初始化方法
+</code></pre></div></div>
+
+<p>就像你看到的，我们在清单7-10中都已经调用了-initCaptureSession这个方法。这里，当我们初始化一个CaptureLayer对象的同时，QTCaptureSession就已经安装好准备运行了。下一步，增加CaptureLayer到窗口的根层树上。你可以看到在AppDelegate的-awakeFromNib代码中是如何实现的，如清单7-12所示。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">awakeFromNib</span><span class="p">;</span> <span class="p">{</span>
+<span class="p">[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span><span class="nf">setWantsLayer</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+<span class="n">captureLayer</span> <span class="o">=</span> <span class="p">[[</span><span class="nf">CaptureLayeralloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+<span class="c1">// Use the frame from thegeneric NSView we have // named captureView</span>
+<span class="p">[</span><span class="n">captureLayer</span> <span class="nf">setBounds</span><span class="p">:</span><span class="n">NSRectToCGRect</span><span class="p">([</span><span class="n">captureView</span> <span class="nf">frame</span><span class="p">])];</span>
+<span class="p">[</span><span class="n">captureLayer</span> <span class="nf">setPosition</span><span class="p">:</span>
+<span class="n">CGPointMake</span><span class="p">([</span><span class="nf">captureViewframe</span><span class="p">].</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="n">captureView</span> <span class="nf">frame</span><span class="p">].</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="o">/</span><span class="mi">2</span><span class="p">)];</span>
+<span class="p">[[</span><span class="n">captureView</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">insertSublayer</span><span class="p">:</span><span class="n">captureLayer</span> <span class="nf">atIndex</span><span class="p">:</span><span class="mi">0</span><span class="p">];</span>
+<span class="p">[</span><span class="nf">captureLayerstarCaptureSession</span><span class="p">];</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>            清单7-12 在AppDelegate中实现CaptureLayer
+</code></pre></div></div>
+
+<p>当你运行这些代码时，你会看到我们在窗口的左边创建了一个视图，视图是被你的视频摄像头或者miniDV照相机获得的东西填充。</p>
+
+<h3 id="捕获目前的图像">捕获目前的图像</h3>
+
+<p>自然的，你就想要捕获目前的一张图像，就像你使用苹果自带的Photo Booth应用程序一样。为了实现这个，需要一个继承自QTCaptureLayer的子类叫做CaptureLayer的类加入到应用程序中。这里，我们实现了-getCurrentImage这个函数，当行动触发时，来返回NSImage对象，就包含了目前的图像。回头看7-10，你可以看到我们设定了QTCaptureDecompressedVidioOutput对象的代理在-initSession的代码中。我们现在实现它的代理方法，-captureOutput,如下所示清单7-13.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">captureOutput</span><span class="p">:(</span><span class="n">QTCaptureOutput</span> <span class="o">*</span><span class="p">)</span><span class="nv">captureOutputdidOutputVideoFrame</span><span class="o">:</span><span class="p">(</span><span class="n">CVImageBufferRef</span><span class="p">)</span><span class="n">videoFrame</span>
+<span class="n">withSampleBuffer</span><span class="o">:</span><span class="p">(</span><span class="n">QTSampleBuffer</span><span class="o">*</span><span class="p">)</span><span class="n">sampleBuffer</span> <span class="n">fromConnection</span><span class="o">:</span><span class="p">(</span><span class="n">QTCaptureConnection</span> <span class="o">*</span><span class="p">)</span><span class="n">connection</span>
+<span class="p">{</span>
+<span class="c1">// Store the current frame</span>
+<span class="n">CVImageBufferRef</span> <span class="n">imageBuffer</span><span class="p">;</span>
+<span class="n">CVBufferRetain</span><span class="p">(</span><span class="n">videoFrame</span><span class="p">);</span>
+<span class="c1">// Synchronize access, asthis delegate is not // called on the main thread.</span>
+<span class="k">@synchronized</span> <span class="p">(</span><span class="n">self</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="n">imageBuffer</span> <span class="o">=</span><span class="n">currentImageBuffer</span><span class="p">;</span>
+<span class="n">currentImageBuffer</span> <span class="o">=</span><span class="n">videoFrame</span><span class="p">;</span> <span class="p">}</span>
+<span class="err">￼</span><span class="n">CVBufferRelease</span><span class="p">(</span><span class="n">imageBuffer</span><span class="p">);}</span>
+</code></pre></div></div>
+
+<p>清单7-13 实现捕获输出的回调</p>
+
+<p>这个代理按照在场景后面的QTCaptureSession的API，以有规律的时间间隔在不停的调用。currentImageBuffer对象在代理中不停的更新，因为它要为用户点击拍照按钮随时做准备。当用户点击了拍照按钮时，QTCaptureLayer的子类就会去查询目前的图像。为了捕获这个图像到层中，我们增加了-getCurrentImage这个函数，清单如7-14.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">NSImage</span><span class="o">*</span><span class="p">)</span><span class="n">getCurrentImage</span><span class="p">;{</span>
+<span class="n">CVImageBufferRef</span> <span class="n">imageBuffer</span><span class="p">;</span>
+<span class="k">@synchronized</span> <span class="p">(</span><span class="n">self</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">imageBuffer</span> <span class="o">=</span><span class="n">CVBufferRetain</span><span class="p">(</span><span class="n">currentImageBuffer</span><span class="p">);</span> <span class="p">}</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">imageBuffer</span><span class="p">)</span> <span class="p">{</span>
+<span class="c1">// Create an NSImage</span>
+<span class="n">NSCIImageRep</span> <span class="o">*</span><span class="n">imageRep</span> <span class="o">=</span><span class="p">[</span><span class="n">NSCIImageRep</span> <span class="nf">imageRepWithCIImage</span><span class="p">:</span>
+<span class="p">[</span><span class="nf">CIImageimageWithCVImageBuffer</span><span class="p">:</span><span class="n">imageBuffer</span><span class="p">]];</span>
+<span class="n">NSImage</span> <span class="o">*</span><span class="n">image</span> <span class="o">=</span> <span class="p">[[[</span><span class="nf">NSImagealloc</span><span class="p">]</span> <span class="nf">initWithSize</span><span class="p">:</span> <span class="p">[</span><span class="n">imageRep</span> <span class="nf">size</span><span class="p">]]</span> <span class="nf">autorelease</span><span class="p">];</span>
+<span class="p">[</span><span class="nf">imageaddRepresentation</span><span class="p">:</span><span class="n">imageRep</span><span class="p">];</span>
+<span class="n">CVBufferRelease</span><span class="p">(</span><span class="n">imageBuffer</span><span class="p">);</span><span class="k">return</span> <span class="n">image</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">return</span> <span class="nb">nil</span><span class="p">;</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>          清单 7-14  实现目前的图像捕获 就像在清单7-13中，captureOutput回调函数里进入到currentImageBuffer对象时，在常规的基础上加入了同步。这个回调运行在自己的线程中，做一个同步块是很有必要的。如果图像的缓存是被成功的获取，我们就转化它成为NSImage对象，然后再返回给要调用的函数。
+</code></pre></div></div>
+
+<p>最后，我们增加一个行动在Appdelegate中，目的来触发捕获按钮被按下来的情况。这个行动会抓取QTCaptureLayer子类中的图像，然后用它设置NSImageView的图像。清单7-15展示了如何实现。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">grabImage</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span><span class="p">;{</span>
+<span class="n">NSImage</span> <span class="o">*</span><span class="n">image</span> <span class="o">=</span><span class="p">[</span><span class="n">captureLayer</span> <span class="nf">getCurrentImage</span><span class="p">];</span>
+<span class="p">[</span><span class="n">imageView</span> <span class="nf">setImage</span><span class="p">:</span><span class="n">image</span><span class="p">];</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>         清单7-15 在imageView上设定图像
+</code></pre></div></div>
+
+<p>当你运行PhotoCapture应用程序时，在左边的NSView的视图中会展示QTCaptureLayer。当你点击捕获图像按钮时，右边的视图就会捕获层中目前的图像。当你在image view上设定图像时，视图就会展示目前帧的图像。如果你想保存图像，你可以通过在NSImage上调用-representationUsingType来获得NSData对象。当你获得了NSData对象时，你可以用-writeTofile:atomically:方法写入到磁盘中。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>QuickTime的核心动画层，提供了一个强大的功能，可以来展示磁盘的影视文件和通过支持的视频捕获设备展示实时的视频。在你自己的视频应用程序中，它使这个复杂的任务变得如此的简单。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

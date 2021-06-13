@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Swift捕获列表 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2019/12/24/capture_list.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Swift捕获列表">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2019/12/24/capture_list.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">Swift捕获列表</h1>
+  
+  <span class="post-meta">12月 24日, 2019</span><br>
+  
+  <span class="post-meta small">5 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>捕获列表，提到这个名词，可能很多做ios开发的人也不怎么了解。因为它在swift语法中，属于非常小众的特性，苹果文档也没有大篇幅讲过。但是它却在我们日常开发中经常用到。例如下面的用法:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">clickBtn</span><span class="o">.</span><span class="nf">bk_addEventHandler</span><span class="p">({[</span><span class="k">weak</span> <span class="k">self</span><span class="p">]</span> <span class="p">(</span><span class="n">_</span><span class="p">)</span> <span class="k">in</span>
+    <span class="k">self</span><span class="p">?</span><span class="o">.</span><span class="n">view</span><span class="o">.</span><span class="nf">removeFromSuperView</span><span class="p">()</span>
+<span class="p">},</span> <span class="nv">for</span><span class="p">:</span> <span class="o">.</span><span class="n">touchUpInside</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>[weak self]这个用法很多人第一印象是说，要防止self循环引用。这往往是从oc语言继承过来的思想，虽然用法没错，但是思想还是有点偏差，[weak self]这个语法其实主要是为了配合闭包使用的，下面我们就来逐步分析下这个用法吧。</p>
+
+<h2 id="闭包特性">闭包特性</h2>
+
+<p>我们都知道swift语言的闭包非常强大，既可以用来作为函数的参数，也可以作为返回值。用过oc开发ios的应该都知道，oc的闭包中用到外部的变量，默认都是做copy的，如果需要改变外部变量的值，需要用到一个关键字__block，表明不要copy这个变量而是传递一个引用。但是swift语言已经移除了这个特性，因为oc闭包的这个用法有些反直觉，开发者往往在用这个特性的时候很容易忽略闭包中变量是copy，明显不符合swift人性化的设计理念。所以swift语言果断抛弃了这个用法，也就是默认情况下变量都是做的引用，例如我们看下面的代码:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">var</span> <span class="nv">a</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">var</span> <span class="nv">b</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">let</span> <span class="nv">closure</span> <span class="o">=</span> <span class="p">{</span> <span class="nf">print</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>如果我们做如下调用:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">a</span> <span class="o">=</span> <span class="mi">6</span>
+<span class="n">b</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="nf">closure</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>控制台会输出6,7。这里明显看出来我们闭包中的变量没有被copy，而是直接引用的。</p>
+
+<p>虽然这样不违反直觉了，但是有时候也会出现一些问题，例如下面的用法</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">var</span> <span class="nv">closureArray</span><span class="p">:</span> <span class="p">[()</span> <span class="o">-&gt;</span> <span class="p">()]</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="k">var</span> <span class="nv">i</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">_</span> <span class="k">in</span> <span class="mi">1</span><span class="o">...</span><span class="mi">5</span> <span class="p">{</span>
+ <span class="n">closureArray</span><span class="o">.</span><span class="n">append</span> <span class="p">{</span> <span class="nf">print</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="p">}</span>
+ <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>如果有人这样写代码，他一定是想要把计算的不同数字存下来，而不是输出下面的结果</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">closureArray</span><span class="p">[</span><span class="mi">0</span><span class="p">]()</span> <span class="c1">// 5 😲</span>
+<span class="n">closureArray</span><span class="p">[</span><span class="mi">1</span><span class="p">]()</span> <span class="c1">// 5 🤔</span>
+<span class="n">closureArray</span><span class="p">[</span><span class="mi">2</span><span class="p">]()</span> <span class="c1">// 5 😨</span>
+<span class="n">closureArray</span><span class="p">[</span><span class="mi">3</span><span class="p">]()</span> <span class="c1">// 5 😭</span>
+<span class="n">closureArray</span><span class="p">[</span><span class="mi">4</span><span class="p">]()</span> <span class="c1">// 5 😱</span>
+</code></pre></div></div>
+
+<p>事实上，确实会输出全部是5。如何才能实现输出不同的数字哪?下面就引出了我们要说的概念<strong>捕获列表</strong>。</p>
+
+<h2 id="捕获列表">捕获列表</h2>
+
+<p>捕获列表就是在闭包中使用外部变量时，帮助闭包copy外部变量成为闭包的内部变量进行使用。下面就看下捕获列表的用法。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">var</span> <span class="nv">c</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">var</span> <span class="nv">d</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">let</span> <span class="nv">closure</span><span class="p">:</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="p">()</span> <span class="o">=</span> <span class="p">{</span> <span class="p">[</span><span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">]</span> <span class="k">in</span>
+ <span class="nf">print</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>用[]放置需要捕获的变量，就可以让这个变量做copy成为闭包的内部变量。下面我们输出下结果</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">c</span> <span class="o">=</span> <span class="mi">7</span>
+<span class="n">d</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="nf">closure</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>可以看到结果仍然是0 0</p>
+
+<h2 id="捕获列表进阶">捕获列表进阶</h2>
+
+<p>上面讲的捕获列表，相对来讲还是比较容易的，下面看一个用法可能有些迷惑，如果理解就能更充分明白swift中闭包中变量的使用。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">var</span> <span class="nv">language</span> <span class="o">=</span> <span class="s">"Objc"</span>
+<span class="k">let</span> <span class="nv">code</span> <span class="o">=</span> <span class="p">{</span> <span class="p">[</span><span class="n">language</span><span class="p">]</span> <span class="k">in</span>
+    <span class="nf">print</span><span class="p">(</span><span class="n">language</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="n">language</span> <span class="o">=</span> <span class="s">"Swift"</span>
+<span class="nf">code</span><span class="p">()</span>
+</code></pre></div></div>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">Human</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">lanuage</span> <span class="o">=</span> <span class="s">"Objc"</span>
+<span class="p">}</span>
+<span class="k">var</span> <span class="nv">human</span> <span class="o">=</span> <span class="kt">Human</span><span class="p">()</span>
+<span class="k">let</span> <span class="nv">code</span> <span class="o">=</span> <span class="p">{</span> <span class="p">[</span><span class="n">human</span><span class="p">]</span> <span class="k">in</span>
+    <span class="nf">print</span><span class="p">(</span><span class="n">human</span><span class="o">.</span><span class="n">lanuage</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="n">human</span><span class="o">.</span><span class="n">lanuage</span> <span class="o">=</span> <span class="s">"Swift"</span>
+<span class="nf">code</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>上面这两段代码分别输出的结果时什么。如果你对捕获列表很了解的话，不难回答应该是Objc和Swift，前面不是说用了参数列表，闭包会copy变量作为内部的值么，为什么会输出不一样的结果哪？</p>
+
+<p>其实前面说如果放到捕获列表中，闭包会copy外包变量的值，并不是很准确，准确的来讲是因为前面的例子变量是Int类型，因为Int和String都是Struct在赋值的时候，swift语言本身会对Struct的类型做copy操作。我们如果把参数列表拆解成代码，实际上可以表示为如下代码:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">language</span><span class="p">:</span> <span class="kt">String</span> <span class="o">=</span> <span class="n">language</span>
+<span class="k">let</span> <span class="nv">language</span><span class="p">:</span> <span class="kt">Human</span> <span class="o">=</span> <span class="n">language</span>
+</code></pre></div></div>
+
+<p>而由于human是一个class，赋值并不会做copy，而只是强引用了此类的实例。下面我们就来拆解下[weak self]吧。</p>
+
+<h2 id="weak-self由来">[weak self]由来</h2>
+
+<p><del>前面我们说过如果变量不放置到捕获列表中，闭包就不会copy或者强引用此变量。</del> swift文档有如下描述:</p>
+
+<blockquote>
+  <p>By default, a closure expression captures constants and variables from its surrounding scope with strong references to those values. You can use a capture list to explicitly control how values are captured in a closure.</p>
+</blockquote>
+
+<p>划掉的部分是博客之前的描述不准确的点，感谢 @sinno93 提出了问题，更正为闭包不管使不使用捕获列表，都会强引用里面的变量。我们来验证下我们的想法，写如下代码:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">Human</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">lanuage</span> <span class="o">=</span> <span class="s">"Objc"</span>
+
+    <span class="kd">deinit</span> <span class="p">{</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"deinit"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">var</span> <span class="nv">human</span><span class="p">:</span> <span class="kt">Human</span><span class="o">!</span> <span class="o">=</span> <span class="kt">Human</span><span class="p">()</span>
+<span class="k">let</span> <span class="nv">code</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="n">human</span><span class="o">!.</span><span class="n">lanuage</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="n">human</span><span class="o">.</span><span class="n">lanuage</span> <span class="o">=</span> <span class="s">"Swift"</span>
+<span class="n">human</span> <span class="o">=</span> <span class="kc">nil</span>
+<span class="nf">code</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>这个代码可以运行下，会输出deinit，然后报如下的错误:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Fatal error: Unexpectedly found nil <span class="k">while </span>unwrapping an Optional value
+</code></pre></div></div>
+
+<p>这是因为human这个类已经被释放了，如果我们改下代码如下:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">code</span> <span class="o">=</span> <span class="p">{[</span><span class="n">human</span><span class="p">]</span> <span class="k">in</span>
+    <span class="nf">print</span><span class="p">(</span><span class="n">human</span><span class="o">!.</span><span class="n">lanuage</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这时候你会发现输出Swift，并且deinit没有输出，准确的讲在展开捕获列表语法时，相当于又定义了一个临时变量<code class="highlighter-rouge">let temp:Human = human</code>，这个赋值本质上相当于<code class="highlighter-rouge">human</code>被<code class="highlighter-rouge">temp</code>这个变量强引用了。因为code这个闭包还没有释放，仍然持有<code class="highlighter-rouge">temp</code>这个变量，而如果我们不用捕获列表，会是同一个引用指向了<code class="highlighter-rouge">human</code>变量，当<code class="highlighter-rouge">human = nil</code>时,相当于闭包code和定义的human的引用都被释放了。为了证实这个问题，我们看下面的代码:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">var</span> <span class="nv">human</span><span class="p">:</span> <span class="kt">Human</span><span class="o">!</span> <span class="o">=</span> <span class="kt">Human</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="kt">CFGetRetainCount</span><span class="p">(</span><span class="n">human</span><span class="p">))</span>
+<span class="k">let</span> <span class="nv">code</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="n">human</span><span class="o">!.</span><span class="n">lanuage</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="nf">print</span><span class="p">(</span><span class="kt">CFGetRetainCount</span><span class="p">(</span><span class="n">human</span><span class="p">))</span> <span class="c1">// 输出为2</span>
+</code></pre></div></div>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">var</span> <span class="nv">human</span><span class="p">:</span> <span class="kt">Human</span><span class="o">!</span> <span class="o">=</span> <span class="kt">Human</span><span class="p">()</span>
+<span class="nf">print</span><span class="p">(</span><span class="kt">CFGetRetainCount</span><span class="p">(</span><span class="n">human</span><span class="p">))</span>
+<span class="k">let</span> <span class="nv">code</span> <span class="o">=</span> <span class="p">{[</span><span class="n">human</span><span class="p">]</span> <span class="k">in</span>
+    <span class="nf">print</span><span class="p">(</span><span class="n">human</span><span class="o">!.</span><span class="n">lanuage</span><span class="p">)</span>
+<span class="p">}</span>
+<span class="nf">print</span><span class="p">(</span><span class="kt">CFGetRetainCount</span><span class="p">(</span><span class="n">human</span><span class="p">))</span> <span class="c1">// 输出为3</span>
+</code></pre></div></div>
+
+<p>从上面的代码输出可以看出来，如果不用显式的捕获列表，输出<code class="highlighter-rouge">human</code>的引用为2，如果改成显式的捕获列表，会显示<code class="highlighter-rouge">human</code>的引用为3。所以本质上显式捕获列表会定义一个临时变量<code class="highlighter-rouge">temp</code>(为了便于理解，其实这个临时变量的名字仍然较human，只是在不同的代码scope内)，当不用显式的捕获列表<code class="highlighter-rouge">human = nil</code>是会把引用计数值为0，如果用了显式的捕获列表,闭包中的临时变量<code class="highlighter-rouge">temp</code>不会被置位nil，所以不会崩溃。</p>
+
+<p>再来看段代码如下:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">Human</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">lanuage</span> <span class="o">=</span> <span class="s">"Objc"</span>
+
+    <span class="k">var</span> <span class="nv">block</span><span class="p">:</span> <span class="p">(()</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)?</span>
+
+    <span class="kd">deinit</span> <span class="p">{</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"deinit"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="kd">func</span> <span class="nf">recycle</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="nv">code</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="nf">print</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">lanuage</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">block</span> <span class="o">=</span> <span class="n">code</span>
+        <span class="k">return</span> <span class="n">code</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">var</span> <span class="nv">human</span><span class="p">:</span> <span class="kt">Human</span><span class="o">!</span> <span class="o">=</span> <span class="kt">Human</span><span class="p">()</span>
+<span class="n">human</span><span class="o">.</span><span class="n">lanuage</span> <span class="o">=</span> <span class="s">"Swift"</span>
+<span class="n">human</span><span class="o">.</span><span class="nf">recycle</span><span class="p">()</span>
+<span class="n">human</span> <span class="o">=</span> <span class="kc">nil</span>
+</code></pre></div></div>
+
+<p>然而你会发现控制台里面并没有输出deinit，<code class="highlighter-rouge">human</code>这个实例被循环引用了，为什么哪？其实swift语言，在类里面默认会把self变量放到捕获列表里面，上面的闭包的写法和下面本质上是等同的。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">code</span> <span class="o">=</span> <span class="p">{</span> <span class="p">[</span><span class="k">self</span><span class="p">]</span> <span class="k">in</span>
+    <span class="nf">print</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">lanuage</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这时候我们终于引出了本文讨论的话题[weak self]，本质上[weak self]如果拆解成代码的话应该如下:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">weak</span> <span class="kd">var</span> <span class="p">`</span><span class="nv">self</span><span class="p">`:</span> <span class="kt">Human</span><span class="p">?</span> <span class="o">=</span> <span class="k">self</span>
+</code></pre></div></div>
+
+<p>对self变量做弱引用声明，因为是弱引用，闭包在使用这个变量时就要定义为optional，因为有可能这个变量为空，所以我们更改上面的代码如下:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">code</span> <span class="o">=</span> <span class="p">{</span> <span class="p">[</span><span class="k">weak</span> <span class="k">self</span><span class="p">]</span> <span class="k">in</span>
+    <span class="nf">print</span><span class="p">(</span><span class="k">self</span><span class="p">?</span><span class="o">.</span><span class="n">lanuage</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>再运行就可以看到控制台输出deinit，另外在控制self引用的时候还有个关键字unowned，这个关键字和weak的区别是：unowned同样不会强引用变量self，但是它不会改变变量的类型为optional，也就是说如果变量self被释放后，闭包中仍然使用的话会崩溃。所以在用unowned关键字的时候，要保证闭包在调用的时候，self不会被释放。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>虽说[weak self]在项目开发中经常使用，但是只知道是为了防止循环引用，至于为什么能防止循环引用，我们往往可能会回答，因为不用的话self变量会被强引用。这时候如果再多思考一些，你就可以刨出来捕获列表，这个swift不常用的语法。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

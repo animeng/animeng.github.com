@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>关系数据库的概念 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2009/03/29/data-base.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="关系数据库的概念">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2009/03/29/data-base.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">关系数据库的概念</h1>
+  
+  <span class="post-meta">03月 29日, 2009</span><br>
+  
+  <span class="post-meta small">1 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>我相信很多人刚学完数据库都会对函数依赖关系有点迷惑。由于自己快要毕业了，回头来看了一下数据库的知识。当看到函数依赖以及范式的时候自己才茅厕顿开。看来正如孔夫子的话温故而知新啊！那下面我就谈谈一下自己在学习关系数据库规范化的一些心的吧！我觉得要想真正能懂第一范式，第二范式，第三范式，巴克斯范式。首先要充分的理解函数依赖的概念，很多初学者往往对函数依赖一知半解，就在看各种范式结果搞的一头雾水，这一点是初学者很容易犯得错误。什么是函数依赖哪？函数依赖是通过关系属性之间的值相等否来体现数据间的关系的。是现实世界属性间的联系。具体的数学定义为，如果A→B成立，<strong>我们就不能有两个元组在A上的值相同而在B上的值不同</strong>。个定这义我觉得是最容易让人理解的，不像有些书上写的公式一堆，让人看的云里雾里的。所以函数依赖有时也叫相等产生依赖。如果这点搞清楚了，你就容易理解为什么第四范式消除的多值依赖，是不属于函数依赖的关系了。我刚开始学习多值依赖的时候我就觉得，消除多值依赖怎么和消除传递依赖一样那？看了很多论坛越看越觉得迷糊，</p>
+
+<p>例如：课本知识：<strong>在关系模式中，函数依赖不能表示属性值之间的一对多联系，这些属性之间有些虽然没有直接关系，但存在间接的关系，把没有直接联系、但有间接的联系称为多值依赖的数据依赖。例如，教师和学生之间没有直接联系，但教师和学生可通过系名，或任课把教师和学生联系起来。</strong>
+举例如下，有这样一个关系 &lt;仓库管理员，仓库号，库存产品号&gt; ，假设一个一个产品只能放到一个仓库中，但是一个仓库可以由若干管理员，那么对应于一个 &lt;仓库管理员，库存产品〉有一个仓库号，而实际上，这个仓库号只与库存产品号有关，与管理员无关，就说这是多值依赖。仓库号→→仓库管理员</p>
+
+<p>上面的例子自己最开始看的时候总觉得仓库号→仓库管理员，产品仓→仓库号。这不就是传递依赖么。怎么有说到多值依赖上面了。其实刚才的划分是没有错，这是在函数依赖的基础上分析的当然是正确的，但是这里要涉及的是多值依赖和函数依赖没有直接的联系，这一点是很容易混淆的。只要根据多值依赖的定义显然上述的划分是正确的（多值依赖：设R(U)是属性集U上的一个关系模式。X，Y，Z是的U的子集,并且Z=U-X-Y。关系模式R(U)中多值依赖X→→Y成立，当且仅当对R(U)的任一关系r,给定的一对(x，z)值有一组Y的值，这组值仅仅决定于x值而与z值无关。 ）。显然多值依赖是如果A→B成立，可以有两个元组在A上的值相同而在B上的值不同。这样就区别开了这俩概念。下面给个例子加以区别：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>loan_number</th>
+      <th style="text-align: right">customer_id</th>
+      <th style="text-align: center">customer_street</th>
+      <th style="text-align: center">customer_city</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>l-23</td>
+      <td style="text-align: right">99-123</td>
+      <td style="text-align: center">North</td>
+      <td style="text-align: center">Rye</td>
+    </tr>
+    <tr>
+      <td>l-23</td>
+      <td style="text-align: right">99-123</td>
+      <td style="text-align: center">Main</td>
+      <td style="text-align: center">Manchester</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>这里的loan_number→→customer_street,customer_city。一个元组可以决定两个不同的元组，这样就是多值依赖，由于函数依赖只能决定相同的元组所以就不属于函数依赖了。</p>
+
+<p>区别了以上的概念再来看第一范式的定义就好理解了。再谈论范式之前首先要了解完全函数依赖和部分依赖以及传递依赖，这些概念正是决定了各个范式的定义。完全的函数依赖：在R（U）中，如果X→Y，并且对于X的任何一个真子集X`，都有X`不能决定Y，则成Y对X完全函数依赖。部分依赖也就是不属于完全依赖的函数依赖。传递依赖：在R（U，F）中，如果X→Y，Y不属于X，Y不能决定X，Y→Z，就成Z对X传递依赖。有了这些概念我想理解范式的定义也就是轻而易举的了。</p>
+
+<p>所以不管学习什么方面的知识，要想透彻的理解必须不断的反复琢磨。刚开始接触就想完全理解那当然是不太现实的，所以温故而知新这一点是很重要的。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

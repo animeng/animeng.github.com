@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>代码重构实践 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2021/02/10/rx-refactor.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="代码重构实践">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2021/02/10/rx-refactor.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">代码重构实践</h1>
+  
+  <span class="post-meta">02月 10日, 2021</span><br>
+  
+  <span class="post-meta small">1 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>  最近因为需求的变更，重构了几个5000多行的大类。完成了之后自然感觉清爽不少。在重构的过程中，自己也在思考，是什么造成了代码需要重构，我曾经重构过的一个类，大概是快6000行代码，类的成员变量有50多个，方法大概也有50个左右。这样的类以后维护起来就容易造成牵一发而动全身，用下图可以形象的表述。</p>
+
+<p><img src="/images/2021-02-10-1.jpg" alt="img1" /></p>
+
+<h2 id="臃肿的代码从何而来">臃肿的代码从何而来</h2>
+
+<p>  冰冻三尺非一日之寒，我看了下这个类的git记录，有5年多的历史，陆陆续续有几十个人修改过。驱使这个类变的如此大。本质上和过多的业务逻辑增加到了同一个类中有很大关系。这是造成代码臃肿的本质原因，根据自己以往代码的经验来看，下面几种情况极易造成庞大的类出现。</p>
+
+<ol>
+  <li>
+    <p>业务单例类—单例本质上是让代码能更好的重用，但是如果把所有的业务逻辑都放进去，就等于打开了恶魔的盒子，这个单例的类必然会越来越大。比如XXXNetworkCenter这种把业务的所有网络接口放到里面去，这时候大家就容易无脑的不管什么业务都往里面放置，必然会越来越庞大。所以还是要针对不同的业务独立的能拆分出来需要的网路接口最关键。在oc开发中，常见的方式就是扩展NetworkCenter+xxxExtension。</p>
+  </li>
+  <li>
+    <p>工具类—我们往往喜欢把所有业务无关的代码抽离出来，放到一个公共的类中，其实这样做对代码的重用有很大的好处的，但是无止境的往工具类中放代码，也会造成代码臃肿的问题。</p>
+  </li>
+  <li>
+    <p>过多的类变量和函数—面对有些复杂业务的逻辑，我们习惯上用一些共享的变量，来存储计算的结果，方便其他地方使用，这样做固然是好。但是如果一个类的变量超过了10个，或者提供给外部调用的函数超过了10个，这样对以后代码的可阅读性和维护性极其不利。因为对个人来讲，记忆超过10个物体的改变状态，其实是很难的挑战。所以当你的类一旦扩展到这种程度时，就要想办法通过好的架构缩减这些共享的变量和方法。</p>
+  </li>
+</ol>
+
+<h2 id="如何消除臃肿的代码">如何消除臃肿的代码</h2>
+
+<p>  软件工程中，经常讨论架构，好的架构本质上就是消除臃肿的代码，让代码读起来更容易，修改起来更简单。软件架构重要的原则就是Keep it simple。这句话说出来简单，可是想把复杂的东西变简单并不是那么容易的事情，所以各种设计模式就应运而生。这里我讲几个自己实践过程中常用的几个原则。</p>
+
+<ol>
+  <li>
+    <p>开闭原则，当你设计一个类的时候，尽量完成后不要修改类内部的设计，但是这个类要具备拓展能力，那很多人问，我不修改类的实现怎么来拓展能力哪？这里往往就需要针对相关的业务，有合理的底层通信机制来保证类的拓展性。比如现在操作系统的微内核，就是通过消息传递的方式，来分离系统的各个模块，让你的系统具备拓展能力，同时不用修改内核的代码。其实还有现在的微服务架构，比如RPC服务框架HSF就是通过合理的消息服务机制来分离和拓展各种微服务。当然上面说的都是很庞大的架构，必然实现非常复杂，我在下面的实践代码中，相对来讲分离的方式比较简单，但是麻雀虽小五脏俱全，其中也是可以看出如何分离各个业务模块的代码的。</p>
+  </li>
+  <li>
+    <p>尽量减少有副作用函数暴露。现在很多架构，都是想要消除函数的副作用，本质上就要是消除引起公共变量改变的函数。所以有副作用的函数尽量放置到内部处理，外部的入口尽量减少。尤其当类有大量可读写的变量暴露时，这时就要考虑架构是否合理了，如果这时不去改变，公共变量将成为你的噩梦。</p>
+  </li>
+  <li>
+    <p>多变的模块做隔离，少做依赖、少变的代码，可以多做依赖。这个原则本质上就是业务的分层设计，让频繁变动的业务层代码最好放在最上层，不要有其他类对它做过多的依赖，否则及其容易牵一发而动全身，引起很多问题。所以同一层的业务代码，分离后尽量不要做依赖。分层设计的目的主要是减少类的大小，便于频繁变动的业务代码的修改。想起来看过的驱动领域设计这本书，描述过抽象出业务领域的语言对于系统的架构非常关键。其实本质上业务领域语言，就是那些少变的底层代码分离出来，放在最下层，而把频繁变化的业务放在最上层。</p>
+  </li>
+</ol>
+
+<p>以上就是自己常用的几个原则，也不一定准确的对应某种设计模式，因为就像刚才所说的保持简洁才是最终的目的，不能为了设计模式而把代码搞的复杂了。</p>
+
+<h2 id="实践操作">实践操作</h2>
+
+<p>  简单描述下重构的会议和电话首页的大概模块划分，如下图所示:</p>
+
+<p><img src="/images/2021-02-10-2.jpg" alt="img2" /></p>
+
+<p>重构之前所有的UI和业务逻辑都是写在一个类中，造成这个类大概有5000多行代码，从模块图可以看出，应该拆分更多层才合理。根据上面提到的重构的原则，为了解耦，首先我们要找到一个方式来提供各个模块消息的通信。其实通信的方式很多，我这里借鉴了ReactX的信号方式进行通信，类图如下:</p>
+
+<p><img src="/images/2021-02-10-3.jpg" alt="img3" /></p>
+
+<p><img src="/images/2021-02-10-4.jpg" alt="img4" /></p>
+
+<p>这样各个模块在上层依赖下层时，通过依赖ColdEvent模块进行调用，ColdEvent通信避免了大量的如下的回调写法：</p>
+
+<pre><code class="language-oc">- (void)getLatestMessage:(void (^ BOOL)(void ))complete;
+</code></pre>
+
+<p>减少了公开的方法调用。并且同层模块不相互依赖，实现了各个模块通信的解耦。</p>
+
+<p>通过这样解耦的方式，如果将来业务复杂了，需要把MeetingModle要分为voiceMeeting和videoMeeting，就可以把MeetingModel再进行横向扩展。其实本质上也是了保持类的简单，避免大量公开的方法。</p>
+
+<p>通过上述的方式，同时视图层和逻辑层，我借鉴了VIPER的架构方式，把原有的类，拆出了10个类左右，各个类代码在200行左右，类变量和公开方法也保持在10个左右，这样对于代码的阅读性大大增加，同时对维护以及扩展功来说成本也会小很多。整个重构做完之后的感觉，就向下图所示:</p>
+
+<p><img src="/images/2021-02-10-5.jpg" alt="img5" /></p>
+
+<h2 id="展望和感悟">展望和感悟</h2>
+
+<p>  上述的代码在重构的过程中也用到了很多设计模式，我这里想表述的是设计模式不是软件架构的银弹。有时候不能为了使用设计模式而过度设计类，还是之前提过的原则，保持代码简单。比如一些简单的业务功能，把所有逻辑都放到一个类中也只要100多行代码时，这时就不要犹豫写一个类就好。不用过度的设计和架构，因为软件架构的原则就是保持代码简单，避免复杂，这时候再用各种设计就有点画蛇贴足了。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

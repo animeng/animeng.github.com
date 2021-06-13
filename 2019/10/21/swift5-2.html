@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Swift5.1编译器诊断系统 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2019/10/21/swift5-2.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Swift5.1编译器诊断系统">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2019/10/21/swift5-2.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">Swift5.1编译器诊断系统</h1>
+  
+  <span class="post-meta">10月 21日, 2019</span><br>
+  
+  <span class="post-meta small">3 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>苹果最近更新的swift5.1的时候，在这篇<a href="https://swift.org/blog/new-diagnostic-arch-overview/">博客</a>介绍了新的诊断系统。其实博客也对苹果的诊断系统原理做了一些简单的分析，理解这个特点，对以后用swift语言做开发，解决一些编译错误，感觉帮助挺大的。</p>
+
+<p>苹果也描述了新的诊断系统的好处，就是不仅仅是报告错误，而是会提供解决问题的方法。在swift5.1之前的诊断系统，出一个错误后就停止诊断，而新的诊断系统会继续诊断后面的错误并提供一些fix建议，可以说是非常智能了。</p>
+
+<p>这么智能的诊断系统，苹果也讲解了他们基本的设计思路，swift语言的诊断系统本质上是基于<a href="https://en.wikipedia.org/wiki/Hindley%E2%80%93Milner_type_system">Hindley-Milner</a>类型推断算法开发的。如果熟悉函数式编程语言的话，就会知道Hindley-Milner类型推断系统是函数式程序设计语言的基石。因为函数式语言大多是表达式结构，在程序编译的时候，计算机来确定表达式中变量类型的合法性，都是靠这个算法保证的。对于这个算法相对来讲彻底理解还是比较复杂的，苹果举了几个简单的实际应用的例子给开发者，也方便开发者之后理解swift这套智能诊断系统。</p>
+
+<h2 id="类型推导算法">类型推导算法</h2>
+
+<p>通过下面这段代码，我们来分析下swift编译器是如何来做语法诊断的</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">foo</span><span class="p">(</span><span class="n">_</span> <span class="nv">str</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">str</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>要分析上面的代码，对于诊断系统的话，大致分为三步</p>
+
+<h3 id="变量类型的分析">变量类型的分析</h3>
+
+<ul>
+  <li>$Str代表的str变量的类型，这其实是Hindley-Milner算法的定义方式，str是作为+调用第一个参数</li>
+  <li>$One代表的是1这个类型，代表的是+调用的第二个参数</li>
+  <li>$Result代表着调用+后的结果类型</li>
+  <li>$Plus代表是+操作符本身的类型,并且这个符号可以被重载。本质上就是函数的调用。</li>
+</ul>
+
+<h3 id="变量的约束">变量的约束</h3>
+
+<ul>
+  <li>$Str &lt;bind to&gt; String 这个表达式是类型推断系统的语法，意思是参数str有一个固定的String类型</li>
+  <li>$One &lt;conforms to&gt; ExpressibleByIntegerLiteral 这代表这个类型要遵循ExpressibleByIntegerLiteral协议，比如Int,Double都是遵循这个协议的</li>
+  <li>$Plus &lt;bind to&gt; disjunction ((String, String) -&gt; String, (Int, Int) -&gt; Int, …) 这个代表的是一个表达式，满足里面这些参数条件，并且可以被重载</li>
+  <li>($Str, $One) -&gt; $Result &lt;applicable to&gt; $Plus 这时候$Result这个类型就是未知的。他将需要上面的表达式，带上二个参数的类型来决定的。</li>
+</ul>
+
+<p>在swift语法解析后，会生成这样的一个树形结构，我们把类型推导的变量约束放到语法树中，就得到如下的图:</p>
+
+<p><img src="/images/constraints-linked-with-exprs.png" alt="图一" /></p>
+
+<h3 id="推断算法执行的过程">推断算法执行的过程</h3>
+
+<p>有了上面对变量和表达式的类型定义和约束之后，下面我们来看下swift语言类型推导的过程</p>
+
+<p>1.首先绑定$Plus这个表达式的第一个表述(String, String) -&gt; String</p>
+
+<p>2.第二步我们就拿($Str, $One) -&gt; $Result上面解析出来的表达式，应用到$Plus这个表达式的约束，这个过程如下:</p>
+
+<ul>
+  <li>首先拿表达式第0个参数String匹配$Str的类型。</li>
+  <li>再拿第一个参数String匹配$One的类型</li>
+  <li>最后就是String类型匹配$Result的类型</li>
+</ul>
+
+<p>3.然后就针对第二步，对类型匹配做判断:</p>
+
+<ul>
+  <li>$Str匹配了String类型</li>
+  <li>$Result类型如果匹配上面的表达式，应该也要分配为String类型</li>
+</ul>
+
+<p>4.现在就剩下$One类型的判断</p>
+
+<ul>
+  <li>从表达式匹配来看$One需要是String类型</li>
+  <li>而前面一步已经确定$One需要 &lt;conforms to&gt; 符合ExpressibleByIntegerLiteral这个协议</li>
+</ul>
+
+<p>5.符合ExpressibleByIntegerLiteral有Int和Double类型，他们都不符合String类型。所以$One的类型约束就出现了歧义</p>
+
+<p>6.尝试$Plus其他表达式(例如 (Int, Int) -&gt; Int)循环上面的1-5步骤</p>
+
+<p>在遍历完所有的情况后，发现都不能满足约束，这时候编译器的推断系统就会报错，通过上面的分析，我们清楚了如何识别错误位置，但是如何帮助诊断系统，判断出来这种情况下如何修改为正确的内容，下面就是苹果给出的一个完整的解决方案。</p>
+
+<h2 id="错误提示解决方案">错误提示解决方案</h2>
+
+<p>swift新的诊断系统会根据上面判断出来的错误位置，给出解决的方法。这个是先前的诊断系统和现在的主要区别，以前的只会告诉你那里错误了，而现在会告诉你怎么更改。例如上面的这个例子，推断系统判断，如果使用$Plus表达式，错误的地方是$One代表的参数类型不能适配ExpressibleByIntegerLiteral协议，我们基于这个错误，可以给出下面两个提示。</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>error: binary operator <span class="s1">'+'</span> cannot be applied to arguments <span class="s1">'String'</span> and <span class="s1">'Int'</span>
+</code></pre></div></div>
+
+<p>还有一个错误提示如下:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>error: argument <span class="nb">type</span> <span class="s1">'String'</span> does not conform to <span class="s1">'ExpressibleByIntegerLiteral'</span>
+</code></pre></div></div>
+
+<p>我们会根据一些规则来选择这两个提示方案中的一个，新的推断系统往往会选择第二个错误提示方案，下面就通过另一个例子再来深入剖析下，具体为啥选择第二个提示。</p>
+
+<h2 id="深入剖析">深入剖析</h2>
+
+<p>当一个错误约束被侦测出来的时候，我们通过捕获下面的信息来fix这个错误:</p>
+
+<ul>
+  <li>哪种类型的错误</li>
+  <li>错误在源码中的位置</li>
+  <li>错误的类型和声明</li>
+</ul>
+
+<p>诊断系统会综合判断上面所有的错误，直到能够给出所有的解决方法，然后就会停止诊断，下面看个例子</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">_</span><span class="p">:</span> <span class="k">inout</span> <span class="kt">Int</span><span class="p">)</span> <span class="p">{}</span>
+
+<span class="k">var</span> <span class="nv">x</span><span class="p">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="nf">foo</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<p>通过上面的分析我们知道错误如何定位了，下面我就简单的列出来步骤</p>
+
+<h3 id="变量类型分析">变量类型分析</h3>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">$</span><span class="kt">X</span> <span class="p">:</span><span class="o">=</span> <span class="kt">Int</span>
+<span class="err">$</span><span class="kt">Foo</span> <span class="p">:</span><span class="o">=</span> <span class="p">(</span><span class="k">inout</span> <span class="kt">Int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span>
+<span class="err">$</span><span class="kt">Result</span>
+</code></pre></div></div>
+
+<h3 id="变量的约束-1">变量的约束</h3>
+
+<p>先看下3个变量类型约束的表达式</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">(</span><span class="err">$</span><span class="kt">X</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="err">$</span><span class="kt">Result</span> <span class="o">&lt;</span><span class="n">applicable</span> <span class="n">to</span><span class="o">&gt;</span> <span class="err">$</span><span class="kt">Foo</span>
+</code></pre></div></div>
+
+<p>($X) -&gt; $Result to (inout Int) -&gt; Void这个表达式的约束，可以让我们推断出下面的约束</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">Int</span> <span class="o">&lt;</span><span class="n">convertible</span> <span class="n">to</span><span class="o">&gt;</span> <span class="k">inout</span> <span class="kt">Int</span>
+<span class="err">$</span><span class="kt">Result</span> <span class="o">&lt;</span><span class="n">equal</span> <span class="n">to</span><span class="o">&gt;</span> <span class="kt">Void</span>
+</code></pre></div></div>
+
+<p>这时候就很容易发现Int不能够适配inout Int这个类型，因此约束推断系统就会记录这个错误位置，变量缺少一个&amp;地址符号。然后根据这个错误，类型诊断系统就会提示需要插入一个&amp;解决这个错误:</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>error: passing value of <span class="nb">type</span> <span class="s1">'Int'</span> to an inout parameter requires explicit <span class="s1">'&amp;'</span>
+foo<span class="o">(</span>x<span class="o">)</span>
+    ^
+    &amp;
+</code></pre></div></div>
+
+<p>下面这个例子是说明swift的诊断系统不会判断出来一个错误后就停止诊断了，而是会继续寻找直到把所有的错误都解决掉，例如:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">_</span><span class="p">:</span> <span class="k">inout</span> <span class="kt">Int</span><span class="p">,</span> <span class="nv">bar</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="p">{}</span>
+
+<span class="k">var</span> <span class="nv">x</span><span class="p">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="nf">foo</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s">"bar"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>上面的错误提示就会有下面这些</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>error: passing value of <span class="nb">type</span> <span class="s1">'Int'</span> to an inout parameter requires explicit <span class="s1">'&amp;'</span>
+foo<span class="o">(</span>x<span class="o">)</span>
+   ^
+    &amp;
+error: missing argument label <span class="s1">'bar:'</span> <span class="k">in </span>call
+foo<span class="o">(</span>x, <span class="s2">"bar"</span><span class="o">)</span>
+      ^
+       bar: 
+</code></pre></div></div>
+
+<h2 id="错误提示改进的例子">错误提示改进的例子</h2>
+
+<p>苹果针对新的诊断系统，给了一些例子，来说明新系统的优点</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">func</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">answer</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">String</span> <span class="p">{</span> <span class="k">return</span> <span class="s">"a"</span> <span class="p">}</span>
+<span class="kd">func</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">answer</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">String</span> <span class="p">{</span> <span class="k">return</span> <span class="s">"b"</span> <span class="p">}</span>
+
+<span class="k">let</span> <span class="nv">_</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">42</span><span class="p">]</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="nf">foo</span><span class="p">(</span><span class="nv">$0</span><span class="p">)</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>先前的系统提示是这样的</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>error: argument labels <span class="s1">'(_:)'</span> <span class="k">do </span>not match any available overloads<span class="sb">`</span>
+</code></pre></div></div>
+
+<p>现在的解决方案提示</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>error: missing argument label <span class="s1">'answer:'</span> <span class="k">in </span>call
+<span class="nb">let </span>_: <span class="o">[</span>String] <span class="o">=</span> <span class="o">[</span>42].map <span class="o">{</span> foo<span class="o">(</span><span class="nv">$0</span><span class="o">)</span> <span class="o">}</span>
+                                 ^
+                                 answer:
+</code></pre></div></div>
+
+<p>如果你想看更多的例子的话可以去<a href="https://swift.org/blog/new-diagnostic-arch-overview/">swift的blog</a></p>
+
+<h2 id="总结">总结</h2>
+
+<p>总之苹果新的诊断系统，能够提供出解决方案，可以更方便开发者快速解决错误。这看起来是相当诱人的，不过从之前苹果对编译器智能提示的优化的体验来看，但愿新的诊断系统，别让我的mac电脑的风扇转动的更厉害，然后所有的提示都罢工的情况再出现了😹。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>深入解析OSX和iOS读后感 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2021/03/13/read-bsd.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="深入解析OSX和iOS读后感">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2021/03/13/read-bsd.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">深入解析OSX和iOS读后感</h1>
+  
+  <span class="post-meta">03月 13日, 2021</span><br>
+  
+  <span class="post-meta small">1 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>自己做了这么久苹果应用的开发，其实还没有认真的看过苹果系统的整个架构。最近看了“深入解析Mac OS X &amp; iOS操作系统”这本书，也算是对自己之前工作的回顾。如果你已经在这个领域从事了很多年，然后再看这个领域的一些基础的理论知识，和你要学习一门新技术而看这方面的书籍，感受是完全不同的。往往我看一些新技术的书籍时，遇到介绍的新知识点，内心的OS：“不过如此么？不就是xx技术加了一个美丽的外壳么？换汤不换药“。而看你一直从事的工作的书籍时，自己的感受是：”原来这个技术点设计的这么美妙啊，自己用了这么多年这个技术，都没理解这个精髓，真是惭愧啊“。内心有种老友重逢的感觉，有很多话想说，所以自己暂且就把读这本书的一些心得写了下来。下面介绍下自己看到的几个技术点的一些感想。</p>
+
+<h2 id="达尔文进化史">达尔文进化史</h2>
+
+<p>看到这个标题，不要误解并不是讲解进化论，而是想回顾下苹果系统从诞生到现在的历程。因为之前经常听说Darwin是苹果系统内核,其实从来没深究过Darwin是从何而来的，之前只是知道”UNIX”、”XNU”、”FreeBSD”但是他们之间又有什么千丝万缕的联系，从来没关心过。从这本书里得知他们之间的历史还是很有趣的，我这里挑几个关键点介绍下。</p>
+
+<p>大名鼎鼎的UNIX内核大家应该都知道，是现代操作系统的鼻祖，1960年左右计算机刚诞生时，为了大家可以共享这个庞然大物，美国电信公司(AT&amp;T)旗下的贝尔实验室研发了一套使用计算机硬件的多任务处理的复杂系统(Uniplexed Information and Computing Service，UnICS)，简称叫做UNIX，里面两个大名鼎鼎的工程师叫做肯·汤普逊和丹尼斯·里奇，这两个人就不多做介绍相信大部人都知道。</p>
+
+<p>讲到这里自己想说一句，在现代的社会里，任何发明都是科学家的梦想和商业世界博弈的结果，科学追逐梦想，商业追求实用型，一实一虚成就了现代的世界。UNIX刚出现的时候是完全免费的给学术机构和大型企业用，但是随着用户量的增多，AT&amp;T公司意识到这玩意可以赚钱了，就不再把源码授权给企业和学术界用了。并且申请了UNIX这个商标，任何系统都不能再叫做UNIX了，导致有很多这方面的专利官司。</p>
+
+<p>之后很多机构都不能使用UNIX系统了，不得已人们根据UNIX内核的设计理念，就做出了很多类似的系统。其中加州大学伯利克分校为了学术研究，就开发了一套伯利克套件(BSD)产品，诞生于学术研究的BSD发展很迅速，根据开源协议的不同，BSD出现了FreeBSD，OpenBSD，NetBSD各种版本。</p>
+
+<p>苹果的Darwin内核就是基于FreeBSD开发出来的，当时很多企业和学术机构，为了避免使用UNIX系统商标被官司缠身，就声明了他们的系统不是Unix，例如苹果就声明自己用的内核是XUN(X not unix),所以Mac系统OSX后面的X也就是从这里由来的。由于苹果的内核其实是开源的BSD发展来的，所以要遵循开源的一些协议，Darwin内核也一直是开源的，只是基于上面开发的软件套件是闭源的。所以苹果系统跟windows系统还是有很大区别的，windows系统的前身是DOS系统，完全是一个闭源的商业化操作系统，没有经历过任何开源的洗礼。</p>
+
+<p>基于UNIX内核设计的开源系统如雨后春笋的发展起来，但是每个系统都是不同的学术机构和企业开发出来的，商业的社会大家都有各种自己的心思，一不小心就触犯了专利，尤其学术界对此非常的反感。为了自由总会有人站出来的，在1983年9月27日时，理查德·斯托曼在麻省理工学院公开发起一个计划。它的目标是创建一套完全自由的操作系统，称为GNU(G is Not Unix)。</p>
+
+<p>GNU计划不仅要造出完全自由免费的操作系统，还要基于系统上造出各种免费的软件套件。但是这个计划是很美好，现实很骨感，在没有商业利益的情况下，GNU组织一直没能开发出来一个完全免费的操作系统。直到1991年，林纳斯·托瓦兹编写出了与UNIX内核兼容的Linux操作系统，之后Linux与GNU结合后，一个完全自由的操作系统正式诞生。许多程序员参与了Linux的开发与修改，也经常将Linux当成开发GNU计划软件的平台。但Linux本身不属于GNU计划的一部分。</p>
+
+<p>据说GNU的Hurd内核现在仍然在开发，还没有发布1.0版本。虽然GNU计划并没有完全的实施完毕，但是开源的计划促进了很多软件的发展，例如shell、mark、vi等一系列开发编辑的软件都是在GNU计划中诞生的。还有大家都知道的Android系统也是基于Linux内核开发的，可以说也是得益GNU计划，同样Android系统也遵循了GNU计划的初衷，所有的内核代码都是开源的。</p>
+
+<p>说来也惭愧，读了这本书之后，才真正的把目前主流的操作系统的前世今生关联起来，之前只是知其然不知所以然。下面也介绍几个读完此书后，自己经常使用但是不知所以然的几个知识点。</p>
+
+<h2 id="魔数">魔数</h2>
+
+<p><code class="highlighter-rouge">chomod +x</code>这个操作我们经常使用，都知道这是告诉操作系统改变一个文件成为可执行文件，但是操作系统怎么识别这个文件是可执行文件那？其实过程很简单，就是会给这个文件打上一个标志。告诉操作系统将这个文件读入内存，然后寻找一个头签名。这个头签名就是”魔数(magic)”。每个操作系统都会定义可执行文件的魔数，然后根据不同的魔数正确加载和解析二进制文件，下面列出常用的一些魔数。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>可执行格式</th>
+      <th>魔数</th>
+      <th>用途</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>PE32/PE32+</td>
+      <td>M2</td>
+      <td>window系统的可执行文件</td>
+    </tr>
+    <tr>
+      <td>ELF</td>
+      <td>\x7FELF</td>
+      <td>Linux和大部分Unix系统的可执行文件，Mac OS不支持</td>
+    </tr>
+    <tr>
+      <td>脚本</td>
+      <td>#!</td>
+      <td>系统内核会寻找#!之后的文本开始执行</td>
+    </tr>
+    <tr>
+      <td>Universal Binary</td>
+      <td>0xcafebabe(小尾顺序) 0xbebafeca(大尾顺序)</td>
+      <td>通用二进制文件 OS X上支持</td>
+    </tr>
+    <tr>
+      <td>Mach-O</td>
+      <td>0xfeedface(32位) 0xfeedfacf(64位)</td>
+      <td>OS X原生二进制文件</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>这里我想说的是，自己经常写脚本的时候默认都写 <code class="highlighter-rouge"><span class="c">#! /bin/bash</span></code>，但是很少去深究为啥要带上<code class="highlighter-rouge">#!</code>这个标志。想一想如果当年开发脚本的大师们用了<code class="highlighter-rouge">#@</code>,可能现在的脚本都要带上这个标志了。虽然是个小小的知识点，但是也能考察出自己学习东西的认真程度。</p>
+
+<h2 id="沙盒机制">沙盒机制</h2>
+
+<p>沙盒机制是苹果很早就具备的能力，尤其是iOS系统，一诞生就有了这个机制，其实在Unix系统下，想实现这个机制还是相对比较容易的，因为Unix系统内核当初开发的时候，就是为了多用户共享使用硬件的资源，共享的前提必须要做好隔离，例如现在的Docker技术就是使用了这个思想，进行容器隔离的。不过苹果使用的方案是不同的，下面就大概了解下苹果系统是怎么完成沙盒机制的。
+沙盒机制上面描述起来简单，但是如果内核支持的不好的话，真正的要实现难度还是很大的，因为现在进程的拦截技术很容易打破这些沙盒能力。BSD内核有一层Mac(mandatory access control)层,是专门用来处理沙盒机制的。用户态的进程在访问操作系统资源的时候，会先进入到Mac层,系统会读取entitlement文件，然后决定此进程的权限，从而分配不同的能力。</p>
+
+<p><img src="/images/read-bsd-system-1.png" alt="img1" /></p>
+
+<p>我们在开发苹果下的应用时，需要通过我们的证书生成entitlement.plist文件，这个文件苹果在官方文档中介绍的比较少，只是说用来提供进程的可访问的能力，其实本质上是苹果用来做沙盒控制的一个手段。苹果会通过Mac层对进程的代码签名进行检查，只有苹果自己颁发的证书的签名才能通过，然后根据entitlement.plist配置授予相应的权限。所以越狱的话，本质上就是要打破内核的Mac层，从而使用户的进程具备系统的root权限。</p>
+
+<blockquote>
+  <p>这里想说一个知识点，就是在iOS下改变一个应用程序权限的时候，例如关闭一个应用程序的麦克风权限，这个程序就需要重启。如果你了解上面苹果实现沙盒机制的原理，就很容易理解，因为权限的分配是在加载程序之前就需要决定的，自然必须要重启应用。</p>
+</blockquote>
+
+<h2 id="内存破坏问题">内存破坏问题</h2>
+
+<p>编程问题中，遇到的最多的两类问题就是内存问题和线程问题。如果能很好的解决这两大类问题，基本90%以上的问题都可以解决。下面就基于这本书的介绍，讨论下这内存问题发生时，如何更好的定位。</p>
+
+<p>内存问题一般包含两类：缓冲区溢出和堆内存破坏。在很多情况下，导致上面崩溃的代码往往相隔甚远，所以从bug出现到程序崩溃往往不在一个时间点，这样就很难定位bug的位置。</p>
+
+<p>苹果系统为了方便定位这些问题，在<code class="highlighter-rouge">malloc</code>操作的时候，允许开发者设置如下的环境变量，便于定位问题。下面的表格列出mac系统提供的相关的内存检测的环境变量。</p>
+
+<p><img src="/images/read-bsd-system-2.png" alt="img1" /></p>
+
+<p>下面介绍下系统的libgmalloc.dylib这个动态库，如何来定位一些内存的bug的。这个库的大致原理就是通过拦截libsystem库的内存分配函数，给分配函数的内存打上不同的标记，从而定位问题。</p>
+
+<ol>
+  <li>
+    <p>给进程分配的每个内存块上加上自定义的数据头，一般包含分配者的函数调用信息，这样当某块内存出问题时方便定位调用堆栈。</p>
+  </li>
+  <li>
+    <p>给进程的每个内存块分配一个自己专有的页上，相邻的页面设置为不可写或者不可访问，这样一旦程序出现bug，例如缓存溢出或者访问了相邻的内存页面时，就会出现bad access的信号出现，这样就可以定位问题了。</p>
+  </li>
+  <li>
+    <p>释放内存块时，解除分配的内存页面的读写权限，这样在过度释放相邻内存块的数据时，同样会引起崩溃的问题。</p>
+  </li>
+</ol>
+
+<p>通过上述的方法可以方便的定位到，是那行代码破坏了进程中的内存结构，不用等到运行到被破坏的结构时才会崩溃。所以本质上xcode的instrument工具，例如检测内存泄漏，用的都是类似于上述的方法。</p>
+
+<h2 id="mach任务概念">Mach任务概念</h2>
+
+<p>严格来讲苹果的系统没有标准的线程的概念，他使用的叫做Mach任务，其实这个数据结构可以看做是线程的概念。同时苹果在上层通过Mach任务也实现了linux的POSIX的线程能力。所以在MAC上也是可以使用Unix下标准的线程接口的。不过苹果开发文档还是建议开发者用苹果自己封装的线程队列(GCD)。</p>
+
+<p>Mach任务是通过消息传递来实现各个任务的通信的，同样异常处理也是通过Mach消息(msg_send)下发的。下面就介绍下mach任务常见的一些异常处理。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#define EXC_BAD_ACCESS // 内存访问异常
+</span>
+<span class="cp">#define EXC_BAD_INSTRUTION //指令执行异常,非法或者未定义的指令
+</span>
+<span class="cp">#define EXC_ARITHMETIC // 算数计算异常
+</span>
+<span class="cp">#define EXC_EMULATION // 模拟指令异常
+</span>
+<span class="cp">#define EXC_SOFTWARE // 软件产生的异常，0-0xFFFF范围内的代码时给硬件的，0x1000-0x1FFF范围内的代码时给操作系统模拟的
+</span>
+<span class="cp">#define EXC_BREAKPOINT // 跟踪或者断点相关的异常
+</span>
+<span class="cp">#define EXC_SYSCALL // 系统调用的异常
+</span>
+<span class="cp">#define EXC_RPC_ALERT // RPC 报警
+</span>
+<span class="cp">#define EXC_CRASH // 异常的系统推出
+</span>
+</code></pre></div></div>
+
+<p>上述这些错误都是早期的MAC系统定义的，其实现在还有很多其他错误没有包含进去，比如abort(系统终止)和segment(内存页错误)，都是操作系统通知进程的错误消息，只有充分了解了这些错误都是什么意思，以及如何发生才能更好的定位问题。</p>
+
+<h2 id="系统崩溃">系统崩溃</h2>
+
+<p>当用户登陆成功时，苹果系统会启动Finder进程而iOS下叫做SpringBoard，这两个都是操作系统的界面GUI。一旦这两个进程崩溃界面的UI就会卡死。</p>
+
+<p>有意思的是，系统内核崩溃时，各个操作系统展示的默认样式是不同的。Linux喜欢将内容导出在黑白控制台上，windows更喜欢EGA的蓝屏风格，而Mac OS X更喜欢黑灰色的半透明画面，这个就是大家熟悉的死亡灰屏，本质上是调用内部的panic()函数，如果感兴趣的可以下载mac的内核，虚拟机上编译下，然后执行panic函数感受下死亡黑屏。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>这本书对于做苹果开发的人员还是很值得一读，里面涉及的很多底层的知识，虽然平时开发很少用到里面的相关代码，但是对了解整个系统的架构，以及将来定位问题很有作用。当然上面只是介绍了这个书的几个知识点，里面还有大量有趣的知识点例如: 进程的优先级策略、如何实现POSIX标准的<code class="highlighter-rouge">poll select</code>、网络utun接口抽象等等。不过从上面几个点中可以看出这本书传递给读者一些基本的理念，就是在平台上开发应用时，不仅要知其然，也要知其所以然。这样才能更好的写出来健壮的程序。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

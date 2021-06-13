@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>UIViewContrller(续） </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2011/08/30/pome-4.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="UIViewContrller(续）">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2011/08/30/pome-4.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">UIViewContrller(续）</h1>
+  
+  <span class="post-meta">08月 30日, 2011</span><br>
+  
+  <span class="post-meta small">2 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>前面说过了viewController的一些基本注意事项。这里针对不同的viewController类，描述一下各自用法的注意事项。至于每种viewController的基本用法，可以参看苹果的官方文档</p>
+<blockquote>
+  <p>View controller Programming Guide for IOS</p>
+</blockquote>
+
+<p>上面对UINavigationController，UITabBarController，UIModelViewController等一些常见的viewController解释的非常清楚，并且官方还专门针对UITableViewController写了一个向导。</p>
+
+<p>先看UINavigationController比较常见的问题。在实际开发中，往往会发现设计的导航条和苹果标准的导航条不一样，毕竟大家都用苹果默认的导航条难免会有视觉疲劳。出现这种情况怎么办？如果仅仅是改变导航条的颜色还好办，如果设计的导航条和苹果默认的导航条大相径庭那就麻烦了。下面就分析下根据设计的导航条跟苹果默认的导航条相差的不同情况，用不同的方法实现。</p>
+
+<ol>
+  <li>
+    <p>如果仅仅改变颜色，并且导航栏中的buttomItem的形状也用苹果自带的形状，那么就很简单了，只要更改tintColor就可以了。</p>
+  </li>
+  <li>
+    <p>如果导航条要增加背景图片，但是这个背景图片的宽和高保持和导航条默认的一样。这样可以考虑用下面的代码实现：</p>
+
+    <div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code>     <span class="n">UIImageView</span> <span class="o">*</span><span class="n">barSeperator</span> <span class="o">=</span> <span class="p">[[</span><span class="n">UIImageView</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithImage</span><span class="p">:[</span><span class="n">cache</span> <span class="nf">retrieveObjectNamed</span><span class="p">:</span><span class="s">@"list_seperator@2x.png"</span><span class="p">]];</span>
+
+     <span class="n">barSeperator</span><span class="p">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">CGRectMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">navigationController</span><span class="p">.</span><span class="n">navigationBar</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">-</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">320</span><span class="p">,</span> <span class="mi">2</span><span class="p">);</span>
+
+     <span class="n">UIImageView</span> <span class="o">*</span><span class="n">barImage</span> <span class="o">=</span> <span class="p">[[</span><span class="n">UIImageView</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithImage</span><span class="p">:[</span><span class="n">cache</span> <span class="nf">retrieveObjectNamed</span><span class="p">:</span><span class="s">@"list_po@2x.png"</span><span class="p">]];</span>
+
+     <span class="n">barImage</span><span class="p">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">CGRectMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">320</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">navigationController</span><span class="p">.</span><span class="n">navigationBar</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">-</span> <span class="mi">2</span><span class="p">);</span>
+
+     <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">navigationController</span><span class="p">.</span><span class="n">navigationBar</span> <span class="nf">addSubview</span><span class="p">:</span><span class="n">barImage</span><span class="p">];</span>
+
+     <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">navigationController</span><span class="p">.</span><span class="n">navigationBar</span> <span class="nf">addSubview</span><span class="p">:</span><span class="n">barSeperator</span><span class="p">];</span>
+
+     <span class="p">[</span><span class="n">barSeperator</span> <span class="nf">release</span><span class="p">];</span>
+
+     <span class="p">[</span><span class="n">barImage</span> <span class="nf">release</span><span class="p">];</span>
+
+</code></pre></div>    </div>
+
+    <p>原理很简单就是在导航条上面加一个背景图片，不过这个方法最好写在- (void)viewWillAppear中，而在viewWillDisappear的时候把这个背景条去掉，这样就不会影响下一个导航条的外观。那么在增加了这个背景条的同时，最好再用自己设计的UIBarButtonItem，因为现再用系统自带的就显的及其不自然。这样就需要你在自己设计的viewcontroller中navigationItem的hidden属性设为YES，然后自己向导航条上增加UIButton就行了，也就是完全不用UIBarButtonItem了，因为这个控件的形状你很难改变。</p>
+  </li>
+  <li>
+    <p>最后就是最离谱的设计，完全背弃苹果导航条的设计规则，导航条的背景，形状和大小都不一样，那么只能用下面的方法了。就是隐藏导航条，然后自己单独设计一个UIView或者UIImageView放上去，只是用到了UINavigationController对UIViewController的导航功能而已。</p>
+  </li>
+</ol>
+
+<p>这里需要指出的是UIViewController类中都会有导航条类的navigationItem的属性，但是这里只读的，你不能给它指定UIBarButtonItem，这个应该只是给开发者提供一个简单接口便于访问。如果要改变还是要进入到UINavigationController中的items获得。</p>
+
+<p>UITableViewController是开发中最常用的一个类。UITableView中单元格的控制往往是难点，根据单元格内容排布的不同，如何选用不同的cell。在”Table View Programming Guide for IOS”都有详细的解释，下面只是针对容易犯错误的地方进行讨论。</p>
+
+<ol>
+  <li>
+    <p>当你使用系统自带的单元格类型的时候如：UITableViewCellStyleSubtitle首先要清楚这个类型的单元格如何布局的。</p>
+
+    <p><img src="/images/pome-4-1.gif" alt="图1" /></p>
+
+    <p>所以有些时候使用这些默认的属性，但是又的按照软件设计的图纸开发。譬如：Image可能设计的比官方指定的要宽很多，可能占用了cell的1／3。你如果用默认属性是怎么都不可能改变图片的宽度的，因为cell中ImageView的属性是readOnly，像这种情况就没有办法必须自定义单元格了。还有就是AccessoryView，如果你用系统自带的单元格属性，同样大小已经限制了，你无论如何都是改变不了的，所以在开发前，分析时一定要考虑这些问题，否则开发的时候会非常的棘手。就像上面说的，如果某个设计和UITableViewCellStyleSubtitle中的布局非常相似，但是就是image宽度不一样，这样如果当初你选择了UITableViewCellStyleSubtitle类型，你就开始纠结吧，无论怎么调节图片的大小都是很难实现出设计图纸的效果。</p>
+  </li>
+  <li>
+    <p>UITableView单元格往往是需要重用的，所以如果这样写代码：</p>
+
+    <div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="k">-</span> <span class="p">(</span><span class="n">UITableViewCell</span><span class="o">*</span><span class="p">)</span><span class="nf">tableView</span><span class="p">:(</span><span class="n">UITableView</span> <span class="o">*</span><span class="p">)</span><span class="nv">tableView</span> <span class="nf">cellForRowAtIndexPath</span><span class="p">:(</span><span class="n">NSIndexPath</span> <span class="o">*</span><span class="p">)</span><span class="nv">indexPath</span><span class="p">{</span>
+
+ <span class="k">static</span> <span class="n">NSString</span> <span class="o">*</span><span class="n">CellIdentifierText</span> <span class="o">=</span> <span class="s">@"CellText"</span><span class="p">;</span>
+
+     <span class="n">UITableViewCell</span> <span class="o">*</span><span class="n">cell</span><span class="o">=</span><span class="nb">nil</span><span class="p">;</span>
+
+     <span class="n">cell</span> <span class="o">=</span> <span class="p">[</span><span class="n">tableView</span> <span class="nf">dequeueReusableCellWithIdentifier</span><span class="p">:</span><span class="s">@"Message"</span><span class="p">];</span>
+
+     <span class="k">if</span> <span class="p">(</span><span class="n">cell</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span> <span class="p">{</span>
+
+         <span class="n">cell</span> <span class="o">=</span> <span class="p">[[[</span><span class="n">UITableViewCell</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithStyle</span><span class="p">:</span><span class="n">UITableViewCellStyleSubtitle</span> <span class="nf">reuseIdentifier</span><span class="p">:</span><span class="s">@"Message"</span><span class="p">]</span><span class="n">autorelease</span><span class="p">];</span>
+
+         <span class="n">UIImageView</span> <span class="o">*</span> <span class="n">imgview</span> <span class="o">=</span> <span class="p">[[</span><span class="n">UIImageView</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithImage</span><span class="p">:[</span><span class="n">UIImage</span> <span class="nf">imageNamed</span><span class="p">:</span><span class="s">@"Message_separator@2x.png"</span><span class="p">]];</span>
+
+         <span class="n">imgview</span><span class="p">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">CGRectMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">53</span><span class="p">,</span> <span class="mi">320</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+
+         <span class="p">[</span><span class="n">cell</span><span class="p">.</span><span class="n">contentView</span> <span class="nf">addSubview</span><span class="p">:</span><span class="n">imgview</span><span class="p">];</span>
+
+         <span class="p">[</span><span class="n">imgview</span> <span class="nf">release</span><span class="p">];</span>
+
+ <span class="k">return</span> <span class="n">cell</span><span class="p">;</span>
+
+ <span class="err">｝</span>
+</code></pre></div>    </div>
+
+    <p>这里增加的UIImageView如果不remove的话，会在所有的单元格中显示，所以如果单元格的布局不同时，一定要慎用重用，不然会发现单元格中的布局乱七八糟的。</p>
+  </li>
+  <li>
+    <p>UITableView经常会用到NSIndexPath这个属性，用来确定单元格的位置，那么你要想获得第三行的单元格实体，你代码会这样写么：</p>
+
+    <div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="n">NSIndexPath</span> <span class="o">*</span> <span class="n">index</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSIndexPath</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithIndex</span><span class="p">:</span><span class="mi">3</span><span class="p">];</span>
+
+ <span class="n">UITableViewCell</span> <span class="o">*</span><span class="n">cell</span> <span class="o">=</span> <span class="p">[</span><span class="n">tableView</span> <span class="nf">cellForRowAtIndexPath</span><span class="p">:</span><span class="n">indexPath</span><span class="p">];</span>
+</code></pre></div>    </div>
+
+    <p>如果你这样写，可以保证程序crash掉。因为NSIndexPath是属于Foundation.framework中的类，代表的是在一颗树中指向某个节点的路径。如下图所示：</p>
+
+    <p><img src="/images/pome-4-2.gif" alt="图2" /></p>
+  </li>
+</ol>
+
+<p>而IOS为NSIndexPath增加了编程的接口，目的是用来适应UITableView对象中，段和行的定位。所以UIKit的API扩展了NSIndexPath。而indexPathForRow:inSection: 这个方法才是创建得UITableView对象中的NSIndexPath。所以在用NSIndexPath不能盲目的就给它初始化，一定要根据不同的情况进行分析，如果是要获得UITableViewCell对象的，一定要用UIKit中扩展的方法。而当你想利用此树存储东西的时候，当然可以使用它初始化的方法。</p>
+
+<p><a href="https://blog.csdn.net/mengtnt/article/details/6733691">原文链接</a></p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

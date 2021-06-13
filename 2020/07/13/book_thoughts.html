@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>程序员的自我修养读后感 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2020/07/13/book_thoughts.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="程序员的自我修养读后感">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2020/07/13/book_thoughts.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">程序员的自我修养读后感</h1>
+  
+  <span class="post-meta">07月 13日, 2020</span><br>
+  
+  <span class="post-meta small">1 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>最近又换了工作，从一个很佛系的公司换到了一个<code class="highlighter-rouge">Ambition</code>的公司。自己也是考虑了很久，担心能不能适应接下来的环境。最后我还是选择了改变，因为在自己的职业生涯里，再大的阻力也抵不过自己的好奇心。在换工作的空档期有些时间，重温了下<code class="highlighter-rouge">程序员的自我修养-链接、装载与库</code>。这本书自己刚毕业那会有看过，当时主要是冲着潘爱民老师的名声来的，毕竟大学他的<code class="highlighter-rouge">数据结构</code>是人人皆知。现在再重新看完这本书，更是深刻感觉到不管掌握了多少新技术，其实都是从这些基础的计算机知识衍生出来的，所以也很推荐给大家看下。下面就自己这些年学习过的一些新技术结合这本书中的观点，分析下底层的一些原理。</p>
+
+<h2 id="变量和函数的符号化">变量和函数的符号化</h2>
+
+<p>书中讲过一个例子c++在引用c语言的库时，由于c++语言会对变量和函数在符号化的时候加入一些辨识符号。所以在c++语言引用c语言的接口时，一定要增加<code class="highlighter-rouge">extern c</code>来声明。表示此处是c语言的变量和接口，在编译器符号化时，不要使用c++的规则，这样在link的时候，才能从c语言库中找到正确的变量和函数的符号。自己曾经在学习swift语言，看到swift语言调用oc语言时需要增加<code class="highlighter-rouge">@objc</code>标志，就想到swift对变量和函数符号化的规则和oc一定是有区别，才需要这种调用规则。而oc在调用c语言时，就完全不用增加任何编译选项，就说明oc的符号化，是和c语言一样的，我们可以打开一个oc的静态库，观察下里面的函数的符号化就会发现其实和c语言一模一样。但是oc在调用c++语言时，就需要改变文件类型为mm，目的就是要告诉编译器，编译时要注意需要用c++规则进行符号化。所以不管什么新语言，想要桥接另一个语言库时，在编译link的时候，符号化一定要适配不同语言，不管java的jni，以及最近很火的flutter框架中dart语言的ffi，都是同样的道理。</p>
+
+<h2 id="并发和锁">并发和锁</h2>
+
+<p>这个是任何软件开发都要了解的技术。以前在学习多线程中，<code class="highlighter-rouge">互斥量</code>、<code class="highlighter-rouge">临界区</code>、<code class="highlighter-rouge">条件变量</code>、<code class="highlighter-rouge">读写锁</code>、<code class="highlighter-rouge">乐观锁</code>、<code class="highlighter-rouge">悲观锁</code> 这些各种概念充斥其中，刚开始接触真的摸不到头脑。其实如果了解最底层的设计原则，再来看这些感念，你会觉得这些都是是基于<code class="highlighter-rouge">原子性操作</code>的不同概念罢了。多线程是可以让程序的汇编指令乱序的执行，如果需要顺序执行某个事情就需要锁。在讲解锁的时候，一般都会说到一个概念原子性，什么是原子性。结合汇编代码，本质上就是一个汇编指令就是具有原子性，也就是说所有的程序指令都是一个个汇编指令组合起来的，指令的最小单元就是一条汇编指令。也就好像是世界万物最小的单元是原子，原子是不能再分割了(虽说现在原子还能分割)，然后就用了原子性来表明这种特性。通过这本书提到的原子性，正好分析下CAS的概念，定义如下:</p>
+
+<blockquote>
+  <p>比较并交换(compare and swap, CAS)，是原子操作的一种，可用于在多线程编程中实现不被打断的数据交换操作，从而避免多线程同时改写某一数据时由于执行顺序不确定性以及中断的不可预知性产生的数据不一致问题。该操作通过将内存中的值与指定数据进行比较，当数值一样时将内存中的数据替换为新的值。</p>
+</blockquote>
+
+<p>其实CAS操作是依赖一条很重要的汇编指令<code class="highlighter-rouge">cmpxchg </code></p>
+
+<blockquote>
+  <p>CMPXCHG r/m,r 将累加器AL/AX/EAX/RAX中的值与首操作数（目的操作数）比较，如果相等，第2操作数（源操作数）的值装载到首操作数，zf置1。如果不等，首操作数的值装载到AL/AX/EAX/RAX并将zf清0</p>
+</blockquote>
+
+<p>这个汇编指令是原子性的，就可以利用这条指令实现<code class="highlighter-rouge">乐观锁</code>,乐观锁就不用阻塞其他线程的指令执行，而是利用cas操作不停的检测共享变量中的数据是否改变，来决定是否执行操作。所以比其他的锁性能要高很多。书中在介绍锁时，引入的汇编指令的原子操作解释，其实就更好的让大家理解各种锁的概念。因为很多不同的语言平台都有一些自己定义的锁，其实万变不离其宗。例如BSD中OSSpinLock锁，其实就是上面所说的乐观锁的概念，在不停的检测共享变量的改变，所以叫做自旋锁。明白了锁基本的设计原理，不管遇到什么概念都可以理解了。</p>
+
+<h2 id="内存映射">内存映射</h2>
+
+<p>在做日志系统的时候，很多人都知道<code class="highlighter-rouge">mmap</code>内存映射可以保证日志文件实时回写到磁盘上，保证不丢失。至于为什么要用这种方式来做，如果看过这本书<code class="highlighter-rouge">内存装载过程</code>章节，就很容易理解。这里先来说下虚拟内存地址，什么是虚拟内存地址，本质上是可执行程序对内部的变量和函数都有一个内存地址分配。在程序还未运行时，还不能完全确定这些数据所装载的真实物理内存位置，所以叫做虚拟内存地址。在程序准备执行时，加载的过程中，就会把这些虚拟内存地址映射到真实的内存空间地址中。这个过程是操作系统自动完成的。</p>
+
+<p>下面就详细解释下我们使用的<code class="highlighter-rouge">mmap</code>，其实在很多操作系统，都会把内存做分页的，也就是真实的物理地址，不会是一连片的，都是分布在不同的页中。有一个概念就要页交换技术，就是把经常不用的内存页交换到磁盘上，等需要的时候再交换回来，这样可以把空闲的内存给优先级更高的应用使用。然后我们程序中使用的<code class="highlighter-rouge">mmap</code>，本质上就是利用这种特性，告诉操作系统这块内存可以映射到磁盘上，这样就节省了内存空间，又可以方便内容保存。</p>
+
+<p>所以我们写下的<code class="highlighter-rouge">mmap</code>这句代码，本质上是利用了操作系统的这种页交换技术特性，把程序的内存地址映射到存储的磁盘上，这样就保证程序退出时，操作系统可以把这块内存交换到磁盘上，从而保证了日志不会在内存中丢失。</p>
+
+<p>这里再多说一下，大多数操作系统包含MacOS都是支持内存交换机制，但是在iOS系统并不支持，其实很多移动设备都不支持内存交换机制。移动设备上的大容量存储器通常是闪存（Flash），它的读写速度远远小于电脑所使用的硬盘，这就导致了在移动设备就算使用内存交换机制，也并不能提升性能。所以<code class="highlighter-rouge">mmap</code>在移动端使用可以节省内存和防止数据丢失，但是却牺牲了数据的访问速度。</p>
+
+<h2 id="栈中的函数">栈中的函数</h2>
+
+<p>每个进程和线程在执行函数时，想必很多人都知道是放在栈中的，这样可以方便实现函数的递归调用。下面举个例子</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="n">n</span> <span class="o">=</span> <span class="n">sum</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">16</span><span class="p">,</span><span class="mi">38</span><span class="p">,</span><span class="mi">53</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>这个函数在加载时在栈中的内存布局如下</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">...</span>
+<span class="n">top</span>          <span class="err">栈顶</span><span class="p">(</span><span class="err">低地址</span><span class="p">)</span>
+<span class="n">ret</span> <span class="n">address</span>  <span class="o">^</span>
+<span class="mi">3</span>            <span class="o">|</span>
+<span class="mi">16</span>           <span class="o">|</span>
+<span class="mi">38</span>           <span class="o">|</span>
+<span class="mi">53</span>           <span class="o">|</span>
+<span class="p">...</span>
+</code></pre></div></div>
+
+<p>这里我想说的是常见的<code class="highlighter-rouge">printf</code>不定参数是如何实现的？因为<code class="highlighter-rouge">printf</code>的参数不仅数量不确定，而且类型也不定，所以<code class="highlighter-rouge">printf</code>需要在格式化字符串中注明参数的类型，要这样调用<code class="highlighter-rouge">printf('this is %d',num)</code>。这样函数参数才能知道自己在栈中占用多少空间，如果一旦将类型描述错误了，就会出现函数内存排列出问题，造成在函数调用时，获取的值发生改变。除了上面一点，栈中函数参数一般是从右向左排列的，好处就是方便计算格式化的第一个字符串参数的值。下面利用书中的一个例子解释。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;stdio.h&gt;
+</span><span class="kt">int</span> <span class="nf">main</span><span class="p">()</span> 
+<span class="p">{</span>
+    <span class="n">printf</span><span class="p">(</span><span class="s">"%f%d%c</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">166</span><span class="p">,</span><span class="sc">'a'</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>在这个程序里,printf的第一个输出参数是一个int（4个字节），而我们告诉printf它是一个double（8字节以上），因此printf的输出会错误，由于printf在读取double的时候实际造成了越界，因此后面几个参数的输出也会失败。</p>
+</blockquote>
+
+<p>在学习很多弱类型语言中，编译器都有一个很重要的能力<code class="highlighter-rouge">类型推断</code>。如果函数的参数类型没有确定，其实是无法真正装载运行的，需要利用语言类型的推断功能，在编译链接时确定了参数类型后，才能真正的加载运行。所以你在学习一门新的弱类型语言时，你就理解为什么函数的参数需要类型推断确定类型后才能运行。</p>
+
+<h2 id="系统调用">系统调用</h2>
+
+<p>下面我拿一个很简单代码来描述下系统调用的过程</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="cp">#include &lt;iostream&gt;
+</span> 
+<span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+ 
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span> <span class="p">)</span>
+<span class="p">{</span>
+   <span class="kt">char</span> <span class="n">name</span><span class="p">[</span><span class="mi">50</span><span class="p">];</span>
+ 
+   <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"请输入："</span><span class="p">;</span>
+   <span class="n">cin</span> <span class="o">&gt;&gt;</span> <span class="n">name</span><span class="p">;</span>
+   <span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">"你的输入是： "</span> <span class="o">&lt;&lt;</span> <span class="n">name</span> <span class="o">&lt;&lt;</span> <span class="n">endl</span><span class="p">;</span>
+ 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>在操作系统中，程序运行时本身没有权利访问系统资源的，因为系统资源有限，有可能被很多程序同时访问。因此需要系统加以保护，阻止应用程序直接访问，例如上面的键盘输入和输出，其实是IO操作。当程序调用<code class="highlighter-rouge">cin &gt;&gt; name</code>时，首先会向操作系统申请一个中断，然后操作系统根据应用的权限判断是否有操作IO的权限，如果有，就会从用户模式切换到内核模式，然后操作系统会把这个操作注册在中断向量表中。cpu就会暂停当前执行的代码，根据中断的中断号，在中断向量表中找到对应的中断处理程序，上面也就是键盘输入程序，调用它。中断处理程序执行完成后，cpu会继续执行之前的代码，完成内核模式切换到用户模式。</p>
+
+<p>这里要说下在实际执行中断向量函数之前，cpu首先还要进行函数栈的切换，用户态和内核态使用的是不同的函数栈，两者负责各自的函数调用，互不干扰。此外，寄存器SS的值还应该指向当前栈所在的内存页里面。下面引用书中描述的用户栈如何切换为内核栈然后再切换回来的过程。</p>
+
+<ol>
+  <li>保存当前的ESP(堆栈栈顶指针)、SS(堆栈段寄存器)的值到内核的栈中。</li>
+  <li>然后ESP、SS的值设置为内核栈的相应的值。</li>
+  <li>恢复原来的ESP、SS的值切换到用户态。</li>
+</ol>
+
+<p>所以在程序崩溃的时候，会发现应用程序需要切换到内核态然后判断出错，再给应用程序发送崩溃指令，然后切换到用户态后接收到崩溃指令，这时崩溃的堆栈信息就是在此时抛出的，最后程序再崩溃。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>过了几年，重新回顾下一本书，最大的收获是，结合这几年新获得的一些能力和书中的一些理论做一些对比，会有一种豁然开朗的感觉。其实一本好书的意义就在于不管经历了多少年，里面的道理总是可以拿来反复验证的。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

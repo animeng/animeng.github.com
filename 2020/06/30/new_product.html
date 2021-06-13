@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>浅谈软件开发的三个特点 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2020/06/30/new_product.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="浅谈软件开发的三个特点">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2020/06/30/new_product.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">浅谈软件开发的三个特点</h1>
+  
+  <span class="post-meta">06月 30日, 2020</span><br>
+  
+  <span class="post-meta small">1 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>最近大老板让开发一个很看好的产品，当然大老板想要开发的产品，大家都一定觉得是有前途的产品。经过辛苦的996了2个月开发，终于做出来了第一个版本。现在自己回过头来，总结下这个产品开发的整个过程，有值得学习的地方，也有引以为戒的地方。总体来讲，这个项目并不是很成功，甚至在自己看来是有些失败的。当然我作为项目里面ios的负责人，肯定有不可推卸的责任，一个很重要的原因，自己对产品本身idear还有开发的过程个人并不认同。自己当然也会总结下，遇到这种赶鸭子上架，不得不做的产品时，一些心得体验。</p>
+
+<p>自己从事软件开发也有不少年头了，大大小小的产品也做了10几个。领悟到一个心得是，开发产品一定要有一个可持续发展的心态，切记不能操之过急，想要一口吃个胖子。因为往后开发产品的日子还长，如果因为开发一款产品，把大家的心态搞的崩溃，非常得不偿失。但是这对于急于要做一款要爆红的产品的负责人来讲，可持续发展是什么？肯定是放在最低优先级考虑的，恨不得明天出原型，后天出产品。产品带头人有激情是很好，如果能够感染给大家就完美。但是就怕一个人自high就很可怕。所以在开发一个新产品之前，团队的心态一定要齐心协力，用大老板的一个词叫热爱。如果大家真的是热爱这个产品，也就不必规定新产品开发必须晚上11点之后回去，周末来加班。因为遇到问题大家甚至会在睡觉的时候，突然想起来去解决，这就是心态的问题。强制规定规则的原因，往往是解决大家没兴趣但是又不得不做的事情。但是不可否认，这种做法有时候会成功，不过在我看来，这种从来不叫成功，叫做撞大运。个人理想的成功是，做一些自己感兴趣的事情，同时又能帮助到别人，正如自己很喜欢的一句俗语叫<code class="highlighter-rouge">我为人人，人人为我。</code>成功`这个词在100个人眼里有100个看法。这里就不再扯了，否则就有点离题远了。</p>
+
+<p>下面就讲下开发这个产品，遇到的三个问题，我这段时间在思考这三个问题的时候，总喜欢同CAP定理来作比较。这里简单对CAP定理做个介绍.</p>
+<blockquote>
+  <p>CAP定理，又被称作布鲁尔定理,它指出对于一个分布式计算系统来说，不可能同时满足以下三点： 一致性 可用性 分区容错性 根据定理，分布式系统只能满足三项中的两项而不可能满足全部三项。理解CAP理论的最简单方式是想象两个节点分处分区两侧。允许至少一个节点更新状态会导致数据不一致，即丧失了C性质。如果为了保证数据一致性，将分区一侧的节点设置为不可用，那么又丧失了A性质。除非两个节点可以互相通信，才能既保证C又保证A，这又会导致丧失P性质。</p>
+</blockquote>
+
+<p><img src="/images/rapidly-1.jpg" alt="CAP定理" /></p>
+
+<p>下面来看下，我们产品立项之初，产品想要达到的三个特点</p>
+
+<ul>
+  <li>
+    <p>开发速度快，必须满足老板的需求短时间内产品做出来。这个无可厚非，因为很多产品都有一个红利期的，老板更多是基于市场的情况来定产品的周期的。</p>
+  </li>
+  <li>
+    <p>稳定可用性，这往往是产品经理最看重的特点，就是我设计的产品一定要保证高还原性，高可用性，当然软件稳定是必不可少的。</p>
+  </li>
+  <li>
+    <p>可复用性，这是软件的开发人员最希望看到的事情，可复用性强其实代表软件设计的一个很重要的原则DRY，不要重复造轮子是每个开发人员天天挂在嘴边的事情。</p>
+  </li>
+</ul>
+
+<p>当然满足这三个特点是所有软件开发都追求的，那么问题来了，同时满足这三个条件的可能性有多大，我下面就根据自己亲自经历的开发经验来谈一下。</p>
+
+<p><img src="/images/rapidly-2.jpg" alt="项目开发" /></p>
+
+<p>从上面的描述就可以很容易看出这三个特点其实是有优先级的<code class="highlighter-rouge">开发速度&gt;稳定可用性&gt;可复用性</code>。在国内商业环境下，公司大多数都是产品驱动的，很自然技术需求放到优先级最低的位置。不过作为一个有理想有追求的开发人员，当然也不想简单放弃这个特点。</p>
+
+<h2 id="rapidly">Rapidly</h2>
+
+<p>为了满足老板要求1个半月内完成项目的需求，产品在立项的时候，就定了996住公司办公的规矩。很多开发人员听到这个着实有点蒙。这是国内软件开发很常见的一个做法，延长开发时间。我个人认为，开发人员随着开发投入时间的增加都有一个边际效益的，达到一定的值，再增加时间也不会产出成果，反而会出现其他问题。同样增加开发人数也是一样的，人数的增加同样有边际效益的，尤其软件开发初期，因为需求往往比较少，直接投入很多人来开发造成大家都没有事情干。所以上文中，我才提出软件开发一定是一个可持续发展的过程。要根据不同的阶段安排不同的人员有序的开发出来产品。想一口气吃个胖子还是很难的。我们开发的小团队大概在10个人左右，其实对于前期来讲算是足够了。但是我想说的是，为了我们软件的稳定性，我们服务器全部采用了中台化的方案。下面就开始说下稳定可用性。</p>
+
+<h2 id="rotustness">Rotustness</h2>
+
+<p>中台化好处当然很多，第一服务稳定，中台服务经历了好多产品的验证，稳定性肯定比重新开发一个功能要好。其次也”节省”了服务器人员的开发时间,这里的节省我打了引号下面会分析。好处说完就来分析下弊端，首先小团队开发的目的是追求效率，就是降低团队之间的沟通成本，因为大家都聚在一起讨论也方便。但是引入了中台后，就让小团队开发的优势完全丧失了，大大增加和中台的沟通成本。造成很多中台的人员入住到我们团队帮忙解决问题，其实小团队高效率的优势荡然无存。自然节省开发时间也是异想天开了，也违背了Rapidly这个特点。这里我举个例子，因为我们的IM通信服务使用中台化的方案，中台IM并不关心用户的信息，只关心IM消息，造成中台传递给客户端的IM消息无法带上用户的个人信息，这样客户端每次需要同步业务服务器的数据，就造成了开发过程中很多数据的不稳定，同时浪费了大量的调试时间。尤其为了满足我们产品的一些特殊需求，中台IM那里也要对一些功能进行改造，造成了项目很多不确定因素，所以一个项目早期为了稳定过早的引入中台化，开发效率会大大折扣。这里就可以看出来Rapidly和Rotustness之间的矛盾性了。</p>
+
+<h2 id="reuseability">Reuseability</h2>
+
+<p>为了可复用性，我们项目采用的是组件式开发。可复用性有一个简单的原则，就是拆分的颗粒度越小，可复用性越强。这个是显而易见的。好处我们不赘述了，上面已经说过。我这里主要分析下问题。我们这个项目第一个版本大概拆分出了20几个组件。前期主要2个人开发，在维护组件的接口问题以及静态化编译问题方面，前期需要投入大量的成本，对于快速迭代的项目来讲其实非常不适合。当项目规模大到一定程度时，组件化可以实现物理隔离，大大减少开发人员之前代码的冲突。可是当项目还在初期，组件化只会让维护的成本大大的高于开发人员实际投入开发的成本，并且由于小团队开发人员有限，往往会造成一个人维护很多组件库，这种切换的成本也会很高，大大降低了开发效率。另外一个隐形成本时，由于很多库是作为静态库引入的，调试起来当然没有源码来的直接，组件化造成了调试代码的成本有所提高。并且每个组件为了抽离出来，功能都相对通用，往往实现不了一些产品特质的功能，会造成一定的稳定性问题。比如我在使用相机组件的时候，由于产品UI做了一些特殊定制，需要实现到组件中，间接上造成了基础组件的通用性丧失。所以为了实现某个特定功能，是要适当放弃已有的组件，强行接入只会得不偿失。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>所以从自己这个项目的开发经验来讲，这三个特点想要完美结合，并不是一蹴而就的。需要在不同的阶段采取不同的手段。中台化固然是好，如果项目对开发时间要求很高的时候，中台化的适当放弃，业务服务器来接管大部分的需求，可以大大提高开发效率。组件化开发当然在提高软件的复用性方面很强，他同样和开发时间有一些不可调和的矛盾。如果前期人力非常充沛，其实组件化开发，在提供软件可用性方面还是挺有帮助的，但是在开发人员有限的情况下，需要适当放弃。所以并不是说这三个特点，软件开发没法结合，只是说我们要在恰当的时间，选择恰当的手段，这样就可以真正达到我们软件开发的最高境界。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

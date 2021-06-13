@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>SimpleCoreData实践 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2020/09/14/coredata-swift.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="SimpleCoreData实践">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2020/09/14/coredata-swift.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">SimpleCoreData实践</h1>
+  
+  <span class="post-meta">09月 14日, 2020</span><br>
+  
+  <span class="post-meta small">7 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>面向协议编程是Swift语言的一个很大的特点，wwdc中有一节经典的Session<a href="https://developer.apple.com/videos/play/wwdc2015/408/">面向协议编程</a>对Swift这个语法特性做了详细的分析。下面分享的内容主要是利用Swift面向协议编程特性，封装CoreData数据库的API。至于为何要选择CoreData数据库也是因为Coredata很多API其实对于初学者非常不友好，也是想通过Swift语言的一些优秀特性来简化API的操作，也特意为此起了一个名字叫SimpleCoredata。</p>
+
+<h2 id="coredata的基本思想">CoreData的基本思想</h2>
+
+<p>CoreData核心思想就是，操控数据库时，避免写繁琐的sql语句，而用更友好的对象操控的方式来使用数据库。CoreData如果你不太了解的话，建议看下苹果的<a href="https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/CoreData/index.html#//apple_ref/doc/uid/TP40001075-CH2-SW1">官方文档</a>。这篇博客并不会对CoreData进行详细的讲解，我主要是想分享下如何利用Swift语言的一些特性设计合理的API。</p>
+
+<p>CoreData虽然说可以简化写代码的量，但是也有很多负面问题，比如coredata对象操控造成没办法很好的指定主键，保证数据唯一性时要做一些过多的操作。还有对象模型合并时，需要写大量的合并代码，以及读写性能的问题等等。其实业界对CoreData的吐槽也很多，对于一些大型的项目确实Coredata还是有一些坑存在。</p>
+
+<p>这几年苹果的开发者大会经常有CoreData的相关Session，也在不停的优化和改善CoreData的体验。如果想使用CoreData数据库作为项目开发，建议最好观看下<a href="https://developer.apple.com/videos/play/wwdc2018/224/">Core Data Best Practices</a>这个session，里面的讲解对CoreData优化方面都有详细的解释。之后你看完这篇文章就会发现，其实用CoreData操作数据库存储，可以如此简单，只要几行代码即可，所以你想要做一些小项目使用到数据库时，CoreData还是蛮合适的。</p>
+
+<p>好了暂时对CoreData的解释就这么多了，下面开始分享下Swift面向协议编程的思想了。</p>
+
+<h2 id="swift的面向协议编程">Swift的面向协议编程</h2>
+
+<p>首先解释下为什么苹果要提出面向协议编程，其实跟OOP遇到的问题有很大的关系，由于现在很多项目越来越复杂，设计类的继承结构非常的深，造成开发者阅读起来比较困难，并且还经常会出现修改了一个子类的方法，莫名其妙的影响到了其他类的实现。</p>
+
+<p>在OOP中为了解决此问题使用了很多设计模式。其实设计模式大多是利用组合、代理、装饰来减弱继承过多的问题。设计模式本质上是迫不得已才引入的，虽然很有效但是大家必须要遵守设计模式的规则去实现代码。可是如果大家不遵守这个规则，语言层面也不会报错，就会造成之后代码的可维护性越来越差。为了语言层面上解决这些问题，就出现面向协议编程(POP)。Swift语言也就是顺应了这个潮流。</p>
+
+<h3 id="extension用法">extension用法</h3>
+
+<p>下面我结合代码来说下Swift的protocol中extension用法是如何避免继承的。先来看下OOP编程中为了重用一个类的方法，往往用如下的写法:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">class</span> <span class="kt">ParentClass</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">learnSwift</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"learn swift"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">class</span> <span class="nv">childClass</span><span class="p">:</span><span class="kt">ParentClass</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">advanceCourse</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nf">learnSwift</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>使用swift语言protocol协议的extension语法特性，可以扩展一个方法的实现就可以这样写。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">protocol</span> <span class="kt">ParentProtocol</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">learnSwift</span><span class="p">()</span>
+<span class="p">}</span>
+
+<span class="kd">extension</span> <span class="kt">ParentProtocol</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">learnSwift</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"learn swift"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">class</span> <span class="nv">childClass</span><span class="p">:</span><span class="kt">ParentProtocol</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">advanceCourse</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nf">learnSwift</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>可以看出来，代码量有一定增加，但是把<code class="highlighter-rouge">learnSwift</code>作为一个公共的方法定义到接口中，明显比这个方法隐藏在父类中，增加了可读性。下面再来看一段代码。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">protocol</span> <span class="kt">FatherProtocol</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">weight</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">CGFloat</span>
+<span class="p">}</span>
+
+<span class="kd">extension</span> <span class="kt">FatherProtocol</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">weight</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">CGFloat</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">60</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">protocol</span> <span class="kt">MatherProtocol</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">height</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">CGFloat</span>
+<span class="p">}</span>
+
+<span class="kd">extension</span> <span class="kt">MatherProtocol</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">height</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">CGFloat</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">175</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">class</span> <span class="kt">PersonClass</span><span class="p">:</span><span class="kt">FatherProtocol</span><span class="p">,</span><span class="kt">MatherProtocol</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="kt">BMI</span><span class="p">()</span> <span class="p">{</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"BMI index height </span><span class="se">\(</span><span class="nf">height</span><span class="p">()</span><span class="se">)</span><span class="s">, weight </span><span class="se">\(</span><span class="nf">weight</span><span class="p">()</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>从上面的使用可以看出，协议和扩展功能可以解决横向多态问题。如果是OOP编程的话，想把一个父类拆分，往往的做法是父类再增加一个父类，造成继承越来越深。现在利用Swift语言的特性就可以用组合的方式提炼出来公共方法，然后进行横向扩展，代码可读性会大大增加。</p>
+
+<h3 id="associatedtype的使用">associatedtype的使用</h3>
+
+<p>相对于OOP类对象，接口中往往缺少实例变量的概念。所以类中的实例变量如果需要重用的话，在protocol中应该如何设计哪？这就要利用Swift语法protocol的另一个特性associatedtype。这个就相当于给协议定义了一个公共的实例变量。下面看个例子</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">protocol</span> <span class="kt">Container</span> <span class="p">{</span>
+    <span class="kd">associatedtype</span> <span class="kt">Item</span><span class="p">:</span> <span class="kt">Equatable</span>
+    <span class="k">mutating</span> <span class="kd">func</span> <span class="nf">append</span><span class="p">(</span><span class="n">_</span> <span class="nv">item</span><span class="p">:</span> <span class="kt">Item</span><span class="p">)</span>
+    <span class="k">var</span> <span class="nv">count</span><span class="p">:</span> <span class="kt">Int</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span>
+    <span class="nf">subscript</span><span class="p">(</span><span class="nv">i</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Item</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这个协议是所有集合类都要实现的，因为集合类都要存储实例变量，所以<code class="highlighter-rouge">associatedtype Item</code>就定义了公共的实例变量。然后所有实现的类用模板语法来定义就可以达到重用的目的,例如Stack的定义。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">struct</span> <span class="kt">Stack</span><span class="o">&lt;</span><span class="kt">Element</span><span class="o">&gt;</span><span class="p">:</span> <span class="kt">Container</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">items</span> <span class="o">=</span> <span class="p">[</span><span class="kt">Element</span><span class="p">]()</span>
+    <span class="k">mutating</span> <span class="kd">func</span> <span class="nf">push</span><span class="p">(</span><span class="n">_</span> <span class="nv">item</span><span class="p">:</span> <span class="kt">Element</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">items</span><span class="o">.</span><span class="nf">append</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">mutating</span> <span class="kd">func</span> <span class="nf">pop</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Element</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">items</span><span class="o">.</span><span class="nf">removeLast</span><span class="p">()</span>
+    <span class="p">}</span>
+
+    <span class="k">mutating</span> <span class="kd">func</span> <span class="nf">append</span><span class="p">(</span><span class="n">_</span> <span class="nv">item</span><span class="p">:</span> <span class="kt">Element</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="nf">push</span><span class="p">(</span><span class="n">item</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="k">var</span> <span class="nv">count</span><span class="p">:</span> <span class="kt">Int</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">items</span><span class="o">.</span><span class="n">count</span>
+    <span class="p">}</span>
+    <span class="nf">subscript</span><span class="p">(</span><span class="nv">i</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Element</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">items</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>其实associatedtype的很多概念设计到了Swift模板语法的特性，如果要深入了解可以看下<a href="https://docs.swift.org/swift-book/LanguageGuide/Generics.html">swift Generics语法</a>官方文档。</p>
+
+<h2 id="simplecoredata实践">SimpleCoreData实践</h2>
+
+<p>上面讲了这么多铺垫，下面说下<code class="highlighter-rouge">SimpleCoreData</code>框架的实践，首先看下这个框架的UML类图结构。
+<img src="/images/simple-coredata.jpg" alt="UML1" /></p>
+
+<p>从类图里面可以看出来，<code class="highlighter-rouge">CoreDataStroage</code>、<code class="highlighter-rouge">NSManagedObjectContext</code>、<code class="highlighter-rouge">NSManagedObject</code>、<code class="highlighter-rouge">CoreDataObservable</code>这几个类是协议的真正实现，将来如果替换成其他类型的数据库，上层protocol的设计可以不用改变，方便了底层的替换。其实这在OOP中是运用了设计模式的一个重要原则依赖接口，不依赖实现(IOC)。</p>
+
+<p>这里就简单说下Objective-c语言中实现IOC的方法，往往需要一个容器来记录哪些接口被实现了，因此要定义一个<code class="highlighter-rouge">IOCContainer</code>的共有类，然后通过<code class="highlighter-rouge">registorComplement</code>方法把所有实现对应的<code class="highlighter-rouge">Protocol</code>接口，注册到<code class="highlighter-rouge">IOCContainer</code>中。然后上层代码的调用都使用<code class="highlighter-rouge">Protocol</code>的方法，这样就实现了接口依赖。Objective-c为何用这么麻烦的方法实现，显然是因为语法上不支持这种特性，并且这样实现容易出现的问题是，假如有一些<code class="highlighter-rouge">protocol</code>的实现没有注册到Container中时，这个问题不容易被发现，一旦上层调用就容易崩溃。</p>
+
+<p>下面看下Swift如何实现这个设计模式的，这里可能要用到Swift一个新的语法<a href="https://docs.swift.org/swift-book/LanguageGuide/OpaqueTypes.html">OpaqueTypes</a>。这个是通用类型定义，具体我们看下面的代码。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">Storage</span><span class="p">:</span><span class="kt">CustomStringConvertible</span><span class="p">,</span><span class="kt">Equatable</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">storePath</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">URL</span>
+    <span class="k">var</span> <span class="nv">context</span><span class="p">:</span> <span class="kt">Context</span><span class="o">!</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="kt">CoreDataStorage</span><span class="p">:</span> <span class="kt">Storage</span> <span class="p">{</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">storeFileName</span><span class="p">:</span> <span class="kt">String</span>
+    <span class="kd">private</span> <span class="k">var</span> <span class="nv">mainContext</span><span class="p">:</span> <span class="kt">Context</span><span class="o">!</span>
+    <span class="kd">required</span> <span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">objectModelName</span><span class="p">:</span><span class="kt">String</span><span class="p">,</span><span class="nv">fileName</span><span class="p">:</span><span class="kt">String</span><span class="p">,</span><span class="nv">bundle</span><span class="p">:</span><span class="kt">Bundle</span><span class="p">?</span> <span class="o">=</span> <span class="kt">Bundle</span><span class="o">.</span><span class="n">main</span><span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// todo</span>
+    <span class="p">}</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">context</span><span class="p">:</span> <span class="kt">Context</span><span class="o">!</span><span class="p">{</span>
+        <span class="k">return</span> <span class="n">mainContext</span>
+    <span class="p">}</span>
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">storePath</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">URL</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kt">URL</span><span class="p">(</span><span class="nv">fileURLWithPath</span><span class="p">:</span> <span class="nf">documentsDirectory</span><span class="p">())</span><span class="o">.</span><span class="nf">appendingPathComponent</span><span class="p">(</span><span class="n">storeFileName</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">static</span> <span class="kd">public</span> <span class="kd">func</span> <span class="nf">openDB</span><span class="p">(</span><span class="nv">objectModelName</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">dbName</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kd">some</span> <span class="kt">Storage</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="k">let</span> <span class="nv">db</span> <span class="o">=</span> <span class="kt">DBFactory</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">containers</span><span class="p">[</span><span class="n">dbName</span><span class="p">]</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">db</span>
+    <span class="p">}</span>
+    <span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="nf">synchronized</span><span class="p">(</span><span class="n">lock</span><span class="p">,</span> <span class="p">{</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">CoreDataStorage</span> <span class="k">in</span>
+        <span class="k">let</span> <span class="nv">db</span> <span class="o">=</span> <span class="kt">CoreDataStorage</span><span class="p">(</span><span class="nv">objectModelName</span><span class="p">:</span> <span class="n">objectModelName</span><span class="p">,</span> <span class="nv">fileName</span><span class="p">:</span> <span class="n">dbName</span><span class="p">)</span>
+        <span class="kt">DBFactory</span><span class="o">.</span><span class="n">manager</span><span class="o">.</span><span class="n">containers</span><span class="p">[</span><span class="n">dbName</span><span class="p">]</span> <span class="o">=</span> <span class="n">db</span>
+        <span class="k">return</span> <span class="n">db</span>
+    <span class="p">})</span>
+    <span class="k">return</span> <span class="n">result</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">some Storage</code>定义了实现<code class="highlighter-rouge">Storage</code>协议这一类型的返回对象，通过这个语法就可以把所有的实现都封装起来，只暴露接口给上层。然后上层的调用只要简单的一行代码就可以搞定。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">database</span><span class="p">:</span><span class="kd">some</span> <span class="kt">Storage</span> <span class="o">=</span> <span class="kt">DBFactory</span><span class="o">.</span><span class="nf">openDB</span><span class="p">(</span><span class="nv">objectModelName</span><span class="p">:</span> <span class="s">"SimpleDataBase"</span><span class="p">,</span> <span class="nv">dbName</span><span class="p">:</span> <span class="s">"TestCoreData"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>这样底层数据库的实现替换了也不会影响上层的代码。<strong>注意我上面的代码是简化了框架中的实现，具体的实现要看下源码，会复杂一些但是思想是一样的。</strong></p>
+
+<h3 id="entity实践">Entity实践</h3>
+
+<p>针对之前提到的Swift协议中extension用法，这里看下<code class="highlighter-rouge">SimpleCoreData</code>中时如何应用的。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">Entity</span><span class="p">:</span><span class="kt">Equatable</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">primeKey</span><span class="p">:</span><span class="kt">String</span> <span class="p">{</span><span class="k">get</span><span class="p">}</span>
+    <span class="kd">func</span> <span class="nf">syncDictionary</span><span class="p">(</span><span class="n">_</span> <span class="nv">jsonObject</span><span class="p">:</span> <span class="p">[</span><span class="kt">String</span><span class="p">:</span><span class="kt">Any</span><span class="p">])</span>
+<span class="p">}</span>
+
+<span class="kd">public</span> <span class="kd">func</span> <span class="o">==</span> <span class="o">&lt;</span><span class="kt">T</span><span class="p">:</span><span class="kt">Entity</span><span class="o">&gt;</span><span class="p">(</span><span class="nv">lhs</span><span class="p">:</span> <span class="kt">T</span><span class="p">,</span> <span class="nv">rhs</span><span class="p">:</span> <span class="kt">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="n">lhs</span><span class="o">.</span><span class="n">primeKey</span> <span class="o">==</span> <span class="n">rhs</span><span class="o">.</span><span class="n">primeKey</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>数据库存储的对象，很重要的一个属性就是<code class="highlighter-rouge">primeKey</code>。往往在比较两个对象是否一样的时候，只要<code class="highlighter-rouge">primeKey</code>一致就可以了。所以Entity协议就把比较操作抽离出来作为一个公共方法。而<code class="highlighter-rouge">syncDictionary</code>这个方法是把数据存储到数据库中常用的手段，这里就需要实现的类完成这个操作了。</p>
+
+<h3 id="dbobservable实践">DBObservable实践</h3>
+
+<p>数据库存储中，上层经常会用到一个方法，就是当存储的数据变化时，通知上层做一些UI方面的刷新。下面就来看下如何利用associatedtype把数据库这个公共操作抽离出来。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">DBObservable</span> <span class="p">{</span>
+    <span class="kd">associatedtype</span> <span class="kt">Elment</span><span class="p">:</span><span class="kt">Entity</span>
+    <span class="nf">init</span><span class="p">(</span><span class="nv">context</span><span class="p">:</span><span class="kt">Context</span><span class="p">)</span>
+    <span class="kd">func</span> <span class="nf">observer</span><span class="p">(</span><span class="n">_</span> <span class="nv">closure</span><span class="p">:</span><span class="kd">@escaping</span> <span class="p">([</span><span class="kt">StorageDataChange</span><span class="o">&lt;</span><span class="kt">Elment</span><span class="o">&gt;</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span>
+<span class="p">}</span>
+
+<span class="kd">public</span> <span class="kd">enum</span> <span class="kt">StorageDataChange</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">:</span><span class="kt">Entity</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="nf">update</span><span class="p">(</span><span class="kt">T</span><span class="p">)</span>
+    <span class="k">case</span> <span class="nf">delete</span><span class="p">(</span><span class="kt">T</span><span class="p">)</span>
+    <span class="k">case</span> <span class="nf">insert</span><span class="p">(</span><span class="kt">T</span><span class="p">)</span>
+    <span class="k">case</span> <span class="nf">fetch</span><span class="p">(</span><span class="kt">T</span><span class="p">)</span>
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">object</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">T</span> <span class="p">{</span>
+        <span class="k">switch</span> <span class="k">self</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="o">.</span><span class="nf">update</span><span class="p">(</span><span class="k">let</span> <span class="nv">object</span><span class="p">):</span> <span class="k">return</span> <span class="n">object</span>
+        <span class="k">case</span> <span class="o">.</span><span class="nf">delete</span><span class="p">(</span><span class="k">let</span> <span class="nv">object</span><span class="p">):</span> <span class="k">return</span> <span class="n">object</span>
+        <span class="k">case</span> <span class="o">.</span><span class="nf">insert</span><span class="p">(</span><span class="k">let</span> <span class="nv">object</span><span class="p">):</span> <span class="k">return</span> <span class="n">object</span>
+        <span class="k">case</span> <span class="o">.</span><span class="nf">fetch</span><span class="p">(</span><span class="k">let</span> <span class="nv">object</span><span class="p">):</span> <span class="k">return</span> <span class="n">object</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">isDeletion</span><span class="p">:</span> <span class="kt">Bool</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">case</span> <span class="o">.</span><span class="n">delete</span> <span class="o">=</span> <span class="k">self</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">true</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="kc">false</span>
+    <span class="p">}</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">isUpdate</span><span class="p">:</span> <span class="kt">Bool</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">case</span> <span class="o">.</span><span class="n">update</span> <span class="o">=</span> <span class="k">self</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">true</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="kc">false</span>
+    <span class="p">}</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">isInsertion</span><span class="p">:</span> <span class="kt">Bool</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">case</span> <span class="o">.</span><span class="n">insert</span> <span class="o">=</span> <span class="k">self</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">true</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="kc">false</span>
+    <span class="p">}</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">isFetch</span><span class="p">:</span> <span class="kt">Bool</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="k">case</span> <span class="o">.</span><span class="n">fetch</span> <span class="o">=</span> <span class="k">self</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kc">true</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="kc">false</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>从上面的代码中可以看出数据库观察者有重要的两个属性，首先要知道要观察的实体对象是什么，这里就用到了通用的<code class="highlighter-rouge">associatedtype</code>方法，其次就要知道数据库当前的<code class="highlighter-rouge">context</code>，也就是数据的内存中分布的情况。然后可以定义数据库更新常用操作的枚举(update,delete,insert,fetch)，就可以方便的抽离出来公共方法，然后实现的类，只要关注<code class="highlighter-rouge">func observer(_ closure:@escaping ([StorageDataChange&lt;Elment&gt;]) -&gt; Void) -&gt; Void</code>方法实现就可以了。</p>
+
+<h2 id="swift-package管理">swift package管理</h2>
+
+<p><code class="highlighter-rouge">SimpleCoreData</code> 目前是使用Swift Package来管理的。相对于pod中心化的仓库管理，Swift Package是去中心化的，更像Carthage的用法。如果想了解详细的用法可以参考苹果的文档<a href="https://swift.org/package-manager/">swift package</a>。苹果还提供了xcode工程<a href="https://developer.apple.com/documentation/xcode/adding_package_dependencies_to_your_app">如何快速集成swift package的方法</a>。</p>
+
+<h2 id="总结">总结</h2>
+
+<p><code class="highlighter-rouge">SimpleCoreData</code> 完整的实现，已经放在了GitHub上<a href="https://github.com/animeng/SimpleCoreData">链接地址</a>。这个是自己对Swift语言面向协议编程的一个实践，还有很多不完善的地方,抛砖引玉，希望大家多多给些意见。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>第三章 基础动画 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2012/01/02/animation-3.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="第三章 基础动画">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2012/01/02/animation-3.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">第三章 基础动画</h1>
+  
+  <span class="post-meta">01月 02日, 2012</span><br>
+  
+  <span class="post-meta small">11 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>核心动画是一个强大成熟的技术，运用它可以使你达到事半功倍的效果。为了执行动画，苹果公司提供了动画的代理对象，当它被调用时同时那些可视的组件，譬如视图的外框、透明度、或者位置改变时，就会自动的触发隐式的动画。对于基础的层动画，CABasicAnimation类通过提供一个开始值和一个结束值，来执行一个动画。这章，通过你的应用程序，我们来看一些执行动画的基础方法。</p>
+
+<h2 id="最简单的动画">最简单的动画</h2>
+
+<p>由于核心动画集成到了cocoa中，因而你通过给窗口、视图、层简单的设定一些你感兴趣的属性值，从而使那些可视的组件做动画到新的值。当你使用CALayer的时候，你需要做的就是直接设置这些值。例如，如果你想改变一个层的边框大小，你简单的调用[layer setBounds:newFrame]，这里要说的是，层是你已经创建的CALayer对象，并且要增加这个对象要层树中，而newFrame是一个CGRect包含了边框的尺寸和原点。当这些代码运行时，就会使用关键路径“bounds”的默认动画，使层具有边框大小改变时的动画。</p>
+
+<p>简单的说，当你使用一个窗口(NSWindow)或者视图(NSView)，你需要做的就是，使用了动画的代理对象，来设置窗口或者视图的属性值。这意味着，例如，你可以代替使用[view setFrame:newFrame]来设置窗口的框架，通过[[view animtor] setFrame:newFrame]这个函数调用，达到目的。不同之处就是，你用了一个动画的代理对象，设置了这些属性，而这些都会隐式的执行框架的初始值到结束值的动画。</p>
+
+<h2 id="动画的代理对象">动画的代理对象</h2>
+
+<p>因此什么是动画的代理对象哪？动画的代理在NSView和NSWindow上面都可用。它实现了NSAnimatablePropertyContainer的代理。这包含了使用键值编码对，当你需要做插值和在场景后面做动画时，来设定你指派的参数值。</p>
+
+<p>顾名思义，动画代理就是一个媒介，来设定你给定的值，达到控制动画的属性，从开始或者目前的值，到结束的值。它设定了这些值，就像是你已经在这些属性上调用了一样。</p>
+
+<h2 id="在窗口视图和层动画之间的不同">在窗口、视图和层动画之间的不同</h2>
+
+<p>在窗口，视图和层之间的动画是一样的，然而实现却不同。这个段落中，我们将讨论你可能会想到的，最普通的动画的实现—框架的尺寸改变。</p>
+
+<h3 id="窗口尺寸改变">窗口尺寸改变</h3>
+
+<p>自从mac os x的第一个版本，动画一个窗口框架的能力已经可用，对于开发者来说，利用</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">setFrame</span><span class="p">:(</span><span class="n">NSRect</span><span class="p">)</span><span class="nv">windowFrame</span>
+<span class="nf">display</span><span class="p">:(</span><span class="n">BOOL</span><span class="p">)</span><span class="nv">displayViews</span> <span class="nf">animate</span><span class="p">:(</span><span class="n">BOOL</span><span class="p">)</span><span class="nv">performAnimation</span><span class="p">;</span>
+
+</code></pre></div></div>
+
+<p>来设定动画。第一个参数是你将要动画到的新框架。第二个参数告诉窗口在所有的子视图上面调用-displayIfNeeded，和第三个参数是告诉窗口以动画的方式，从目前的框架转换到新的框架。如果最后一个参数设定为NO，新的框架会立即改变，而不会有渐变的动画。</p>
+
+<p>既然内嵌的窗口框架具有改变大小的能力，那么为什么你需要使用核心动画来改变窗口的框架那？答案是你不必。对于许多情况，当你改变尺寸的时候，你可能仅仅需要使用内嵌的功能就行了。然而，可能有这些情况，你想要在窗口动画上有更多的控制。当你要做这些的时候，记住一些事情。NSWindow就像NSView一样，有一个动画代理。当你调用动画者时，它会按照你指定的参数做动画，但是那些参数都是附带物。如果你想把一个窗口，在屏幕上移动到一个不同的位置，事实上，要么你用</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">setFrame</span><span class="p">:(</span><span class="n">NSRect</span><span class="p">)</span><span class="nv">windowFrame</span>
+
+<span class="nf">display</span><span class="p">:(</span><span class="n">BOOL</span><span class="p">)</span><span class="nv">displayViews</span>
+</code></pre></div></div>
+
+<p>这个方法（这个方法不要第三个参数），或者你可以增加动画到窗口本身的动画字典中。首先让我们看怎么来使用动画代理。如下：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[[</span><span class="n">window</span> <span class="nf">animator</span><span class="p">]</span> <span class="nf">setFrame</span><span class="p">:</span><span class="n">newFrame</span> <span class="nf">display</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+</code></pre></div></div>
+
+<p>这个可以使你简单的动画窗口的框架。</p>
+
+<p>默认的动画播放是0.25秒。如果你想改变这个时间，需要使用NSAnimationContext这个对象，对于CATransaction它是NSView/NSWindow的副本。如果我们利用NSAnimationContext封装调用-setFrame，我们可以指定动画的时间。表3-1演示了如何做：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">NSAnimationContext</span> <span class="nf">beginGrouping</span><span class="p">];</span>
+
+<span class="p">[[</span><span class="n">NSAnimationContext</span> <span class="nf">currentContext</span><span class="p">]</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+
+<span class="p">[[</span><span class="n">window</span> <span class="nf">animator</span><span class="p">]</span> <span class="nf">setFrame</span><span class="p">:</span><span class="n">newFrame</span> <span class="nf">display</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">NSAnimationContext</span> <span class="nf">endGrouping</span><span class="p">];</span>
+</code></pre></div></div>
+<p>List 3-1</p>
+
+<p>这引起了框架的改变的时间为5秒，而非默认的0.25秒。你下一段即将看到，这种方法也是你能使用的，可以改变NSView的动画时间的。</p>
+
+<p>使用核心动画的CABasicAnimation 也能够在窗口和视图上做动画，但是动画如何安装有点不同。作为通过在窗口动画代理调用-setFrame的替换者，我可以创建一个CABasicAnimation和动画框架的属性。下面在表3-2中可以看到如何在窗口创建、增加和运行基础动画。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">animation</span> <span class="o">=</span>
+
+<span class="p">[</span><span class="n">CABasicAnimation</span> <span class="nf">animationWithKeyPath</span><span class="p">:</span><span class="err">@”</span><span class="n">frame</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">animation</span> <span class="nf">setFromValue</span><span class="p">:[</span><span class="n">NSValue</span> <span class="nf">valueWithRect</span><span class="p">:</span><span class="n">oldFrame</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">animation</span> <span class="nf">setToValue</span><span class="p">:[</span><span class="n">NSValue</span> <span class="nf">valueWithRect</span><span class="p">:</span><span class="n">newFrame</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">animation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">window</span> <span class="nf">setAnimations</span><span class="p">:[</span><span class="n">NSDictionary</span> <span class="n">animation</span> <span class="nf">forKey</span><span class="p">:</span><span class="err">@”</span><span class="n">frame</span><span class="err">”</span><span class="p">]];</span>
+
+<span class="p">[[</span><span class="n">window</span> <span class="nf">animator</span><span class="p">]</span> <span class="nf">setFrame</span><span class="p">:</span><span class="n">newFrame</span> <span class="nf">display</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>         表3-2 增加一个动画到窗口动画字典
+</code></pre></div></div>
+
+<p>这个动画的效果和表3-1是相同的。</p>
+
+<h3 id="视图的改变">视图的改变</h3>
+
+<p>视图和窗口同样能被改变，但是你要使用不同的关键路径。你可以在视图上使用-setFrame这个在窗口上使用的同样的代码。如图3-3</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">NSAnimationContext</span> <span class="nf">beginGrouping</span><span class="p">];</span>
+
+<span class="p">[[</span><span class="n">NSAnimationContext</span> <span class="nf">currentContext</span><span class="p">]</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+
+<span class="p">[[</span><span class="n">view</span> <span class="nf">animator</span><span class="p">]</span> <span class="nf">setFrame</span><span class="p">:</span><span class="n">newFrame</span> <span class="nf">display</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">NSAnimationContext</span> <span class="nf">endGrouping</span><span class="p">];</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                    表3-3
+</code></pre></div></div>
+
+<p>仅仅的不同之处是，表3-1中调用的对象不同，这里是用的view</p>
+
+<p>如果你想使用显示的动画，代替使框架做动画，你可以使框架原点和框架尺寸做动画。表3-4展示了如何使用这些属性做动画。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">originAnimation</span> <span class="o">=</span> <span class="p">[</span><span class="n">CABasicAnimation</span>
+
+<span class="nl">animationWithKeyPath:</span><span class="err">@”</span><span class="n">frameOrigin</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">originAnimation</span> <span class="nf">setFromValue</span><span class="p">:[</span><span class="n">NSValue</span>
+
+<span class="nl">valueWithPoint:</span><span class="n">oldImageFrame</span><span class="p">.</span><span class="nf">origin</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">originAnimation</span> <span class="nf">setToValue</span><span class="p">:[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">newFrame</span><span class="p">.</span><span class="n">origin</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">originAnimation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="p">];</span>
+
+<span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">sizeAnimation</span> <span class="o">=</span> <span class="p">[</span><span class="n">CABasicAnimation</span>
+
+<span class="nl">animationWithKeyPath:</span><span class="err">@”</span><span class="n">frameSize</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">sizeAnimation</span> <span class="nf">setFromValue</span><span class="p">:</span>
+
+<span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithSize</span><span class="p">:</span><span class="n">oldImageFrame</span><span class="p">.</span><span class="n">size</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">sizeAnimation</span> <span class="nf">setToValue</span><span class="p">:[</span><span class="n">NSValue</span> <span class="nf">valueWithSize</span><span class="p">:</span><span class="n">newFrame</span><span class="p">.</span><span class="n">size</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">sizeAnimation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="p">];</span>
+
+<span class="p">[[</span><span class="n">view</span> <span class="nf">animator</span><span class="p">]</span> <span class="nf">setAnimations</span><span class="p">:[</span><span class="n">NSDictionary</span>
+
+<span class="nl">dictionaryWithObjectsAndKeys:</span><span class="n">originAnimation</span><span class="p">,</span>
+
+<span class="err">@”</span><span class="n">frameOrigin</span><span class="err">”</span><span class="p">,</span>
+
+<span class="n">sizeAnimation</span><span class="p">,</span>
+
+<span class="err">@”</span><span class="n">frameSize</span><span class="err">”</span><span class="p">,</span>
+
+<span class="nf">nil</span><span class="p">]];</span>
+
+<span class="p">[[</span><span class="n">view</span> <span class="nf">animator</span><span class="p">]</span> <span class="nf">setFrame</span><span class="p">:</span><span class="n">newFrame</span><span class="p">];</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>             表3-4显示的使原点和尺寸做动画
+</code></pre></div></div>
+
+<h2 id="层的尺寸改变">层的尺寸改变</h2>
+
+<p>一个层的框架的动画是有点不同于窗口和视图的动画。在CALayer对象中没有动画代理可用，但是也并非当你想有一个显示的改变动画的属性时，动画总是被调用。事实上，如果你想禁用动画，你就得显示的关闭动画。表3-5演示了如何做。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">CATransaction</span> <span class="nf">begin</span><span class="p">]</span>
+
+<span class="p">[</span><span class="n">CATransaction</span> <span class="nf">setValue</span><span class="p">:[</span><span class="n">NSNumber</span> <span class="nf">numberWithBool</span><span class="p">:</span><span class="nb">YES</span><span class="p">]</span>
+
+<span class="nl">forKey:</span> <span class="n">kCATransactionDisableActions</span><span class="p">]</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">setBounds</span><span class="p">:</span><span class="n">bounds</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">CATransaction</span> <span class="nf">commit</span><span class="p">];</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        表 3-5 显示的关闭动画
+</code></pre></div></div>
+
+<p>CATransaction类和我们在表3-2和3-4对于窗口和视图中的APPKit中使用的NSAnimationContext非常的相似。就像NSAnimationContext一样，CATransaction也可以给动画设置时间。表3-6演示了如何做：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">CATransaction</span> <span class="nf">begin</span><span class="p">]</span>
+
+<span class="p">[</span><span class="n">CATransaction</span> <span class="nf">setValue</span><span class="p">:[</span><span class="n">NSNumber</span> <span class="nf">numberWithFloat</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]</span>
+
+<span class="nl">forKey:</span> <span class="n">kCATransactionAnimationDuration</span><span class="p">]</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">setBounds</span><span class="p">:</span><span class="n">bounds</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">CATransaction</span> <span class="nf">commit</span><span class="p">];</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                 表 3-6
+</code></pre></div></div>
+
+<p>就像你猜想的，我们也能显示的使用层的属性做动画。表3-7是来完成表3-6同样的效果的代码。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">boundsAnimation</span> <span class="o">=</span> <span class="p">[</span><span class="n">CABasicAnimation</span>
+
+<span class="nl">animationWithKeyPath:</span><span class="err">@”</span><span class="n">bounds</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">boundsAnimation</span> <span class="nf">setFromValue</span><span class="p">:[</span><span class="n">NSValue</span> <span class="nf">valueWithRect</span><span class="p">:</span><span class="n">oldRect</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">boundsAnimation</span> <span class="nf">setToValue</span><span class="p">:[</span><span class="n">NSValue</span> <span class="nf">valueWithRect</span><span class="p">:</span><span class="n">newRect</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">boundsAnimation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">setBounds</span><span class="p">:</span><span class="n">NSRectToCGRect</span><span class="p">(</span><span class="n">newRect</span><span class="p">)];</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">addAnimation</span><span class="p">:</span><span class="n">boundsAnimation</span> <span class="nf">forKey</span><span class="p">:</span><span class="err">@”</span><span class="n">bounds</span><span class="err">”</span><span class="p">];</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                   表3-7
+</code></pre></div></div>
+
+<p>在表3-6中，我们也使用了CABasicAnimation这个类，它是基础动画的主要类。马上我们会深入的理解这个类，但是首先我们要安装一个简单的Xcode的工程来演示基础的层动画。</p>
+
+<p>准备一个视图来做层动画
+当你创建一个基于核心动画的工程时，你要做的第一件事是确保视图的根层有一个后背的层。下面让我们一步一步创建基于核心动画的工程，并且在OS X上安装一个根层。</p>
+
+<p>创建XCode工程</p>
+
+<p>去创建应用程序，按照下面的步骤：</p>
+
+<ol>
+  <li>
+    <p>在Xcode中，按shift - command - N和在工程模板中，选择cocoa应用程序。</p>
+  </li>
+  <li>
+    <p>命名工程叫CA Basics，点击保存。</p>
+  </li>
+  <li>
+    <p>扩展frameworks组，control - click链接framework子组，并且选择add&gt;existing frameworks</p>
+  </li>
+  <li>
+    <p>在结果对话框中，导航到/system/library/frameworks，然后选择QuartzCore.framework。按照提示，点击增加2次。</p>
+  </li>
+  <li>
+    <p>Control - click class 组，选择add&gt;New File。</p>
+  </li>
+  <li>
+    <p>在新的模板对话框中，下面的cocoa组中选择Objective-c 类，然后点击next。</p>
+  </li>
+  <li>
+    <p>命名文件为appDelegate.m，并且核对确保创建了appDelegate.h。然后点击完成</p>
+  </li>
+  <li>
+    <p>选择appDelegate.h在编辑器中打开文件，并且增加下面的代码</p>
+  </li>
+</ol>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">@interface</span> <span class="nc">AppDelegate</span> <span class="p">:</span> <span class="nc">NSObject</span> <span class="p">{</span>
+
+<span class="n">IBOutlet</span> <span class="n">NSWindow</span> <span class="o">*</span><span class="n">window</span><span class="p">;</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>9.选择appDelegate.m在编辑器中打开文件，增加下面的代码</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">@implementation</span> <span class="nc">AppDelegate</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">awakeFromNib</span><span class="p">;</span>
+
+<span class="p">{</span>
+
+<span class="p">[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">setWantsLayer</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+
+<span class="p">}</span>
+
+<span class="k">@end</span>
+</code></pre></div></div>
+
+<ol>
+  <li>
+    <p>在工程的Resources组下面，双击MainMenu.xib，在接口编辑器中打开XIB文件。</p>
+  </li>
+  <li>
+    <p>从Library画板中，拖出NSObject对象到MainMenu.xib中，重命名它为appDelegate。</p>
+  </li>
+  <li>
+    <p>确保AppDelegate对象被选择，在对象编辑器中，点击Identity 标签并且改变类的域为AppDelegate</p>
+  </li>
+  <li>
+    <p>在MainMenu.xib中，control - click File’s Owner 并且拖拽链接到Appdelegate对象中。在下拉的按钮中选择delegate。</p>
+  </li>
+  <li>
+    <p>在MainMenu.xib中，control - click Appdelegate和拖拽链接到Window object。在下拉菜单中选择window</p>
+  </li>
+  <li>
+    <p>保存xib文件和返回XCode</p>
+  </li>
+</ol>
+
+<p>工程时安装完毕。在先前的步骤中，我们创建了一个应用程序的代理，这个代理是用来控制我们的层、窗口、和视图的。</p>
+
+<p>给根层增加动画层</p>
+
+<p>去增加我们将要动画的层，做法如下：</p>
+
+<p>1.打开AppDelegate.h和增加一个CALayer实例变量：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">@interface</span> <span class="nc">AppDelegate</span> <span class="p">:</span> <span class="nc">NSObject</span>
+
+<span class="p">{</span>
+
+<span class="n">IBOutlet</span> <span class="n">NSWindow</span> <span class="o">*</span><span class="n">window</span><span class="p">;</span>
+
+<span class="n">CALayer</span> <span class="o">*</span><span class="n">layer</span><span class="p">;</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>2.打开AppDelegate.m，并且增加层的初始化代码在-awakeFromNib:</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">@implementation</span> <span class="nc">AppDelegate</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">awakeFromNib</span><span class="p">;</span>
+
+<span class="p">{</span>
+
+<span class="p">[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">setWantsLayer</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+
+<span class="n">layer</span> <span class="o">=</span> <span class="p">[</span><span class="n">CALayer</span> <span class="nf">layer</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">setBounds</span><span class="p">:</span><span class="n">CGRectMake</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">.</span><span class="mi">0</span><span class="p">)];</span>
+
+<span class="c1">// Center the animation layer</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">setPosition</span><span class="p">:</span><span class="n">CGPointMake</span><span class="p">([[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span>
+
+<span class="nf">frame</span><span class="p">].</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span>
+
+<span class="p">[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span>
+
+<span class="nf">frame</span><span class="p">].</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="o">/</span><span class="mi">2</span><span class="p">)];</span>
+
+<span class="n">CGColorRef</span> <span class="n">color</span> <span class="o">=</span> <span class="n">CGColorCreateGenericRGB</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">setBackgroundColor</span><span class="p">:</span><span class="n">color</span><span class="p">];</span>
+
+<span class="n">CFRelease</span><span class="p">(</span><span class="n">color</span><span class="p">);</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">setOpacity</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">75</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">setBorderWidth</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+
+<span class="p">[[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">layer</span><span class="p">]</span> <span class="nf">addSublayer</span><span class="p">:</span><span class="n">layer</span><span class="p">];</span>
+
+<span class="p">}</span>
+<span class="k">@end</span>
+</code></pre></div></div>
+
+<p>层内存分配的注意事项</p>
+
+<p>尽管你有了一个实例变量，但是当你安装完层后，另一个你应该意识到的是，这个层它没有retained，除非你显示的retain了它。在objective - c的内存管理中的规则，是在你仅仅需要的地方retain。如果你不想长久的持有他，你不应该retain一个对象，而你需要持有时，你就应该retain这个对象。</p>
+
+<p>这听起来简单，但是实际用起来比较复杂。在先前的代码中，你看到了我为层开辟空间，用了一个便捷的方法layer = [CALayer layer]；这会给CAlayer对象分配一个auto-released的对象。当这个层对象离开了-awakeFromNid这个代码段空间时，它将自动释放，除非你retain了它。在我的例子中，我们增加了层到contentView的子层数组中，这样就给我们retain了层。然而，假如我们要等到真在-awakeFromNib中初始化时，增加的层到子层的数组中，我们需要用[[CALayer alloc]init]这个方法来初始化。然而我们需要释放这个层，在dealloc方法中调用[layer release]；</p>
+
+<p>你只要一次使用了-removeFromSuperlayer这个方法，你会发现，如果你再试图增加层到子层中时，它将会使你的应用程序crash。这是因为当调用-removeFromSuperLayer时，层将会被释放。假如你想从它的父层中，移除它的子层，但是还想保留它在内存中，那么你就必须retain这个层。</p>
+
+<p>使用CABasicAnimation
+这里你已经看到了CABasicAnimation对象的行动。然而，在这个段落里，我们会考虑一些细节，如何来使用这些类和基础动画。</p>
+
+<p>使用CABasicAnimation类实现的基础动画，是通过2个值，一个开始的，一个结束的来做动画的。例如，为了在窗口中，移动从一个点到另一个点，我们能够使用关键路径position创建一个基础动画。我们可以给动画一个开始的值和一个结束的值，然后增加动画到层中。在下一个运行循环中，那个动画就可以立即执行。表3-8演示了如何来对一个层的位置做动画。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">animate</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span><span class="p">;</span>
+
+<span class="p">{</span>
+
+<span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">animation</span> <span class="o">=</span>
+
+<span class="p">[</span><span class="n">CABasicAnimation</span> <span class="nf">animationWithKeyPath</span><span class="p">:</span><span class="err">@”</span><span class="n">position</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">animation</span> <span class="nf">setFromValue</span><span class="p">:[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">startPoint</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">animation</span> <span class="nf">setToValue</span><span class="p">:[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">endPoint</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">animation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">addAnimation</span><span class="p">:</span><span class="n">animation</span> <span class="nf">forKey</span><span class="p">:</span><span class="err">@”</span><span class="n">position</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这个代码移动一个层的位置，从startPoint到endPoint。这两个值都是NSPoint对象。Position属性是一个层的中心点。它和它包含的层有关系。</p>
+
+<p>如果你增加了下表中的代码到我们先前创建的工程中，你就可以在接口编辑器中，简单的链接一个按钮的行动。跟着下面的步骤做：</p>
+
+<ol>
+  <li>打开AppDelegate.h，然后增加响应声明如下：</li>
+</ol>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">@interface</span> <span class="nc">AppDelegate</span> <span class="p">:</span> <span class="nc">NSObject</span>
+
+<span class="p">{</span>
+
+<span class="n">IBOutlet</span> <span class="n">NSWindow</span> <span class="o">*</span><span class="n">window</span><span class="p">;</span>
+
+<span class="n">CALayer</span> <span class="o">*</span><span class="n">layer</span><span class="p">;</span>
+
+<span class="p">}</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">animate</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span><span class="p">;</span>
+</code></pre></div></div>
+
+<ol>
+  <li>
+    <p>打开AppDelegate.m和增加animate的实现代码如表3-8</p>
+  </li>
+  <li>
+    <p>打开接口编辑器。从对象库中，拖出按钮到main window上。</p>
+  </li>
+  <li>
+    <p>Control - click拖拽在main window上的按钮，然后链接到appDelegate对象上。选择animate这个行动</p>
+  </li>
+  <li>
+    <p>返回Xcode，编译运行，看效果。</p>
+  </li>
+</ol>
+
+<p>就这些了。这真的就是给层创建动画的全部了。你创建一个动画，设置开始值和结束值，设置动画时间（如果不设置的话，默认是0.25秒）。然后就增加这个动画到你想要做动画的层上。</p>
+
+<p>还要继续说，因为实现的细节增加了一个微小的不同和复杂性，这里你最好不要立刻停下来。例如，当你用表3-8的代码，第一次运行动画时，你会注意到随着你指定的动画时间，层移动到了正确的位置，这时动画完成，它就会跳回到原来的位置。这是个bug么？我们怎么解决那？下面进一步分析。</p>
+
+<h2 id="动画vs层的属性">动画vs层的属性</h2>
+
+<p>当你创建一个CABasicAnimation时，你需要通过-setFromValue和-setToValue来指定一个开始和结束的值。当你增加基础动画到层中的时候，它开始运行。当用属性做动画完成时，例如用位置属性做动画，，层就会立刻返回到它的初始位置。</p>
+
+<p>记住当你做动画时，你至少使用了2个对象。这些对象都是层本身，一个层或者层继承的对象，和在先前的例子中你分配给层的CABasicAnimation对象。因为你给动画对象设定了最后的值（目的地），但是并不意味着当动画完成的时候，层的属性就改变成了最后的值。当你动画完成时，你必须显示的设定层的属性，这样动画结束后，你的层才能真正的到你设定的属性值上。</p>
+
+<p>你可以简单的停止动画到你结束的点上，但是这仅仅是一个视觉效果。层实际的值仍然是一样的。要真的改变内部的值，就像刚才所说的你必须显示的设定那个属性。例如，显示的设定位置的属性，你需要在层中调用-setPosition方法。但是，这会造成一点问题。</p>
+
+<p>如果你通过-set这个方法显示的设定了层属性的值，那么默认的动画将被执行，而非之前你设定的动画。在表3-9中演示了你设置位置的方法。注意到了，我们使用position已经创建了基础动画，但是我们在层上显示的调用了-setPosition方法，就覆盖了我们设定的动画，使我们设定的基础动画完全没用了。如果你使用了这个代码，你会看到虽然我们的层结束的时候放到了正确的位置，但是它使用的是默认的0.25秒，而非我们在动画里显示设定的5秒钟。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">animation</span> <span class="o">=</span>
+
+<span class="p">[</span><span class="n">CABasicAnimation</span> <span class="nf">animationWithKeyPath</span><span class="p">:</span><span class="err">@”</span><span class="n">position</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">animation</span> <span class="nf">setFromValue</span><span class="p">:[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">startPoint</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">animation</span> <span class="nf">setToValue</span><span class="p">:[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">endPoint</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">animation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">setPosition</span><span class="p">:</span><span class="n">endpoint</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">addAnimation</span><span class="p">:</span><span class="n">animation</span> <span class="nf">forKey</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>          表3-9 动画和升级位置属性
+</code></pre></div></div>
+
+<p>因此现在问题出来了，你怎么能使用我们设定的动画那？看表3-9的最后一行，注意到forKey：这个参数是被设定为nil。这就是为什么动画不能覆盖默认动画的原因。如果你改变最后一行为[layer addAnimation:animation forKey:@”position”]，动画将会按照我们设定的时间工作。这告诉了层当需要做动画时，使用我们给关键路径指定的新动画。</p>
+
+<p>隐式的层动画和默认的时间步调</p>
+
+<p>像我们先前章节做的，我们可以使用CATransaction类来重载默认的时间，并且它可以方便的使用我们指定的时间做动画。如果你使用表3-10的代码，position属性是被设置在层理，那个属性的动画就按照你期望的方式运行。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">CATransaction</span> <span class="nf">begin</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">CATransaction</span> <span class="nf">setValue</span><span class="p">:[</span><span class="n">NSNumber</span> <span class="nf">numberWithFloat</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="nl">forKey:</span><span class="n">kCATransactionAnimationDuration</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">setPosition</span><span class="p">:</span><span class="n">endPoint</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">CATransaction</span> <span class="nf">commit</span><span class="p">];</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        表3-10 隐式的重载了动画的时间
+</code></pre></div></div>
+
+<p>然而，当你运行这个代码时，你会看到动画的时间确实是5秒，但是它应用了默认的时间步调，就是KCAMediaTimingFunctionEaseInEaseOut。这个会引起开始的时候变慢，然后加速，之后再慢下了从而到达目的地。如果这是你想要的时间步调再好不过了，但是如果你想要一个线性的步调（KCAMEdiaTimingFunctionLinear），例如，你需要考虑其他的方法。没有直接的方法给隐式的动画设定时间步调。</p>
+
+<p>这意味着，如果你想用其他的时间步调，你不得不用显示的动画，就像表3-9演示的那样。</p>
+
+<p>视觉粘性</p>
+
+<p>我们可以使用另一个方法，通过设定我们动画对象的属性，来达到动画完成时，固定在完成位置的效果。换句话说，层会展现为目的值。这个方案仅仅是视觉效果，也就是说那个层根本的位置还是动画开始时的位置。当你不需要真正的改变层的值时，这是一个很好的方法。表3-11展示了如何去实现这个方法，使层固定在结束的位置。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">animation</span> <span class="o">=</span> <span class="p">[</span><span class="n">CABasicAnimation</span>
+
+<span class="nl">animationWithKeyPath:</span><span class="err">@”</span><span class="n">position</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">animation</span> <span class="nf">setToValue</span><span class="p">:[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">endPoint</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">animation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">animation</span> <span class="nf">setFillMode</span><span class="p">:</span><span class="n">kCAFillModeForwards</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">animation</span> <span class="nf">setRemovedOnCompletion</span><span class="p">:</span><span class="nb">NO</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">addAnimation</span><span class="p">:</span><span class="n">animation</span> <span class="nf">forKey</span><span class="p">:</span><span class="err">@”</span><span class="n">position</span><span class="err">”</span><span class="p">];</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        表3-11 使层的位置固定
+</code></pre></div></div>
+
+<p>我们需要设定2个动画属性。首先是填充模式。我们告诉动画来固定属性值为最后的值，通过调用-setFillMode方法，给它传递一个kCAFillModeForwards属性来实现。然后我们必须告诉动画，当动画结束的时候，不要动画从层的动画数组中移除。用-setRemoveOnCompletion方法，传递NO来实现。</p>
+
+<h3 id="有用的动画属性">有用的动画属性</h3>
+
+<p>你已经发现了，所有可以在层上做动画的属性。然而，在动画对象（CABasicAnimation）中还有许多有用的属性，这些属性可以让你便于控制动画，提升动画的性能。</p>
+
+<h3 id="autoreverses">Autoreverses</h3>
+
+<p>当你设定这个属性为YES时，在它到达目的地之后，动画的属性会返回到开始的值，代替了直接跳转到开始的值。</p>
+
+<h3 id="duration">Duration</h3>
+
+<p>Duration这个参数你已经相当熟悉来了。它设定开始值到结束值花费的时间。期间会被速度的属性所影响。</p>
+
+<h3 id="removedoncompletion">RemovedOnCompletion</h3>
+
+<p>这个属性默认为YES，那以为着，在指定的时间段完成后，动画就自动的从层上移除了。这个一般不用。假如你想要再次用这个动画时，你需要设定这个属性为NO。这样的话，下次你在通过-set方法设定动画的属性时，它将再次使用你的动画，而非默认的动画。</p>
+
+<h3 id="speed">Speed</h3>
+
+<p>默认的值为1.0.这意味着动画播放按照默认的速度。如果你改变这个值为2.0，动画会用2倍的速度播放。这样的影响就是使持续时间减半。如果你指定的持续时间为6秒，速度为2.0，动画就会播放3秒钟—一半的持续时间。</p>
+
+<h3 id="begintime">BeginTime</h3>
+
+<p>这个属性在组动画中很有用。它根据父动画组的持续时间，指定了开始播放动画的时间。默认的是0.0.组动画在下个段落中讨论“Animation Grouping”。</p>
+
+<h3 id="timeoffset">TimeOffset</h3>
+
+<p>如果一个时间偏移量是被设定，动画不会真正的可见，直到根据父动画组中的执行时间得到的时间都流逝了。</p>
+
+<h3 id="repeatcount">RepeatCount</h3>
+
+<p>默认的是0，意味着动画只会播放一次。如果指定一个无限大的重复次数，使用1e100f。这个不应该和repeatDration属性一块使用。</p>
+
+<h3 id="repeatduration">RepeatDuration</h3>
+
+<p>这个属性指定了动画应该被重复多久。动画会一直重复，直到设定的时间流逝完。它不应该和repeatCount一起使用。</p>
+
+<h3 id="动画组">动画组</h3>
+
+<p>在先前的段落中，“有用的动画属性”，我们定义了2个特殊的属性，是关系到动画组的：beginTime和timeOffset。在我们讨论这个之前，然而，让我们考虑为什么你想要使用动画组，而非给层增加一列动画。</p>
+
+<p>在表3-12中，你可以看到我们建立了一列基础动画，和简单的增加他们到层上面。如果你想要所有的动画开始在同样的时间，并且他们中每个动画都有同样的执行时间，这个方法是足够了。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">animate</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span><span class="p">;</span>
+
+<span class="p">{</span>
+
+<span class="n">NSRect</span> <span class="n">oldRect</span> <span class="o">=</span> <span class="n">NSMakeRect</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+
+<span class="n">NSRect</span> <span class="n">newRect</span> <span class="o">=</span> <span class="n">NSMakeRect</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">300</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">300</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+
+<span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">boundsAnimation</span> <span class="o">=</span>
+
+<span class="p">[</span><span class="n">CABasicAnimation</span> <span class="nf">animationWithKeyPath</span><span class="p">:</span><span class="err">@”</span><span class="n">bounds</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">boundsAnimation</span> <span class="nf">setFromValue</span><span class="p">:[</span><span class="n">NSValue</span> <span class="nf">valueWithRect</span><span class="p">:</span><span class="n">oldRect</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">boundsAnimation</span> <span class="nf">setToValue</span><span class="p">:[</span><span class="n">NSValue</span> <span class="nf">valueWithRect</span><span class="p">:</span><span class="n">newRect</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">boundsAnimation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+
+<span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">positionAnimation</span> <span class="o">=</span>
+
+<span class="p">[</span><span class="n">CABasicAnimation</span> <span class="nf">animationWithKeyPath</span><span class="p">:</span><span class="err">@”</span><span class="n">position</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">positionAnimation</span> <span class="nf">setFromValue</span><span class="p">:</span>
+
+<span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span>
+
+<span class="n">NSPointFromCGPoint</span><span class="p">([</span><span class="n">layer</span> <span class="nf">position</span><span class="p">])]];</span>
+
+<span class="p">[</span><span class="n">positionAnimation</span> <span class="nf">setToValue</span><span class="p">:</span>
+
+<span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">NSMakePoint</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">)]];</span>
+
+<span class="p">[</span><span class="n">positionAnimation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+
+<span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">borderWidthAnimation</span> <span class="o">=</span>
+
+<span class="p">[</span><span class="n">CABasicAnimation</span> <span class="nf">animationWithKeyPath</span><span class="p">:</span><span class="err">@”</span><span class="n">borderWidth</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">borderWidthAnimation</span> <span class="nf">setFromValue</span><span class="p">:[</span><span class="n">NSNumber</span> <span class="nf">numberWithFloat</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">borderWidthAnimation</span> <span class="nf">setToValue</span><span class="p">:[</span><span class="n">NSNumber</span> <span class="nf">numberWithFloat</span><span class="p">:</span><span class="mi">30</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">borderWidthAnimation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">addAnimation</span><span class="p">:</span><span class="n">boundsAnimation</span> <span class="nf">forKey</span><span class="p">:</span><span class="err">@”</span><span class="n">bounds</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">addAnimation</span><span class="p">:</span><span class="n">positionAnimation</span> <span class="nf">forKey</span><span class="p">:</span><span class="err">@”</span><span class="n">position</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">addAnimation</span><span class="p">:</span><span class="n">borderWidthAnimation</span> <span class="nf">forKey</span><span class="p">:</span><span class="err">@”</span><span class="n">borderWidth</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                                                        表3-12
+</code></pre></div></div>
+
+<p>每个动画都有5秒的执行时间，并且它们在下个循环里一起播放，最后同时结束。层的位置到左下角，层的边框宽度增加30个像素，和层的尺寸增加从100x100像素到了300x300像素。</p>
+
+<p>让我们说下我们要做的情况，并不是使所有的动画同时播放，我们想要它们按顺序播放–之前定义好的顺序。我们可以完成这些，通过使用动画组合设定beginTime这个属性的区域。这里我提下，这种情况下如果我们使用关键帧可能更有意义，但是你需要读到第四章“Keyframe Animation”了解他怎么工作。</p>
+
+<p>我们必须显示的指定我们组动画的执行时间，以便于能为每个动画分离一部分时间。例如，我们设定我们的动画时间为15秒钟，然后给每个动画5秒钟的播放时间。列表3-13展示了先前的例子，这里用动画组替代，来更好的控制每个动画的播放。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">animate</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span><span class="p">;</span>
+
+<span class="p">{</span>
+
+<span class="n">NSRect</span> <span class="n">oldRect</span> <span class="o">=</span> <span class="n">NSMakeRect</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+
+<span class="n">NSRect</span> <span class="n">newRect</span> <span class="o">=</span> <span class="n">NSMakeRect</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">300</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">300</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+
+<span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">boundsAnimation</span> <span class="o">=</span>
+
+<span class="p">[</span><span class="n">CABasicAnimation</span> <span class="nf">animationWithKeyPath</span><span class="p">:</span><span class="err">@”</span><span class="n">bounds</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">boundsAnimation</span> <span class="nf">setFromValue</span><span class="p">:[</span><span class="n">NSValue</span> <span class="nf">valueWithRect</span><span class="p">:</span><span class="n">oldRect</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">boundsAnimation</span> <span class="nf">setToValue</span><span class="p">:[</span><span class="n">NSValue</span> <span class="nf">valueWithRect</span><span class="p">:</span><span class="n">newRect</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">boundsAnimation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">15</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">boundsAnimation</span> <span class="nf">setBeginTime</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+
+<span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">positionAnimation</span> <span class="o">=</span>
+
+<span class="p">[</span><span class="n">CABasicAnimation</span> <span class="nf">animationWithKeyPath</span><span class="p">:</span><span class="err">@”</span><span class="n">position</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">positionAnimation</span> <span class="nf">setFromValue</span><span class="p">:</span>
+
+<span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span>
+
+<span class="n">NSPointFromCGPoint</span><span class="p">([</span><span class="n">layer</span> <span class="nf">position</span><span class="p">])]];</span>
+
+<span class="p">[</span><span class="n">positionAnimation</span> <span class="nf">setToValue</span><span class="p">:</span>
+
+<span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">NSMakePoint</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">)]];</span>
+
+<span class="p">[</span><span class="n">positionAnimation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">15</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">positionAnimation</span> <span class="nf">setBeginTime</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+
+<span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">borderWidthAnimation</span> <span class="o">=</span>
+
+<span class="p">[</span><span class="n">CABasicAnimation</span> <span class="nf">animationWithKeyPath</span><span class="p">:</span><span class="err">@”</span><span class="n">borderWidth</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">borderWidthAnimation</span> <span class="nf">setFromValue</span><span class="p">:[</span><span class="n">NSNumber</span> <span class="nf">numberWithFloat</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">borderWidthAnimation</span> <span class="nf">setToValue</span><span class="p">:[</span><span class="n">NSNumber</span> <span class="nf">numberWithFloat</span><span class="p">:</span><span class="mi">30</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">borderWidthAnimation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">15</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">borderWidthAnimation</span> <span class="nf">setBeginTime</span><span class="p">:</span><span class="mi">10</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+
+<span class="n">CAAnimationGroup</span> <span class="o">*</span><span class="n">group</span> <span class="o">=</span> <span class="p">[</span><span class="n">CAAnimationGroup</span> <span class="nf">animation</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">group</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">15</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">group</span> <span class="nf">setAnimations</span><span class="p">:</span>
+
+<span class="p">[</span><span class="n">NSArray</span> <span class="nf">arrayWithObjects</span><span class="p">:</span><span class="n">boundsAnimation</span><span class="p">,</span>
+
+<span class="n">positionAnimation</span><span class="p">,</span>
+
+<span class="n">borderWidthAnimation</span><span class="p">,</span> <span class="nb">nil</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">addAnimation</span><span class="p">:</span><span class="n">group</span> <span class="nf">forKey</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 表3-13 使用动画组
+</code></pre></div></div>
+
+<p>注意到我们为每个分割的动画都设定了15秒的执行时间，但是每个动画的开始时间分别为 0.0,5.0，和10.0.</p>
+
+<p>你也注意到了我们仅仅增加组动画给层。组动画对象通过调用-setAnimations这个方法增加。</p>
+
+<p>你可以看到使用组给予了你多么灵活的方法。你仅仅需要按照你的需求关注于你的执行时间和开始时间。如果你想要动画同时发生，你仅仅需要改变开始时间，就是你想要播放的开始时间。你要保持同样的执行时间，否则在层中每个关键路径（keyPaht)的值（就是，bounds，position，和borderWidth），在预期结束时，都会突兀的返回到开始的值，看起来很古怪。保持所有的执行时间都一样，可以使他们等待直到动画结束时，才返回到原来的值。如果你不想他们返回，在动画结束时，你需要显示的设定上一段落中提到的属性值“使用CABasicAnimation”</p>
+
+<h2 id="总结">总结</h2>
+
+<p>基础动画是非常强大的。为了完成动画的目标，你有很多便捷的方法。通常你都不需要用基础动画额外的方法。如果你需要的全部就是动画代理，使用它，保持简单！如果你需要的就是设置一个层的属性，就调用层属性的set方法让核心动画控制其余的工作。如果你需要更灵活的动画参数，使用CABasicAnimation对象，设定所有的动画属性。仅仅记得通常情况下，你仅仅需要基础动画就可以了。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

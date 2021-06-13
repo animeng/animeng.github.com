@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>如何使用一门新技术开始你的项目0x1 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2019/06/25/flutter.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="如何使用一门新技术开始你的项目0x1">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2019/06/25/flutter.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">如何使用一门新技术开始你的项目0x1</h1>
+  
+  <span class="post-meta">06月 25日, 2019</span><br>
+  
+  <span class="post-meta small">1 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>经过一个多月的开发上架了一款工具类的应用</p>
+
+<p>广告打起来😂<a href="https://play.google.com/store/apps/details?id=com.mengtnt.video_extract">出彩 google play</a> <a href="https://apps.apple.com/cn/app/%E5%87%BA%E5%BD%A9-%E8%A7%86%E9%A2%91%E5%AF%BC%E5%87%BA%E9%AB%98%E6%B8%85%E7%85%A7%E7%89%87/id1468642894">AppStore</a></p>
+
+<p>这个app是用目前被google吹上天的flutter开发的，写这个博客的目的主要是想记录下学习新技术的一些方式，再加上创业5年来，自己写博客的习惯早已被荒废，也算是重新拾起来，或许之后也会把自己创业的经历记录下来吧。</p>
+
+<p>flutter是2018年在google io大会上,介绍的跨平台框架，自己看了下官方的一些视频介绍，感觉就是另外一个react native。当时公司的一些同事对此比较感兴趣，内部做了一些分享会。第一印象是flutter的代码风格更接近前端的react，声明式的控件布局。不过还是有区别react native，虽说react native是用前端js开发的，但是底层UI渲染还是用平台的API来实现的，但是flutter使用skia这套开源的2d引擎实现的UI渲染，也感觉到flutter确实有自己一套独特的思想。</p>
+
+<p>18年底google发布了正式版本后，google io，也开始大量篇幅介绍flutter，国内也是铺天盖地的宣传。感觉要大红大紫的趋势了。由于前段时间和朋友讨论想做一些自己小的工具，正好flutter这种新技术可以用起来。于是决定了用flutter开发这个新app。</p>
+
+<p>这里要感谢下<a href="https://weibo.com/wangchaohui">Allen</a>，一个很棒的设计师，对产品也有独特的想法。他的很多产品思想都是从生活中实际的经验取得的，都是一些很务实的想法，不像一些做产品的张嘴都是区块链，机器学习。其实自己对产品的看法也是这样的，能够实际解决用户的一些小问题即可，不必追求让用户用你自己创造的idea，我们这个app就是解决用户一个很简单的需求，就是平时拍照片，总想抓拍一些高光时刻，可是照片毕竟只有一张，为了解决这个问题，有些人会在拍照的时候啪啪啪按下无数张，从中选取一张，但是往往会被吐嘲，为何刚才我这么帅的动作没有拍摄到，绝望了！这时候如果能拍摄一段视频，然后从视频里选取一张照片导出来，岂不是任何一个动作都不会丢失。所以这个产品核心功能点就出来了。</p>
+
+<p>所以想做自己的产品，有一个好的帮手很是重要。有了这个想法后。自己开始着手学习下flutter这门技术了。</p>
+
+<h2 id="如何学习一门新技术">如何学习一门新技术</h2>
+
+<p>其实我想写这个博客并不是想分享flutter的技术，因为flutter教程官方和一些第三方的教程已经足够多了，我主要是想记录自己学习一门新事物的过程。</p>
+
+<h3 id="学起前的准备">学起前的准备</h3>
+
+<p>学习新的东西，自己往往会准备一个Todoist工具，用来记录自己学习的任务和安排学习的计划。还有一个记录学习的笔记和一些难点的工具(Evernote)。当然一根笔和一张纸也是必不可少的。工具是学习最好的帮手。有些人觉得安排学习计划没啥大用，总是会被一些日常的事情打乱，事实上确实也是这样。往往计划赶不上变化。但是Todoist 有一个强大的作用就是心里暗示。每天你打开电脑Todoist 总会提醒你有事情要做，尤其对于强迫症的人来说，看到红点就想消除，其实间接起到一个敦促监督作用。有时候自己回顾Todolist的历史记录的时候，会惊讶的发现自己做了这么多事情。如果自己当初没计划是绝对不会做这么多的。其实这也是这个工具给我的最大作用。当然可能对于一些自制力特别强的人可能觉得这个有点多此一举，但是在我的实践中，这是对自己最有效的方法。</p>
+
+<p>Todolist另外一个很重要的功能就是拆分任务，当有一个很庞大的任务你感觉一年都做不完的时候，尝试把他拆分开，等你完成的时候回头看，会发现没有想象的那么困难，这其实是人的认知障碍，往往对未知的东西产生恐惧，容易高估困难。同样对自己相对了解的东西，人又容易高估自己。为了降低这种出错率，使用一些手段约束自己还是很有必要的。下图就是自己拆分的flutter的一些任务，完成这个app开发，自己总计有64个任务。</p>
+
+<p><img src="/images/flutter-1-3.png" alt="图1" /></p>
+
+<p>我第二个学习常用的工具就是Evernote ，这么多年记笔记的习惯自己一直都有，遇到一些好的想法，自己总想记下来。因为我从小都对自己的记忆力很担忧，生怕自己忘记掉。其实在学习新技术的时候，笔记不在于记录多少知识点，重要的是记录自己认为很难理解的点，以及自己觉得有疑点的。之后自己会分享出来自己学习flutter记录的方式。</p>
+
+<h3 id="学习的技巧和方法">学习的技巧和方法</h3>
+
+<p>最后，想分享下，自己学习这类新框架的一些技巧。</p>
+
+<p>1.首先可以先了解框架的历史，了解框架的来龙去脉,比如flutter就可以看下Google io的视频，了解下框架的大致结构，如图:</p>
+
+<p><img src="/images/flutter-1.webP" alt="image1" /></p>
+
+<p><img src="/images/flutter-1-2.png" alt="image2" /></p>
+
+<p>然后可以去一些博客和论坛,例如redit，知乎，看下框架的优缺点，整体上留下一个印象,这对之后理解一些细节很有帮助。比如上图中native插件和渲染引擎的关系。对于理解OpenGL渲染的时候flutter如何通过textureid共享数据,非常有用.</p>
+
+<p>2.先看官方文档，有些人喜欢看别人的教程和博客，其实有个问题就是非官方的教程不是第一手资料往往跟作者的理解有关系，一旦理解出现偏差了。很容易给阅读者留下错误的第一印象，这样之后纠正就很麻烦。</p>
+
+<p>3.官方文档看完，一定有很多理解不到位的点，没关系，这时候就可以通过教程和博客来解决这些难点了。因为这时候你对框架应该有自己的一些理解，这样带着问题看博客和教程效果是最好的，就可能从不同的角度更好的理解问题。</p>
+
+<p>4.框架的大致理论学习完毕的时候，最好能做一些和自己将来要开发的App技术相关的一些demo，这些demo可能就会是之后你写代码的重要来源。</p>
+
+<p>5.在写demo的时候遇到难点，不要第一时间去搜索，而是先用已经学到的知识点，尝试解决，有可能最后没有解决，也有可能用了很蹩脚的方式解决了。之后再去搜索问题看别人解决的思路，有了前后对比的解决方案，就可以更深入的理解这些功能。</p>
+
+<p>这些点不仅仅是学习flutter的方式，也是自己学习很多新技术的方式。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

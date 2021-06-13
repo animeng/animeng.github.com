@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>柔性数组 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2009/06/27/flexible-array.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="柔性数组">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2009/06/27/flexible-array.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">柔性数组</h1>
+  
+  <span class="post-meta">06月 27日, 2009</span><br>
+  
+  <span class="post-meta small">2 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>最近看书看到一段这样的代码如下</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;iostream&gt;
+#include &lt;string.h&gt;
+#include &lt;malloc.h&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+<span class="kt">void</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="k">struct</span> <span class="n">_rect</span>
+    <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">left</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">right</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">top</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">bottom</span><span class="p">;</span>
+    <span class="p">}</span> <span class="n">RECT</span><span class="p">;</span>
+    <span class="k">typedef</span> <span class="k">struct</span> <span class="n">_RGNDATA</span><span class="p">{</span>
+        <span class="n">RECT</span> <span class="n">rect</span><span class="p">;</span>
+        <span class="kt">char</span> <span class="n">Buffer</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+    <span class="p">}</span><span class="n">RGNDATA</span><span class="p">;</span>
+    <span class="n">RGNDATA</span> <span class="o">*</span><span class="n">region_data</span><span class="p">;</span>
+    <span class="n">region_data</span><span class="o">=</span><span class="p">(</span><span class="n">RGNDATA</span> <span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">RECT</span><span class="p">)</span><span class="o">+</span><span class="mi">3</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="n">RECT</span><span class="p">));</span>
+    <span class="n">RECT</span> <span class="n">rect_list</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">=</span><span class="p">{</span>
+        <span class="p">{</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">},</span>
+        <span class="p">{</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">},</span>
+        <span class="p">{</span><span class="mi">300</span><span class="p">,</span><span class="mi">300</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">450</span><span class="p">}</span>
+    <span class="p">};</span>
+    <span class="n">memcpy</span><span class="p">(</span><span class="n">region_data</span><span class="o">-&gt;</span><span class="n">Buffer</span><span class="p">,</span><span class="n">rect_list</span><span class="p">,</span><span class="k">sizeof</span><span class="p">(</span><span class="n">RECT</span><span class="p">)</span><span class="o">*</span><span class="mi">3</span><span class="p">);</span>
+    <span class="n">cout</span> <span class="o">&lt;</span> <span class="o">&lt;</span><span class="k">sizeof</span><span class="p">(</span><span class="n">region_data</span><span class="o">-&gt;</span><span class="n">Buffer</span><span class="p">)</span> <span class="o">&lt;</span> <span class="o">&lt;</span><span class="n">endl</span><span class="p">;</span>
+    <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span><span class="n">i</span> <span class="o">&lt;</span><span class="mi">50</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+    <span class="n">cout</span> <span class="o">&lt;</span> <span class="o">&lt;</span><span class="n">region_data</span><span class="o">-&gt;</span><span class="n">Buffer</span> <span class="o">&lt;</span> <span class="o">&lt;</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>如果我把程序稍微更改下，就是把Buffer这个char数组单独定义，给他开辟空间，具体如下：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#include &lt;iostream&gt;
+#include &lt;string.h&gt;
+#include &lt;malloc.h&gt;
+</span><span class="k">using</span> <span class="k">namespace</span> <span class="n">std</span><span class="p">;</span>
+<span class="kt">void</span> <span class="nf">main</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="k">typedef</span> <span class="k">struct</span> <span class="n">_rect</span>
+    <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">left</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">right</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">top</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">bottom</span><span class="p">;</span>
+    <span class="p">}</span> <span class="n">RECT</span><span class="p">;</span>
+    <span class="kt">char</span> <span class="n">Buffer</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+    <span class="n">RECT</span> <span class="n">rect_list</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span><span class="o">=</span><span class="p">{</span>
+        <span class="p">{</span><span class="mi">10</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">50</span><span class="p">,</span><span class="mi">50</span><span class="p">},</span>
+        <span class="p">{</span><span class="mi">100</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">200</span><span class="p">,</span><span class="mi">200</span><span class="p">},</span>
+        <span class="p">{</span><span class="mi">300</span><span class="p">,</span><span class="mi">300</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">450</span><span class="p">}</span>
+    <span class="p">};</span>
+    <span class="n">memcpy</span><span class="p">(</span><span class="n">Buffer</span><span class="p">,</span><span class="n">rect_list</span><span class="p">,</span><span class="k">sizeof</span><span class="p">(</span><span class="n">RECT</span><span class="p">)</span><span class="o">*</span><span class="mi">3</span><span class="p">);</span>
+    <span class="n">cout</span> <span class="o">&lt;</span> <span class="o">&lt;</span><span class="k">sizeof</span><span class="p">(</span><span class="n">Buffer</span><span class="p">)</span> <span class="o">&lt;</span> <span class="o">&lt;</span><span class="n">endl</span><span class="p">;</span>
+    <span class="n">cout</span> <span class="o">&lt;</span> <span class="o">&lt;</span><span class="n">Buffer</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="o">&lt;</span><span class="n">endl</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>程序运行的时候就会崩溃，原因也很简单就是memcpy(Buffer,rect_list,sizeof(RECT)*3);的时候，Buffer越界了。虽然第一段代码也确定Buffer数组的长度为1，但是程序可以在运行的时候，动态的给Buffer增加长度。而如果你单独定义Buffer就不能用sizeof动态的增加长度。我查了一些资料上面说是因为你在第一段代码中是sizeof结构体的大小，所以他就会为你结构体中的Buffer动态分配长度。而后面的代码你是sizeof char数组的大小，因为已经是1了，sizeof的时候会报错。自己就上网随便到论坛逛了一下，结果被高手鄙视了一下算是明白了。下面就引用下别人的帖子。
+<strong>柔性数组结构成员 C99中，结构中的最后一个元素允许是未知大小的数组，这就叫做柔性数组成员，但结构中的柔性数组成员前面必须至少一个其 他成员。柔性数组成员允许结构中包含一个大小可变的数组。sizeof返回的这种结构大小不包括柔性数组的内存。包含柔性数组成员的结构用malloc ()函数进行内存的动态分配，并且分配的内存应该大于结构的大小，以适应柔性数组的预期大小</strong></p>
+
+<p>C语言大全，”柔性数组成员”
+看看 C99 标准中 灵活数组成员：
+结构体变长的妙用——0个元素的数组
+有时我们需要产生一个结构体，实现了一种可变长度的结构。如何来实现呢？
+看这个结构体的定义：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="k">struct</span> <span class="n">st_type</span>
+<span class="p">{</span>
+<span class="kt">int</span> <span class="n">nCnt</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">item</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+<span class="p">}</span><span class="n">type_a</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>（有些编译器会报错无法编译可以改成：）</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="k">struct</span> <span class="n">st_type</span>
+<span class="p">{</span>
+<span class="kt">int</span> <span class="n">nCnt</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">item</span><span class="p">[];</span>
+<span class="p">}</span><span class="n">type_a</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>这样我们就可以定义一个可变长的结构，用sizeof(type_a)得到的只有4，就是sizeof(nCnt)=sizeof(int)那
+个0个元素的数组没有占用空间，而后我们可以进行变长操作了。
+C语言版：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">type_a</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">type_a</span><span class="o">*</span><span class="p">)</span><span class="n">malloc</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">type_a</span><span class="p">)</span><span class="o">+</span><span class="mi">100</span><span class="o">*</span><span class="nf">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+</code></pre></div></div>
+
+<p>C++语言版:</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">type_a</span> <span class="o">*</span><span class="n">p</span> <span class="o">=</span> <span class="p">(</span><span class="n">type_a</span><span class="o">*</span><span class="p">)</span><span class="k">new</span> <span class="kt">char</span><span class="p">[</span><span class="k">sizeof</span><span class="p">(</span><span class="n">type_a</span><span class="p">)</span><span class="o">+</span><span class="mi">100</span><span class="o">*</span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">)];</span>
+</code></pre></div></div>
+
+<p>这样我们就产生了一个长为100的type_a类型的东西用p-&gt;item[n]就能简单地访问可变长元素，原理十分简单
+，分配了比sizeof(type_a)多的内存后int item[];就有了其意义了，它指向的是int nCnt;后面的内容，是没
+有内存需要的，而在分配时多分配的内存就可以由其来操控，是个十分好用的技巧。
+而释放同样简单：
+C语言版：
+free(p);
+C++语言版：
+delete []p;
+其实这个叫灵活数组成员(fleible array member)C89不支持这种东西，C99把它作为一种特例加入了标准。但
+是，C99所支持的是incomplete type，而不是zero array，形同int item[0];这种形式是非法的，C99支持的
+形式是形同int item[];只不过有些编译器把int item[0];作为非标准扩展来支持，而且在C99发布之前已经有
+了这种非标准扩展了，C99发布之后，有些编译器把两者合而为一。
+这篇帖子参考出处：
+<a href="http://blog.csdn.net/todototry/archive/2007/04/11/1560458.aspx">柔性数组结构成员</a></p>
+
+<p>这下你算是彻底明白了吧！原来都是柔性数组惹的祸啊！看来自己c语言的功底太差了。惭愧之
+！</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

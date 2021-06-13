@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>NSOperation和NSOperationQueue </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2011/11/08/pome-7.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="NSOperation和NSOperationQueue">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2011/11/08/pome-7.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">NSOperation和NSOperationQueue</h1>
+  
+  <span class="post-meta">11月 08日, 2011</span><br>
+  
+  <span class="post-meta small">4 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>最近在网上闲逛，看到一个老外的博客，感觉里面iphone开发的文章相当不错，自己就暂且选了一篇进行翻译，以备日后使用。这里有这个博客的链接，有兴趣的可以看下<a href="http://www.cimgf.com/">博客</a>。下面是Cocoa Tutorial: NSOperation and NSOperationQueue这篇博文的原文翻译。</p>
+
+<p>在任何语言中线程都是困难的。更糟糕的是，当线程出错的时候，会出现意想不到的情况。因为这些，程序员要么完全的避免线程，要么就花费大量的时间确保线程万无一失。</p>
+
+<p>值得庆幸的是，苹果在狮子系统中对此做了大量的改进。利用NSThread封装了大量的方法，以便于线程容易管理。另外，苹果介绍了两个新的对象：NSOperation和NSOperationQueue。这个教程，我将利用一些简单的例子，展示如何使用这些新对象和怎么使多线程应用程序顺利执行。</p>
+
+<p>下面的网址你可以获得工程的<a href="http://www.cimgf.com/wp-content/uploads/2008/02/asyncdownloader.zip">例子</a>
+在这个教程中，我将展示利用NSOperation和NSOperationQueue怎么来控制后台的线程。这个教程的目的仅仅是用来演示这些类怎么使用的，所以并不是使用这些类的唯一方法。</p>
+
+<h3 id="nsoperation对象">NSOperation对象</h3>
+
+<p>如果你熟悉java语言的话。NSOperation对象很像java.lang.Runnable这个接口。就像java.lang.Runnable一样，NSOperation对象也被设计成可以扩展的。在java的Runnable中，有一个最低级的重载的方法。在NSOperation中此方法是 -(void)main。使用NSOperation最简单的方法是放置它到NSOperationQueue中。只要该操作被导入到队列中，此队列就立刻取得该操作，然后执行它。然后此操作完成，队列就释放它。
+这个例子中，我写了一个NSOperation来抓取一个网页的字符串，然后把这些字符串放到NSXMLDocument中解析，然后在此操作完成之前，传递NSXMLDocument对象给主线程。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">PageLoadOperation</span><span class="p">.</span><span class="n">h</span>
+
+<span class="cp">#import &lt;Cocoa/Cocoa.h&gt;
+</span> 
+ 
+<span class="k">@interface</span> <span class="nc">PageLoadOperation</span> <span class="p">:</span> <span class="nc">NSOperation</span> <span class="p">{</span>
+    <span class="n">NSURL</span> <span class="o">*</span><span class="n">targetURL</span><span class="p">;</span>
+<span class="p">}</span>
+ 
+<span class="k">@property</span><span class="p">(</span><span class="n">retain</span><span class="p">)</span> <span class="n">NSURL</span> <span class="o">*</span><span class="n">targetURL</span><span class="p">;</span>
+ 
+<span class="k">-</span> <span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="nf">initWithURL</span><span class="p">:(</span><span class="n">NSURL</span><span class="o">*</span><span class="p">)</span><span class="nv">url</span><span class="p">;</span>
+ 
+<span class="k">@end</span> 
+<span class="cp">#import "PageLoadOperation.h"
+#import "AppDelegate.h"
+</span> 
+<span class="k">@implementation</span> <span class="nc">PageLoadOperation</span>
+ 
+<span class="k">@synthesize</span> <span class="n">targetURL</span><span class="p">;</span>
+ 
+<span class="k">-</span> <span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="nf">initWithURL</span><span class="p">:(</span><span class="n">NSURL</span><span class="o">*</span><span class="p">)</span><span class="nv">url</span><span class="p">;</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">[</span><span class="n">super</span> <span class="nf">init</span><span class="p">])</span> <span class="k">return</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="p">[</span><span class="n">self</span> <span class="nf">setTargetURL</span><span class="p">:</span><span class="n">url</span><span class="p">];</span>
+    <span class="k">return</span> <span class="n">self</span><span class="p">;</span>
+<span class="p">}</span>
+ 
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">dealloc</span> <span class="p">{</span>
+    <span class="p">[</span><span class="n">targetURL</span> <span class="nf">release</span><span class="p">],</span> <span class="n">targetURL</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="p">[</span><span class="n">super</span> <span class="nf">dealloc</span><span class="p">];</span>
+<span class="p">}</span>
+ 
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">main</span> <span class="p">{</span>
+    <span class="n">NSString</span> <span class="o">*</span><span class="n">webpageString</span> <span class="o">=</span> <span class="p">[[[</span><span class="n">NSString</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithContentsOfURL</span><span class="p">:[</span><span class="n">self</span> <span class="nf">targetURL</span><span class="p">]]</span> <span class="nf">autorelease</span><span class="p">];</span>
+ 
+    <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="n">NSXMLDocument</span> <span class="o">*</span><span class="n">document</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSXMLDocument</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithXMLString</span><span class="p">:</span><span class="n">webpageString</span> 
+                                                              <span class="nl">options:</span><span class="n">NSXMLDocumentTidyHTML</span> 
+                                                                <span class="nl">error:</span><span class="o">&amp;</span><span class="n">error</span><span class="p">];</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">document</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">NSLog</span><span class="p">(</span><span class="s">@"%s Error loading document (%@): %@"</span><span class="p">,</span> <span class="n">_cmd</span><span class="p">,</span> <span class="p">[[</span><span class="n">self</span> <span class="nf">targetURL</span><span class="p">]</span> <span class="nf">absoluteString</span><span class="p">],</span> <span class="n">error</span><span class="p">);</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>	
+ 
+    <span class="p">[[</span><span class="n">AppDelegate</span> <span class="nf">shared</span><span class="p">]</span> <span class="nf">performSelectorOnMainThread</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nf">pageLoaded</span><span class="p">:)</span>
+                                           <span class="nl">withObject:</span><span class="n">document</span>
+                                        <span class="nl">waitUntilDone:</span><span class="nb">YES</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">document</span> <span class="nf">release</span><span class="p">];</span>
+<span class="p">}</span>
+<span class="k">@end</span>
+</code></pre></div></div>
+
+<p>就像你看到的，这个类非常的简单。初始化的时候，它接受了一个URL，并且存储了这个URL。当main方法被调用时，它从URL中构造了一个字符串，然后传递这个字符串传给NSXMLDocument初始化。假如在装载xml文档的时候，没有错误发生，它将回传给AppDelegate，在主线程上，然后此任务完成。当main方法结束时，NSOperation也会在队列中被释放。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">AppDelegate</span><span class="p">.</span><span class="n">h</span>
+<span class="cp">#import &lt;Cocoa/Cocoa.h&gt;
+</span> 
+<span class="k">@interface</span> <span class="nc">AppDelegate</span> <span class="p">:</span> <span class="nc">NSObject</span> <span class="p">{</span>
+	<span class="n">NSOperationQueue</span> <span class="o">*</span><span class="n">queue</span><span class="p">;</span>
+<span class="p">}</span>
+ 
+<span class="k">+</span> <span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="n">shared</span><span class="p">;</span>
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">pageLoaded</span><span class="p">:(</span><span class="n">NSXMLDocument</span><span class="o">*</span><span class="p">)</span><span class="nv">document</span><span class="p">;</span>
+ 
+<span class="k">@end</span>
+<span class="cp">#import "AppDelegate.h"
+#import "PageLoadOperation.h"
+</span> 
+<span class="k">@implementation</span> <span class="nc">AppDelegate</span>
+<span class="k">static</span> <span class="n">AppDelegate</span> <span class="o">*</span><span class="n">shared</span><span class="p">;</span>
+<span class="k">static</span> <span class="n">NSArray</span> <span class="o">*</span><span class="n">urlArray</span><span class="p">;</span>
+ 
+<span class="k">-</span> <span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="n">init</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">shared</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">[</span><span class="n">self</span> <span class="nf">autorelease</span><span class="p">];</span>
+        <span class="k">return</span> <span class="n">shared</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">[</span><span class="n">super</span> <span class="nf">init</span><span class="p">])</span> <span class="k">return</span> <span class="nb">nil</span><span class="p">;</span>
+ 
+    <span class="n">NSMutableArray</span> <span class="o">*</span><span class="n">array</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSMutableArray</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">array</span> <span class="nf">addObject</span><span class="p">:</span><span class="s">@"http://www.google.com"</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">array</span> <span class="nf">addObject</span><span class="p">:</span><span class="s">@"http://www.apple.com"</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">array</span> <span class="nf">addObject</span><span class="p">:</span><span class="s">@"http://www.yahoo.com"</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">array</span> <span class="nf">addObject</span><span class="p">:</span><span class="s">@"http://www.zarrastudios.com"</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">array</span> <span class="nf">addObject</span><span class="p">:</span><span class="s">@"http://www.macosxhints.com"</span><span class="p">];</span>
+    <span class="n">urlArray</span> <span class="o">=</span> <span class="n">array</span><span class="p">;</span>
+ 
+    <span class="n">queue</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSOperationQueue</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+    <span class="n">shared</span> <span class="o">=</span> <span class="n">self</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">self</span><span class="p">;</span>
+<span class="p">}</span>
+ 
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">applicationDidFinishLaunching</span><span class="p">:(</span><span class="n">NSNotification</span> <span class="o">*</span><span class="p">)</span><span class="nv">aNotification</span>
+<span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">NSString</span> <span class="o">*</span><span class="n">urlString</span> <span class="k">in</span> <span class="n">urlArray</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">NSURL</span> <span class="o">*</span><span class="n">url</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSURL</span> <span class="nf">URLWithString</span><span class="p">:</span><span class="n">urlString</span><span class="p">];</span>
+        <span class="n">PageLoadOperation</span> <span class="o">*</span><span class="n">plo</span> <span class="o">=</span> <span class="p">[[</span><span class="n">PageLoadOperation</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithURL</span><span class="p">:</span><span class="n">url</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">queue</span> <span class="nf">addOperation</span><span class="p">:</span><span class="n">plo</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">plo</span> <span class="nf">release</span><span class="p">];</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+ 
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">dealloc</span>
+<span class="p">{</span>
+    <span class="p">[</span><span class="n">queue</span> <span class="nf">release</span><span class="p">],</span> <span class="n">queue</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="p">[</span><span class="n">super</span> <span class="nf">dealloc</span><span class="p">];</span>
+<span class="p">}</span>
+ 
+<span class="k">+</span> <span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="n">shared</span><span class="p">;</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">shared</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">[[</span><span class="n">AppDelegate</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">shared</span><span class="p">;</span>
+<span class="p">}</span>
+ 
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">pageLoaded</span><span class="p">:(</span><span class="n">NSXMLDocument</span><span class="o">*</span><span class="p">)</span><span class="nv">document</span><span class="p">;</span>
+<span class="p">{</span>
+    <span class="n">NSLog</span><span class="p">(</span><span class="s">@"%s Do something with the XMLDocument: %@"</span><span class="p">,</span> <span class="n">_cmd</span><span class="p">,</span> <span class="n">document</span><span class="p">);</span>
+<span class="p">}</span>
+ 
+<span class="k">@end</span>
+</code></pre></div></div>
+
+<p>在这个例子的AppDelegate中，两件事正在发生。第一，在初始化方法中，NSOperationQueue装载一些URL数组。然后当应用程序完成装载的时候，也就是在被应用程序实例调用的applicationDidFinishLaunching方法中，通过url数组循环，为每个url创建一个任务，然后放置这些任务到NSOperationQueue中。只要任何一个NSOperation被安排到队列中，就回立刻被队列获取，然后分配它到一个NSThread中，然后NSThread就会运行NSOperation中的main函数中的方法。一旦操作完成，线程就报告给队列，然后队列就释放这个操作。</p>
+
+<h3 id="nsoperationqueue同步">NSOperationQueue同步</h3>
+
+<p>在这个简单的例子中，很困难导入足够多的对象，使之并行运行。然而，如果你运行的任务需要花费大量的时间，你将会看到此队列同时运行很多任务。幸运的是，如果你想降低并发任务的数量，你能在AppDelegate的初始化方法中，
+如下的设置：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="n">init</span>
+<span class="p">{</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">shared</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">[</span><span class="n">self</span> <span class="nf">autorelease</span><span class="p">];</span>
+        <span class="k">return</span> <span class="n">shared</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">[</span><span class="n">super</span> <span class="nf">init</span><span class="p">])</span> <span class="k">return</span> <span class="nb">nil</span><span class="p">;</span>
+ 
+    <span class="n">NSMutableArray</span> <span class="o">*</span><span class="n">array</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSMutableArray</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">array</span> <span class="nf">addObject</span><span class="p">:</span><span class="s">@"http://www.google.com"</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">array</span> <span class="nf">addObject</span><span class="p">:</span><span class="s">@"http://www.apple.com"</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">array</span> <span class="nf">addObject</span><span class="p">:</span><span class="s">@"http://www.yahoo.com"</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">array</span> <span class="nf">addObject</span><span class="p">:</span><span class="s">@"http://www.zarrastudios.com"</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">array</span> <span class="nf">addObject</span><span class="p">:</span><span class="s">@"http://www.macosxhints.com"</span><span class="p">];</span>
+    <span class="n">urlArray</span> <span class="o">=</span> <span class="n">array</span><span class="p">;</span>
+    <span class="n">queue</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSOperationQueue</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">queue</span> <span class="nf">setMaxConcurrentOperationCount</span><span class="p">:</span><span class="mi">2</span><span class="p">];</span>
+    <span class="n">shared</span> <span class="o">=</span> <span class="n">self</span><span class="p">;</span>
+    <span class="k">return</span> <span class="n">self</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这样的话，在相同的时间，队列就会被控制在只有2个操作在运行。剩下的操作将会等待，直到头两个操作被执行完，然后队列才能得到机会去执行其他的操作，直到队列空为止。</p>
+
+<h3 id="总结">总结</h3>
+
+<p>这些是NSOperation和NSOperationQueue最基础的操作。你会注意到代码中很多地方都与NSOperation，NSOperationQueue的建立和使用没有关系。事实上使用NSOperation和NSOperationQueue的代码是惊人的小。然而，使用如此少的代码，你就可以在程序中使用多线程，所以它提供了一个很好的方式方便的管理应用程序中复杂的任务。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

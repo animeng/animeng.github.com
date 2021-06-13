@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>四 cocoa中Foundation框架的介绍 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2010/12/20/cocoa-study-4.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="四 cocoa中Foundation框架的介绍">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2010/12/20/cocoa-study-4.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">四 cocoa中Foundation框架的介绍</h1>
+  
+  <span class="post-meta">12月 20日, 2010</span><br>
+  
+  <span class="post-meta small">7 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>自己好久没更新博客了，不能说没有时间，还是自己太懒惰了。有空就想玩玩游戏，聊聊天，总觉得有的是时间改天在写，就这样一拖再拖都一个月了。自己实在不好意思再拖了，所以做学问贵在持之以恒，难点也在这里。所以那些能够坚持不懈，持之以恒的人我都佩服的五体投地，这种品质真的很难培养啊。不发牢骚了，言归正传。下面我就分3部分，来分享一下自己的学习心得。首先会介绍下Foundation框架的大致架构，然后就重点分析下NSObject的组成，最后讲下cocoa编程中方法调用的精髓：SELECTOR IMP。</p>
+
+<h2 id="foundation框架的架构">Foundation框架的架构</h2>
+
+<p>cocoa程序编写主要用到2个框架Foundation和ApplicationKit。其中Foundation框架主要定义了一些基础类，供程序员来使用，而Application kit主要是一些用户界面设计的类。Foundation框架中的所有类都继承自NSObject这个对象，等下会讲到这个对象，这里就暂且知道有这样一个超类就行了。Foundation框架的主要目标有一下几点：</p>
+
+<ol>
+  <li>
+    <p>为内存管理，对象的创建，消息的传递定义基本的对象。</p>
+  </li>
+  <li>
+    <p>用Unicode编码定义字符串类，以及方便的支持语言本地化</p>
+  </li>
+  <li>
+    <p>支持对象的持久保存和发布。</p>
+  </li>
+</ol>
+
+<p>这几点都是apple官方文档上写的设计Foundation框架的目标。</p>
+
+<p>    下面就分析下Foundation类设计的大致策略，首先是建立对象和清理对象的策略，对象释放池NSAutorelasePool是一个重要的对象，用来自动回收对象，从而让程序员方便的进行内存管理。其次就是可变大小的对象（例如NSMutableString），这些对象可以对我们常用的容器类，例如数组，字典，集合，堆栈进行方便的扩展，而不必关系这些容器扩展的方法。第三点就是类簇，就是一个抽象类和一些具体类的组合，这样就组成了我们需要的各种对象和方法，方便以后的调用。最后一点就是通知NSNotificationCentor，其实这个特点用到了一个重要的设计模式，观察者模式。相信如果看过五人组写的设计模式这本书，你一定对这个方法深有体会，因为它是设计模式中一个重要的方法。NSNotificationCentor类就是在这个基础上设计的。</p>
+
+<p>    那么Foundation框架到底有那些类组成哪？我会在以后的博客里，挑选一些常用的类进行详细的分析。这里就大致说以下Foundation框架有那些类组成吧。Foundation类的根是NSObject和NSCoping协议组成的，这两个定义了类的基本属性和方法。继承自NSObject的类大致可以分为这样几类：基本的数据类型的类，如 NSNumber 、一些集合类如NSString NSArray、一些代表系统信息的类如NSDate、还有一些系统实体的类如NSTread NSTast等等。</p>
+
+<h2 id="nsobject介绍">NSObject介绍</h2>
+
+<p>假如没有面向对象的语言，那么结构化的程序设计语言如何模拟类哪？那自然就想到了结构体，其实objective c是在c语言的基础上发展的，同样NSObject也是用结构体来实现的。首先来看下一段结构体模拟类的代码吧。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="k">struct</span> <span class="n">my_objc_class</span> <span class="o">*</span><span class="n">MetaClass</span><span class="p">;</span>
+
+<span class="k">typedef</span> <span class="k">struct</span> <span class="n">my_objc_class</span> <span class="o">*</span><span class="n">MyClass</span><span class="p">;</span>
+<span class="k">struct</span> <span class="n">my_objc_class</span> <span class="p">{</span><span class="err">    </span> 
+<span class="err">   </span> <span class="n">MetaClass</span><span class="err">          </span> <span class="n">class_pointer</span><span class="p">;</span><span class="err">        </span> 
+<span class="err">   </span> <span class="k">struct</span> <span class="n">my_objc_class</span><span class="o">*</span><span class="err"> </span> <span class="n">super_class</span><span class="p">;</span><span class="err">           </span> 
+<span class="err">   </span> <span class="k">const</span> <span class="kt">char</span><span class="o">*</span><span class="err">        </span> <span class="n">name</span><span class="p">;</span><span class="err">                </span> 
+<span class="err">   </span> <span class="kt">long</span><span class="err">               </span> <span class="n">version</span><span class="p">;</span><span class="err">              </span> 
+<span class="err">   </span> <span class="kt">unsigned</span> <span class="kt">long</span><span class="err">      </span> <span class="n">info</span><span class="p">;</span><span class="err">                 </span> 
+<span class="err">   </span> <span class="kt">long</span><span class="err">               </span> <span class="n">instance_size</span><span class="p">;</span><span class="err">         </span> 
+<span class="err">   </span> <span class="k">struct</span> <span class="n">objc_ivar_list</span><span class="o">*</span> <span class="n">ivars</span><span class="p">;</span><span class="err">             </span> 
+<span class="err">   </span> <span class="k">struct</span> <span class="n">objc_method_list</span><span class="o">*</span><span class="err"> </span> <span class="n">methods</span><span class="p">;</span><span class="err">         </span> 
+<span class="err">   </span> <span class="k">struct</span> <span class="n">sarray</span> <span class="o">*</span><span class="err">   </span> <span class="n">dtable</span><span class="p">;</span><span class="err">                 </span> 
+<span class="err">   </span> <span class="k">struct</span> <span class="n">my_objc_class</span><span class="o">*</span> <span class="n">subclass_list</span><span class="p">;</span><span class="err">          </span> 
+<span class="err">   </span> <span class="k">struct</span> <span class="n">my_objc_class</span><span class="o">*</span> <span class="n">sibling_class</span><span class="p">;</span>
+<span class="err">   </span> <span class="k">struct</span> <span class="n">objc_protocol_list</span> <span class="o">*</span><span class="n">protocols</span><span class="p">;</span><span class="err">        </span> 
+<span class="err">   </span> <span class="kt">void</span><span class="o">*</span> <span class="n">gc_object_type</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="c1">//这里就是自己定义一个类了。</span>
+
+<span class="n">MyClass</span> <span class="n">student</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>估计你看完这个结构体，会惊奇的说原来这就是NSObject啊，其实这不是NSObject的原型，因为苹果公司一向不喜欢开源，她的代码我们怎么可能得到那。上面的结构体，是GCC中定义的开源代码，从网上都可以下到，这就是一个类是如何用结构体实现的。下面我们就来逐行分析下这个结构体吧，来揭示一下类的本质。</p>
+
+<ol>
+  <li>
+    <p>class_pointer 顾名思义就是这个结构体本身的一个指针，相信大部人都知道java和c＋＋中的this关键字的用法吧，在c＋＋中this指针就是这里的class_point。而objective c则是用的self来表示自身的指针的。</p>
+  </li>
+  <li>
+    <p>super_class 看到这里就知道继承是怎么回事了吧，就是在结构体里放上一个指针指向它的父节点。懂得了这点如果想要实现c++中的多重继承，无非就是用指针数组或者链表就可以了。</p>
+  </li>
+  <li>
+    <p>name version和info我要放到一块说了，因为她们都大同小异。name就是你定义的类的名字。任何产品都要有个版本吧，类同样也是人们设计出来的产品，version就是要给你的类加一个版本号，方便日后升级。info就是相当于一个ID，来区分你创建了多少个这样的结构体，也就是类。</p>
+  </li>
+  <li>
+    <p>instance_size 这就是类的关键部分，在类中叫成员变量，这个大小是如何分配的，是根据你在类中定义了多少实例。这样在这个类去初始化的时候，就会读取instance_size中的数据,在c语言中就用malloc给这个结构体分配大小。</p>
+  </li>
+  <li>
+    <p>ivars 表示的是类成员变量的列表，成员变量在分配好大小之后，ivars就存取了她们的地址，从而可以方便的访问到成员变量。所以说c++对类成员变量作用区域的限制，如pravite都是语法上的限制，如果你知道类是如何设计的，就可以先读取类的地址，接着让指针偏移一个变量的大小就可以访问到类中pravite的变量了。</p>
+  </li>
+  <li>
+    <p>methods 方法列表，和实例变量设计的类似，无非这个列表是个函数指针列表吧了，存的都是函数指针。这里就不赘余了。</p>
+  </li>
+  <li>
+    <p>dtable 这个要就是一些语言可以实现动态绑定的关键，在c＋＋中这就是一个虚表，当这个虚表中有数据的时候，函数调用的时候就会首先在methods列表中找到方法的地址，然后从dtable查找符合这个方法应该有多少偏移量，从而访问到正确的地址。objective c中消息同样也是这样实现的。下面是objective c每次方法调用时都会调用lookup这个方法。</p>
+
+    <div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="n">objc_msg_lookup</span><span class="p">(</span><span class="n">id</span><span class="err"> </span><span class="n">receiver</span><span class="p">,</span><span class="err"> </span><span class="n">SEL</span><span class="err"> </span><span class="n">op</span><span class="p">)</span>
+ <span class="p">{</span>
+ <span class="err"> </span> <span class="k">if</span> <span class="p">(</span><span class="n">receiver</span><span class="p">)</span>
+ <span class="err">   </span> <span class="k">return</span> <span class="err"> </span><span class="n">sarray_get</span><span class="p">(</span><span class="n">receiver</span> <span class="o">-&gt;</span> <span class="n">class_pointer</span> <span class="o">-&gt;</span> <span class="n">dtable</span><span class="p">,</span><span class="err"> </span><span class="p">(</span><span class="n">sidx</span><span class="p">)</span><span class="n">op</span><span class="p">);</span>
+ <span class="err"> </span> <span class="k">else</span> 
+ <span class="err">   </span> <span class="k">return</span> <span class="err"> </span><span class="n">nil_method</span><span class="p">;</span>
+
+ <span class="err">｝</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>subclass_list 是子类的列表指针这里不再赘余。</p>
+  </li>
+  <li>
+    <p>sibling_class 是兄弟类的列表，类的结构明显看出来是数据结构中树的原型，用链表表示树的方法多种多样，这里用到的是孩子兄弟表示法。</p>
+  </li>
+  <li>
+    <p>protocols 这里特意用这个名字是为了方便说明objectivc的协议，如果用面向对象的统一定义解释的话，这个指针是用来实现接口的，在c++中叫纯虚对象。</p>
+  </li>
+  <li>
+    <p>gc_object_type 类方法和类变量从那而来的，这就是答案。</p>
+  </li>
+</ol>
+
+<p>有了上面的基础下面介绍SELECTOR和IMP就容易多了。</p>
+
+<p>SELECTOR和IMP
+下面的内容主要以代码的形式演示下，在cocoa中类的方法调用是如何实现的。这里我定义了2个很简单的类纯属是用来模拟数据的。 athlete和footballPlayer。其中footballPlayer继承自athlete，代码如下：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//</span>
+<span class="c1">//  athlete.h</span>
+<span class="c1">//  SelectorAndFuntion</span>
+<span class="c1">//</span>
+<span class="c1">//  Created by mengtnt on 10-12-8.</span>
+<span class="c1">//  Copyright 2010 __MyCompanyName__. All rights reserved.</span>
+<span class="c1">//</span>
+<span class="cp">#import &lt;Cocoa/Cocoa.h&gt;
+</span><span class="k">@interface</span> <span class="nc">athlete</span> <span class="p">:</span> <span class="nc">NSObject</span> 
+<span class="p">{</span>
+<span class="err">   </span> <span class="n">NSString</span> <span class="o">*</span><span class="n">name</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">show</span><span class="p">;</span>
+<span class="k">@end</span>
+
+
+<span class="cp">#import "athlete.h"
+</span><span class="k">@implementation</span> <span class="nc">athlete</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="n">init</span>
+<span class="p">{</span>
+<span class="err">   </span> <span class="n">self</span> <span class="o">=</span> <span class="p">[</span><span class="n">super</span> <span class="nf">init</span><span class="p">];</span>
+<span class="err">   </span> <span class="k">if</span> <span class="p">(</span><span class="n">self</span><span class="p">)</span>
+<span class="err">   </span> <span class="p">{</span>
+<span class="err">   </span> <span class="err">   </span> <span class="n">name</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSString</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithString</span><span class="p">:</span><span class="s">@"Rossi"</span><span class="p">];</span>
+<span class="err">   </span> <span class="p">}</span>
+<span class="err">   </span> <span class="k">return</span> <span class="n">self</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">dealloc</span>
+<span class="p">{</span>
+<span class="err">   </span> <span class="p">[</span><span class="n">name</span> <span class="nf">release</span><span class="p">];</span>
+<span class="err">   </span> <span class="p">[</span><span class="n">super</span> <span class="nf">dealloc</span><span class="p">];</span>
+<span class="p">}</span>
+
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">show</span>
+<span class="p">{</span>
+<span class="err">   </span> <span class="n">NSLog</span><span class="p">(</span><span class="s">@"My name is %@/n"</span><span class="p">,</span><span class="n">name</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">@end</span>
+
+<span class="c1">//</span>
+<span class="c1">//  footballPlayer.h</span>
+<span class="c1">//  SelectorAndFuntion</span>
+<span class="c1">//</span>
+<span class="c1">//  Created by mengtnt on 10-12-8.</span>
+<span class="c1">//  Copyright 2010 __MyCompanyName__. All rights reserved.</span>
+<span class="c1">//</span>
+
+<span class="cp">#import &lt;Cocoa/Cocoa.h&gt;
+#import "athlete.h"
+</span>
+<span class="k">@interface</span> <span class="nc">footballPlayer</span> <span class="p">:</span> <span class="nc">athlete</span>
+<span class="p">{</span>
+<span class="err">   </span> <span class="n">NSNumber</span> <span class="o">*</span><span class="n">goalNumber</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">@end</span>
+
+<span class="cp">#import "footballPlayer.h"
+</span>
+
+<span class="k">@implementation</span> <span class="nc">footballPlayer</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="n">init</span>
+<span class="p">{</span>
+<span class="err">   </span> <span class="n">self</span> <span class="o">=</span> <span class="p">[</span><span class="n">super</span> <span class="nf">init</span><span class="p">];</span>
+<span class="err">   </span> <span class="k">if</span> <span class="p">(</span><span class="n">self</span><span class="p">)</span>
+<span class="err">   </span> <span class="p">{</span>
+<span class="err">   </span> <span class="err">   </span> <span class="n">goalNumber</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSNumber</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithUnsignedInt</span><span class="p">:</span><span class="mi">100</span><span class="p">];</span>
+<span class="err">   </span> <span class="p">}</span>
+<span class="err">   </span> <span class="k">return</span> <span class="n">self</span><span class="p">;</span>
+<span class="p">}</span>
+
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">dealloc</span>
+<span class="p">{</span>
+<span class="err">   </span> <span class="p">[</span><span class="n">goalNumber</span> <span class="nf">release</span><span class="p">];</span>
+<span class="err">   </span> <span class="p">[</span><span class="n">super</span> <span class="nf">dealloc</span><span class="p">];</span>
+<span class="p">}</span>
+
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">show</span>
+<span class="p">{</span>
+<span class="err">   </span> <span class="n">NSLog</span><span class="p">(</span><span class="s">@"Goal is %@/n"</span><span class="p">,</span><span class="n">goalNumber</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">@end</span>
+</code></pre></div></div>
+
+<p>那么利用上面两个数据类，下面这个类就模拟了cocoa中消息的发送。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">//  doProx.h</span>
+<span class="c1">//  SelectorAndFuntion</span>
+
+<span class="c1">//  这个类是用来演示Class,SEL，IMP，函数指针在objective c中如何使用。</span>
+<span class="c1">//  1.SEL IMP 函数名字的关系。其中SEL是apple给每个函数分配的ID，IMP代表函数指针。关系图如下：</span>
+<span class="c1">//           footballPlayer 类</span>
+<span class="c1">//  方法名字        方法ID(假设)        地址(假设)</span>
+<span class="c1">//  show             1001                 0x2001</span>
+
+<span class="c1">//  2.其中会用到获取函数ID的方法selector和通过函数ID调用函数的方法performSelector,等等这些函数的用法。</span>
+<span class="c1">//  另外,反之我们可以用NSSelectorFromString方法来查找此函数名字的ID。</span>
+
+<span class="c1">//  3.我们可以利用methodForSelector来获得函数的指针。并且还利用函数指针，来展示objective c中的performSelector是如何实现的。</span>
+
+<span class="c1">//  4.同样我们可以通过一个普通的字符串取得这个Class类型(方法NSClassFromString)，也可以通过我们生成的对象取得这个Class.</span>
+<span class="c1">//  Selector和Class比较类似，而Class类型获得的方法ClassName.不同的地方是Selector用于表示方法.</span>
+
+
+<span class="c1">//  Created by mengtnt on 10-12-8.</span>
+<span class="c1">//  Copyright 2010 __MyCompanyName__. All rights reserved.</span>
+
+
+<span class="cp">#import &lt;Cocoa/Cocoa.h&gt;
+</span>
+<span class="cp">#define SHOW @"show"    //函数show的字符串。
+#define FOOTBALLPLAYER_CLASS @"footballPlayer"  //类footballPlayer的字符串
+</span>
+<span class="k">@interface</span> <span class="nc">doProx</span> <span class="p">:</span> <span class="nc">NSObject</span> 
+<span class="p">{</span>
+<span class="err">   </span> <span class="n">id</span> <span class="n">athleteInstance</span><span class="p">[</span><span class="mi">2</span><span class="p">];</span><span class="err">   </span> <span class="c1">//因为要动态的调用athlete中的show和footballPlayer的show方法，所以要定义为id类型。</span>
+<span class="err">   </span> <span class="n">SEL</span> <span class="n">show_SEL</span><span class="p">;</span><span class="err">  </span> 
+<span class="err">   </span> <span class="n">IMP</span> <span class="n">show_IMP</span><span class="p">;</span>
+<span class="err">   </span> <span class="kt">void</span><span class="p">(</span><span class="o">*</span><span class="n">show_Func</span><span class="p">)</span> <span class="p">(</span><span class="n">id</span><span class="p">,</span> <span class="n">SEL</span><span class="p">);</span><span class="err"> </span> <span class="c1">//函数指针是用来展示IMP在cocoa中是如何实现的。因为IMP其实定义就是函数指针。</span>
+<span class="err">   </span> <span class="n">Class</span> <span class="n">footBallPlayerClass</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">setSEL</span><span class="p">;</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">showResult</span><span class="p">;</span>
+<span class="k">@end</span>
+
+<span class="cp">#import "doProx.h"
+#import "athlete.h"
+#import "footballPlayer.h"   //在这里才包含两个头文件，这样才能体现程序动态执行的效果。
+</span>
+<span class="k">@implementation</span> <span class="nc">doProx</span>
+<span class="c1">//分别给athlete赋予不同的对象</span>
+<span class="k">-</span> <span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="n">init</span>
+<span class="p">{</span>
+<span class="err">   </span> <span class="n">self</span> <span class="o">=</span> <span class="p">[</span><span class="n">super</span> <span class="nf">init</span><span class="p">];</span>
+<span class="err">   </span> <span class="c1">//第一种获得类对象的方法，是用类方法调用获得此对象</span>
+<span class="err">   </span> <span class="n">athleteInstance</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span><span class="n">athlete</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+<span class="err">   </span> 
+<span class="err">   </span> <span class="c1">//第二种获得类对象的方法，首先通过类的字符串获得类的类型，然后用此类型的类方法调用创建对象。</span>
+<span class="err">   </span> <span class="n">footBallPlayerClass</span> <span class="o">=</span> <span class="n">NSClassFromString</span><span class="p">(</span><span class="n">FOOTBALLPLAYER_CLASS</span><span class="p">);</span>
+<span class="err">   </span> <span class="n">athleteInstance</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span><span class="n">footBallPlayerClass</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+<span class="err">   </span> <span class="k">return</span> <span class="n">self</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">dealloc</span>
+<span class="p">{</span>
+<span class="err">   </span> <span class="p">[</span><span class="n">athleteInstance</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="nf">release</span><span class="p">];</span>
+<span class="err">   </span> <span class="p">[</span><span class="n">athleteInstance</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="nf">release</span><span class="p">];</span>
+<span class="err">   </span> <span class="p">[</span><span class="n">super</span> <span class="nf">dealloc</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="c1">//如何获取SEL变量的值。SEL的值是根据函数名字获得的，相同的名字具有相同的ID。</span>
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">setSEL</span>
+<span class="p">{</span>
+<span class="err">   </span> <span class="c1">//方法一用函数名字获得。</span>
+<span class="err">   </span> <span class="c1">//show_SEL = @selector(show);</span>
+<span class="err">   </span> 
+<span class="err">   </span> <span class="c1">//方法二用函数的字符串获得。</span>
+<span class="err">   </span> <span class="n">show_SEL</span> <span class="o">=</span> <span class="n">NSSelectorFromString</span><span class="p">(</span><span class="n">SHOW</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">showResult</span>
+<span class="p">{</span>
+<span class="err">   </span> <span class="n">show_IMP</span> <span class="o">=</span> <span class="p">[</span><span class="n">athleteInstance</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="nf">methodForSelector</span><span class="p">:</span><span class="n">show_SEL</span><span class="p">];</span>
+<span class="err">   </span> <span class="n">show_IMP</span><span class="p">(</span><span class="n">athleteInstance</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">show_SEL</span><span class="p">);</span>
+<span class="err">   </span> 
+<span class="err">   </span> <span class="n">show_Func</span><span class="o">=</span><span class="p">(</span><span class="kt">void</span> <span class="p">(</span><span class="o">*</span><span class="p">)(</span><span class="n">id</span><span class="p">,</span> <span class="n">SEL</span><span class="p">))</span> <span class="p">[</span><span class="n">athleteInstance</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="nf">methodForSelector</span><span class="p">:</span><span class="n">show_SEL</span><span class="p">];</span>
+<span class="err">   </span> <span class="n">show_Func</span><span class="p">(</span><span class="n">athleteInstance</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">show_SEL</span><span class="p">);</span>
+<span class="err">   </span> 
+<span class="err">   </span> <span class="c1">//展现perform的用法，判断这个对象必须是footballPlayer类型才能执行。</span>
+<span class="err">   </span> <span class="k">for</span><span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span><span class="n">i</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">;</span><span class="n">i</span><span class="o">++</span><span class="p">)</span>
+<span class="err">   </span> <span class="p">{</span>
+<span class="err">   </span> <span class="err">   </span> <span class="k">if</span> <span class="p">([[</span><span class="n">athleteInstance</span><span class="p">[</span><span class="nf">i</span><span class="p">]</span> <span class="nf">className</span><span class="p">]</span> <span class="nf">isEqualToString</span><span class="p">:</span><span class="n">FOOTBALLPLAYER_CLASS</span><span class="p">])</span>
+<span class="err">   </span> <span class="err">   </span> <span class="p">{</span>
+<span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="p">[</span><span class="n">athleteInstance</span><span class="p">[</span><span class="nf">i</span><span class="p">]</span> <span class="nf">performSelector</span><span class="p">:</span><span class="n">show_SEL</span><span class="p">];</span>
+<span class="err">   </span> <span class="err">   </span> <span class="p">}</span>
+<span class="err">   </span> <span class="p">}</span>
+<span class="err">   </span> <span class="n">NSString</span> <span class="o">*</span><span class="n">myName</span> <span class="o">=</span> <span class="n">NSStringFromSelector</span><span class="p">(</span><span class="n">_cmd</span><span class="p">);</span>
+<span class="err">   </span> <span class="n">NSLog</span><span class="p">(</span><span class="s">@"Running in the method of %@"</span><span class="p">,</span> <span class="n">myName</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="k">@end</span>
+<span class="err">然后在主函数里面调用这些方法。</span>
+
+<span class="cp">#import &lt;Foundation/Foundation.h&gt;
+#import "doProx.h"
+</span><span class="kt">int</span> <span class="nf">main</span> <span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span> <span class="n">argv</span><span class="p">[])</span> 
+<span class="p">{</span>
+<span class="err">   </span> <span class="n">NSAutoreleasePool</span> <span class="o">*</span> <span class="n">pool</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSAutoreleasePool</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+<span class="err">   </span> <span class="n">doProx</span> <span class="o">*</span><span class="n">proxy</span> <span class="o">=</span> <span class="p">[[</span><span class="n">doProx</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+<span class="err">   </span> <span class="p">[</span><span class="n">proxy</span> <span class="nf">setSEL</span><span class="p">];</span>
+<span class="err">   </span> <span class="p">[</span><span class="n">proxy</span> <span class="nf">showResult</span><span class="p">];</span>
+<span class="err">   </span> <span class="p">[</span><span class="n">pool</span> <span class="nf">drain</span><span class="p">];</span>
+<span class="err">   </span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>有兴趣的可以把代码复制过去调试下，在debuger中观察各个实例变量和方法的指针是如何变化的，相信有了这些基础以后学习Foundation框架中的常用类就不会有什么困难了。</p>
+
+<p><a href="https://blog.csdn.net/mengtnt/article/details/6087536">原文链接</a></p>
+
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

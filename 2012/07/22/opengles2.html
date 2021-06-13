@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>OpenGL ES的性能范围 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2012/07/22/opengles2.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="OpenGL ES的性能范围">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2012/07/22/opengles2.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">OpenGL ES的性能范围</h1>
+  
+  <span class="post-meta">07月 22日, 2012</span><br>
+  
+  <span class="post-meta small">1 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>OpenGL ES 1.1和OpengGL ES2.0的规范中，都定义了每种实现必须支持的最低标准。但是，在OpenGL ES规范中，对这些应该支持的性能的实现没有限制的那么死板。在OpenGL ES的规范中，有很多种方法可以扩展这些能力范围。在之后的章节“平台注意事项”，会详细讲解IOS中每个OpenGL ES的实现所具备的特定能力。一个实现的准确能力范围根OpengGL ES特定的实现版本，硬件平台以及运行在设备中的IOS版本有关系。</p>
+
+<p>无论你选择构建OpenGL ES1.1还是OpengGL ES2.0的应用程序，你的应用程序应该做的第一件事，就是确定在目前的实现下所具备的准确的能力。为了做这些，你的应用程序需要设定当前上下文，然后调用一个或者更多的OpenGL ES的函数来取回实现的某些特定能力。在创建之后，上下文所具备的能力不能够被改变。一旦你的应用程序具备了这些能力，那么就可以根据这些能力适当的修剪绘制的代码。例如，根据执行提供的纹理单元数量，你可能会单次执行计算，执行多遍，或选择一个简单的算法。一个常用的方式，就是在你的应用程序中，为每一个渲染方式都设计一个类，并且这些类都拥有一个通用的父类。你运行时，你会根据上下文的能力实例化不同的类,读取实现依赖的值</p>
+
+<p>在OpenGL ES规范中定义了实现依赖值，这些值来定义OpenGL ES实现所具有的能力极限范围。例如，纹理的最大尺寸和纹理单元的个数是经常用到的实现依赖值，一个应用程序经常会确认这些值的。IOS设备支持PowerBR MBX图像硬件，最大的纹理尺寸是1024x1024，而PowerVR SGX软件支持的最大纹理尺寸是2048x2048。这两个尺寸都超过了64x64，这个是OpenGL ES规范中的最小尺寸要求。如果你的应用程序要超过这个最小尺寸的要求，那么就应该查询硬件设备是否支持你需要的尺寸。否则，你就需要导入一个更小的纹理或者使用一个不同的渲染策略。
+规范提供了这些限制的很完善的清单，但是在OpenGL ES应用程序中只有一部分会用到。表 3-1 列出了OpenGL ES1.1和OpenGL ES2.0应用程序应该检测的值。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">纹理的最大尺寸</th>
+      <th style="text-align: right">GL_MAX_TEXTURE_SIZE</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">深度缓存面的数量</td>
+      <td style="text-align: right">GL_DEPTH_BITS</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">模版缓存面的数量</td>
+      <td style="text-align: right">GL_STENCIL_BITS</td>
+    </tr>
+  </tbody>
+</table>
+
+<center>表 3-1</center>
+
+<p>在OpenGL ES2.0的应用程序中，你的应用程序首先要读取放置在着色器上面的各种限制。所有的硬件设备都支持一个有限的属性值，传递给顶点和片段着色器。当你的应用程序实现时，超过了这些极限值，一个OpenGL ES 2.0的实现不会给你提供一个软件回退。所以你的应用程序要么就在规定的最小值上实现，要么就需要核对表3-2中的极限值，从而选择何时的值来使用着色器。</p>
+
+<h3 id="opengl-es20着色器">OpenGL ES2.0着色器</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">顶点属性的最大数量</th>
+      <th style="text-align: right">GL_MAX_VERTEX_ATTRIBS</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left">统一顶点向量的最大数量</td>
+      <td style="text-align: right">GL_MAX_VERTEX_UNIFORM_VECTORS</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">统一片段向量的最大数量</td>
+      <td style="text-align: right">GL_MAX_FRAGMENT_UNIFORM_VECTORS</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">可变向量的最大数量</td>
+      <td style="text-align: right">GL_MAX_VARYING_VECTORS</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">在一个顶点着色器上纹理单元的最大数量</td>
+      <td style="text-align: right">GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS</td>
+    </tr>
+    <tr>
+      <td style="text-align: left">在一个片段着色器上纹理单元的最大数量</td>
+      <td style="text-align: right">GL_MAX_TEXTURE_IMAGE_UNITS</td>
+    </tr>
+  </tbody>
+</table>
+
+<center>表 3-2 openGL ES 2.0的着色器的值</center>
+
+<p>对于所有的向量类型，查询将返回四分量的浮点向量的数量
+OpenGL ES 1.1的应用程序需要检查纹理单元的数量，和可用的裁剪平面的数量，如表3-3.</p>
+
+<h3 id="opengl-es11">OpenGL ES1.1</h3>
+
+<table>
+  <thead>
+    <tr>
+      <th>到固定功能管道中可用的纹理单元的最大数量</th>
+      <th>GL_MAX_TEXTURE_UNITS</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>裁剪平面的最大数量</td>
+      <td>GL_MAX_CLIP_PLANES</td>
+    </tr>
+  </tbody>
+</table>
+
+<center>表 3-3 openGL ES 1.1的值</center>
+
+<h3 id="在使用他们之前核对扩展性">在使用他们之前核对扩展性</h3>
+
+<p>一个OpenGL ES的实现可以通过实现OpenGL ES的扩展来为OpenGL ES API增加一些函数的功能。在你打算用OpenGL ES的某个扩展特性时，你的应用程序必须检查这个扩展特性是否能用。唯一的例外是OES_framebuffer_object扩展，这个扩展性能在所有的OpenGL ES 1.1中都提供。在应用程序中，IOS使用framebuffer对象作为唯一一种绘制的帧缓冲。
+清单 3-1 提供了如何检查扩展存在的代码</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">BOOL</span> <span class="nf">CheckForExtension</span><span class="p">(</span><span class="n">NSString</span> <span class="o">*</span><span class="n">searchName</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="c1">// For performance, the array can be created once and cached.</span>
+    <span class="n">NSString</span> <span class="o">*</span><span class="n">extensionsString</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSString</span>
+<span class="nl">stringWithCString:</span><span class="n">glGetString</span><span class="p">(</span><span class="n">GL_EXTENSIONS</span><span class="p">)</span> <span class="nf">encoding</span><span class="p">:</span> <span class="n">NSASCIIStringEncoding</span><span class="p">];</span>
+    <span class="n">NSArray</span> <span class="o">*</span><span class="n">extensionsNames</span> <span class="o">=</span> <span class="p">[</span><span class="n">extensionsString</span> <span class="nf">componentsSeparatedByString</span><span class="p">:</span><span class="s">@"</span><span class="err">
+</span><span class="s">"</span><span class="p">];</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">extensionsNames</span> <span class="nf">containsObject</span><span class="p">:</span> <span class="n">searchName</span><span class="p">];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>      清单 3-1 检查OpenGL ES的扩展
+</code></pre></div></div>
+
+<h3 id="调用glgeterror来测试错误">调用glGetError来测试错误</h3>
+
+<p>你的应用程序的调试版本，应该通过定期的调用glGetError功能函数的返回值，来找出错误。如果有一个错误从glGetError函数中返回，这就意味着没有正确的使用OpenGL ES的API，或者底层的实现不能执行所请求的操作。
+要注意的是重复多次的调用glGetError函数会降低你应用程序的性能。在你程序的release版本时要慎重调用。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>RxCocoa剖析 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2019/12/16/rxswift_cocoa.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="RxCocoa剖析">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2019/12/16/rxswift_cocoa.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">RxCocoa剖析</h1>
+  
+  <span class="post-meta">12月 16日, 2019</span><br>
+  
+  <span class="post-meta small">14 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>上篇介绍了RxSwift设计理念，核心就是利用函数式编程的理念，构建响应式的程序。可是ios原生自带的框架例如UIKit、UIFoundation等等，都是用命令式的方式编写的，如何适配成响应式的方式。RxSwift框架为此专门开发了一个库叫RxCocoa，这个库的大概设计原理下面就分享下。</p>
+
+<h2 id="基本原理">基本原理</h2>
+
+<p>首先看下RxCocoa框架简略的UML类图，下面会根据这个类图对RxCocoa框架的设计理念做一些分析.</p>
+
+<p><img src="/images/rxswift_cocoa.png" alt="image" /></p>
+
+<p>首先看下接口ReactiveCompatible，如果你查看RxCocoa的源码会看到下面的代码</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">/// Extend NSObject with `rx` proxy.</span>
+<span class="kd">extension</span> <span class="kt">NSObject</span><span class="p">:</span> <span class="kt">ReactiveCompatible</span> <span class="p">{</span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>因为ios的基础UI框架都是继承NSObject，所以也就是让所有的UI框架都扩展了RxSwift的功能。</p>
+
+<p>接下来我们再看下Reative这个结构体的实现，我们查看下源码</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Reactive</span><span class="o">&lt;</span><span class="kt">Base</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="c1">/// Base object to extend.</span>
+    <span class="kd">public</span> <span class="k">let</span> <span class="nv">base</span><span class="p">:</span> <span class="kt">Base</span>
+
+    <span class="c1">/// Creates extensions with base object.</span>
+    <span class="c1">///</span>
+    <span class="c1">/// - parameter base: Base object.</span>
+    <span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="n">_</span> <span class="nv">base</span><span class="p">:</span> <span class="kt">Base</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">base</span> <span class="o">=</span> <span class="n">base</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="c1">/// A type that has reactive extensions.</span>
+<span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">ReactiveCompatible</span> <span class="p">{</span>
+    <span class="c1">/// Extended type</span>
+    <span class="kd">associatedtype</span> <span class="kt">ReactiveBase</span>
+
+    <span class="kd">@available</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">deprecated</span><span class="p">,</span> <span class="nv">message</span><span class="p">:</span> <span class="s">"Use `ReactiveBase` instead."</span><span class="p">)</span>
+    <span class="kd">typealias</span> <span class="kt">CompatibleType</span> <span class="o">=</span> <span class="kt">ReactiveBase</span>
+
+    <span class="c1">/// Reactive extensions.</span>
+    <span class="kd">static</span> <span class="k">var</span> <span class="nv">rx</span><span class="p">:</span> <span class="kt">Reactive</span><span class="o">&lt;</span><span class="kt">ReactiveBase</span><span class="o">&gt;.</span><span class="k">Type</span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span>
+
+    <span class="c1">/// Reactive extensions.</span>
+    <span class="k">var</span> <span class="nv">rx</span><span class="p">:</span> <span class="kt">Reactive</span><span class="o">&lt;</span><span class="kt">ReactiveBase</span><span class="o">&gt;</span> <span class="p">{</span> <span class="k">get</span> <span class="k">set</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>可以看出来，实现ReactiveCompatible协议的类，都会包含一个Reative对象rx，并且Reative是一个模板类，会有一个Base类型，这个类型就是ios基础库的类型了。接下来，我们就看下UIView这个类是怎么扩展成具备RxSwift的响应式功能的。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">extension</span> <span class="kt">Reactive</span> <span class="k">where</span> <span class="kt">Base</span><span class="p">:</span> <span class="kt">UIButton</span> <span class="p">{</span>
+    <span class="c1">/// Reactive wrapper for `TouchUpInside` control event.</span>
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">tap</span><span class="p">:</span> <span class="kt">ControlEvent</span><span class="o">&lt;</span><span class="kt">Void</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nf">controlEvent</span><span class="p">(</span><span class="o">.</span><span class="n">touchUpInside</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>可以看到通过这种方法就很容易的扩展UIButton点击事件为一个RxSwift的Observal了。写按钮响应事件的时候就可以用如下代码.</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">button</span> <span class="o">=</span> <span class="kt">UIButton</span><span class="p">(</span><span class="nv">type</span><span class="p">:</span> <span class="o">.</span><span class="n">custom</span><span class="p">)</span>
+        <span class="n">button</span><span class="o">.</span><span class="n">rx</span><span class="o">.</span><span class="n">tap</span><span class="o">.</span><span class="nf">subscribe</span><span class="p">(</span><span class="nv">onNext</span><span class="p">:</span> <span class="p">{</span> <span class="n">_</span> <span class="k">in</span>
+        <span class="p">})</span>
+</code></pre></div></div>
+
+<p>这样就很方便的扩展ios各种控件，下面再来看下UIViewController的一些扩展方法</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">extension</span> <span class="kt">Reactive</span> <span class="k">where</span> <span class="kt">Base</span><span class="p">:</span> <span class="kt">UIViewController</span> <span class="p">{</span>
+
+        <span class="c1">/// Bindable sink for `title`.</span>
+        <span class="kd">public</span> <span class="k">var</span> <span class="nv">title</span><span class="p">:</span> <span class="kt">Binder</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="kt">Binder</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">base</span><span class="p">)</span> <span class="p">{</span> <span class="n">viewController</span><span class="p">,</span> <span class="n">title</span> <span class="k">in</span>
+                <span class="n">viewController</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">title</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</code></pre></div></div>
+
+<p>Binder这个又是什么，看下源码实现</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">struct</span> <span class="kt">Binder</span><span class="o">&lt;</span><span class="kt">Value</span><span class="o">&gt;</span><span class="p">:</span> <span class="kt">ObserverType</span>
+</code></pre></div></div>
+
+<p>本质上是Observer类型，作为观察者对象，也就是Binder是可以接收事件响应的方法。例如下面的用法</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">observal</span> <span class="o">=</span> <span class="kt">Single</span><span class="o">&lt;</span><span class="kt">String</span><span class="o">&gt;.</span><span class="n">create</span> <span class="p">{</span> <span class="n">single</span> <span class="k">in</span>
+    <span class="nf">single</span><span class="p">(</span><span class="o">.</span><span class="nf">success</span><span class="p">(</span><span class="s">"Title"</span><span class="p">))</span>
+    <span class="k">return</span> <span class="kt">Disposables</span><span class="o">.</span><span class="n">create</span> <span class="p">{</span> <span class="p">}</span>
+<span class="p">}</span><span class="o">.</span><span class="nf">asObservable</span><span class="p">()</span>
+<span class="n">observal</span><span class="o">.</span><span class="nf">asObservable</span><span class="p">()</span><span class="o">.</span><span class="nf">bind</span><span class="p">(</span><span class="nv">to</span><span class="p">:</span><span class="n">viewController</span><span class="o">.</span><span class="n">rx</span><span class="o">.</span><span class="n">title</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>所以对于常用的控件，可以用上述方法扩展控件的属性为Observal和Observer类型。这样既可以作为输出的源又可以作为输入的源，基本就可以用响应式的方式进行编程了。</p>
+
+<p>再仔细想想，我们可能漏了什么东西，在UITableView,UICollectionView这里控件，有大量的delegate和datasource方法，那么控件里的delegate和datasouce方法又是如何转换成RxSwift的方法那？下面我们就来讲解下，可能是比上面的方法要略微复杂些。</p>
+
+<p>下面我们看文章开头的UML类图右边的结构，你会发现DelegateProxy这个类是实现代理方法转换成RxSwift方法的核心。而这个类其实是实现了DelegateProxyType的协议，我们就看下这个协议的核心代码</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">DelegateProxyType</span><span class="p">:</span> <span class="kd">class</span> <span class="p">{</span>
+    <span class="kd">associatedtype</span> <span class="kt">ParentObject</span><span class="p">:</span> <span class="kt">AnyObject</span>
+    <span class="kd">associatedtype</span> <span class="kt">Delegate</span>
+    
+    <span class="c1">/// It is require that enumerate call `register` of the extended DelegateProxy subclasses here.</span>
+    <span class="kd">static</span> <span class="kd">func</span> <span class="nf">registerKnownImplementations</span><span class="p">()</span>
+
+    <span class="c1">/// Unique identifier for delegate</span>
+    <span class="kd">static</span> <span class="k">var</span> <span class="nv">identifier</span><span class="p">:</span> <span class="kt">UnsafeRawPointer</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span>
+
+    <span class="c1">/// Returns designated delegate property for object.</span>
+    <span class="c1">///</span>
+    <span class="c1">/// Objects can have multiple delegate properties.</span>
+    <span class="c1">///</span>
+    <span class="c1">/// Each delegate property needs to have it's own type implementing `DelegateProxyType`.</span>
+    <span class="c1">///</span>
+    <span class="c1">/// It's abstract method.</span>
+    <span class="c1">///</span>
+    <span class="c1">/// - parameter object: Object that has delegate property.</span>
+    <span class="c1">/// - returns: Value of delegate property.</span>
+    <span class="kd">static</span> <span class="kd">func</span> <span class="nf">currentDelegate</span><span class="p">(</span><span class="k">for</span> <span class="nv">object</span><span class="p">:</span> <span class="kt">ParentObject</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Delegate</span><span class="p">?</span>
+
+    <span class="c1">/// Sets designated delegate property for object.</span>
+    <span class="c1">///</span>
+    <span class="c1">/// Objects can have multiple delegate properties.</span>
+    <span class="c1">///</span>
+    <span class="c1">/// Each delegate property needs to have it's own type implementing `DelegateProxyType`.</span>
+    <span class="c1">///</span>
+    <span class="c1">/// It's abstract method.</span>
+    <span class="c1">///</span>
+    <span class="c1">/// - parameter toObject: Object that has delegate property.</span>
+    <span class="c1">/// - parameter delegate: Delegate value.</span>
+    <span class="kd">static</span> <span class="kd">func</span> <span class="nf">setCurrentDelegate</span><span class="p">(</span><span class="n">_</span> <span class="nv">delegate</span><span class="p">:</span> <span class="kt">Delegate</span><span class="p">?,</span> <span class="n">to</span> <span class="nv">object</span><span class="p">:</span> <span class="kt">ParentObject</span><span class="p">)</span>
+
+    <span class="c1">/// Returns reference of normal delegate that receives all forwarded messages</span>
+    <span class="c1">/// through `self`.</span>
+    <span class="c1">///</span>
+    <span class="c1">/// - returns: Value of reference if set or nil.</span>
+    <span class="kd">func</span> <span class="nf">forwardToDelegate</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Delegate</span><span class="p">?</span>
+
+    <span class="c1">/// Sets reference of normal delegate that receives all forwarded messages</span>
+    <span class="c1">/// through `self`.</span>
+    <span class="c1">///</span>
+    <span class="c1">/// - parameter forwardToDelegate: Reference of delegate that receives all messages through `self`.</span>
+    <span class="c1">/// - parameter retainDelegate: Should `self` retain `forwardToDelegate`.</span>
+    <span class="kd">func</span> <span class="nf">setForwardToDelegate</span><span class="p">(</span><span class="n">_</span> <span class="nv">forwardToDelegate</span><span class="p">:</span> <span class="kt">Delegate</span><span class="p">?,</span> <span class="nv">retainDelegate</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>RxCocoa源码中作者画了如下这个图，我们配合这个图来看下其中的原理。</p>
+
+<p><img src="/images/rxswift_cocoa1.png" alt="image" /></p>
+
+<p>作者在源码中说到要扩展UIScrollViewDelegate的方法需要定义一个DelegateType类型，这个类型中通过ProxyFactory来创建，本质上是调用DelegateType的注册方法registerKnownImplementations。为了让delegate的方法具备Observable能力，在DelegateType对象里面定义了一个PublishSubject的对象，然后把delegate中的方法存储到了一个队列中，如果delegate方法被调用，PublishSubject对象就会响应此事件。这样delegateType就具备了Observal的能力。</p>
+
+<p>通过上面的方法，你会发现，当创建DelegateType时，需要把控件所有的代理方法实现一遍。作者为了不增加这么多冗余的代码，特意写了_RXDelegateProxy这个oc语言编写的类，主要是为了用runtime的方法，因为swift没有runtime特性，所以作者也只能勉强为之了。下面看下这个类runtime的方法实现。</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">forwardInvocation</span><span class="o">:</span><span class="p">(</span><span class="n">NSInvocation</span> <span class="o">*</span><span class="p">)</span><span class="n">anInvocation</span> <span class="p">{</span>
+    <span class="n">BOOL</span> <span class="n">isVoid</span> <span class="o">=</span> <span class="n">RX_is_method_signature_void</span><span class="p">(</span><span class="n">anInvocation</span><span class="p">.</span><span class="n">methodSignature</span><span class="p">);</span>
+    <span class="n">NSArray</span> <span class="o">*</span><span class="n">arguments</span> <span class="o">=</span> <span class="n">nil</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">isVoid</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">arguments</span> <span class="o">=</span> <span class="n">RX_extract_arguments</span><span class="p">(</span><span class="n">anInvocation</span><span class="p">);</span>
+        <span class="p">[</span><span class="n">self</span> <span class="n">_sentMessage</span><span class="o">:</span><span class="n">anInvocation</span><span class="p">.</span><span class="n">selector</span> <span class="n">withArguments</span><span class="o">:</span><span class="n">arguments</span><span class="p">];</span>
+    <span class="p">}</span>
+    
+    <span class="k">if</span> <span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">_forwardToDelegate</span> <span class="o">&amp;&amp;</span> <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">_forwardToDelegate</span> <span class="n">respondsToSelector</span><span class="o">:</span><span class="n">anInvocation</span><span class="p">.</span><span class="n">selector</span><span class="p">])</span> <span class="p">{</span>
+        <span class="p">[</span><span class="n">anInvocation</span> <span class="n">invokeWithTarget</span><span class="o">:</span><span class="n">self</span><span class="p">.</span><span class="n">_forwardToDelegate</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">isVoid</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">[</span><span class="n">self</span> <span class="n">_methodInvoked</span><span class="o">:</span><span class="n">anInvocation</span><span class="p">.</span><span class="n">selector</span> <span class="n">withArguments</span><span class="o">:</span><span class="n">arguments</span><span class="p">];</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>如果熟悉runtime就会发现，本质上就是把ios控件代理的方法用forwardInvocation方式捕获掉，当用户用rxswift方式调用代理的方法时，forwardInvocation会转发给DelegateProxy类型，从而实现了捕获，不过作者也说了，这里Runtime只实现了没有参数返回的代理方法，如果有参数返回，比如UICollectionView的dataSource都会返回参数，这时就需要自己定义方法实现了，例如下面RxCollectionViewDataSourceProxy的实现</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">open</span> <span class="kd">class</span> <span class="kt">RxCollectionViewDataSourceProxy</span>
+    <span class="p">:</span> <span class="kt">DelegateProxy</span><span class="o">&lt;</span><span class="kt">UICollectionView</span><span class="p">,</span> <span class="kt">UICollectionViewDataSource</span><span class="o">&gt;</span>
+    <span class="p">,</span> <span class="kt">DelegateProxyType</span> 
+    <span class="p">,</span> <span class="kt">UICollectionViewDataSource</span> <span class="p">{</span>
+
+    <span class="c1">/// Typed parent object.</span>
+    <span class="kd">public</span> <span class="k">weak</span> <span class="kd">private(set)</span> <span class="k">var</span> <span class="nv">collectionView</span><span class="p">:</span> <span class="kt">UICollectionView</span><span class="p">?</span>
+
+    <span class="c1">/// - parameter collectionView: Parent object for delegate proxy.</span>
+    <span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">collectionView</span><span class="p">:</span> <span class="kt">ParentObject</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">collectionView</span> <span class="o">=</span> <span class="n">collectionView</span>
+        <span class="k">super</span><span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">parentObject</span><span class="p">:</span> <span class="n">collectionView</span><span class="p">,</span> <span class="nv">delegateProxy</span><span class="p">:</span> <span class="kt">RxCollectionViewDataSourceProxy</span><span class="o">.</span><span class="k">self</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Register known implementations</span>
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">registerKnownImplementations</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">register</span> <span class="p">{</span> <span class="kt">RxCollectionViewDataSourceProxy</span><span class="p">(</span><span class="nv">collectionView</span><span class="p">:</span> <span class="nv">$0</span><span class="p">)</span> <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="kd">private</span> <span class="k">weak</span> <span class="k">var</span> <span class="nv">_requiredMethodsDataSource</span><span class="p">:</span> <span class="kt">UICollectionViewDataSource</span><span class="p">?</span> <span class="o">=</span> <span class="n">collectionViewDataSourceNotSet</span>
+
+    <span class="c1">// MARK: delegate</span>
+
+    <span class="c1">/// Required delegate method implementation.</span>
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">collectionView</span><span class="p">(</span><span class="n">_</span> <span class="nv">collectionView</span><span class="p">:</span> <span class="kt">UICollectionView</span><span class="p">,</span> <span class="n">numberOfItemsInSection</span> <span class="nv">section</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Int</span> <span class="p">{</span>
+        <span class="nf">return</span> <span class="p">(</span><span class="n">_requiredMethodsDataSource</span> <span class="p">??</span> <span class="n">collectionViewDataSourceNotSet</span><span class="p">)</span><span class="o">.</span><span class="nf">collectionView</span><span class="p">(</span><span class="n">collectionView</span><span class="p">,</span> <span class="nv">numberOfItemsInSection</span><span class="p">:</span> <span class="n">section</span><span class="p">)</span>
+    <span class="p">}</span>
+    
+    <span class="c1">/// Required delegate method implementation.</span>
+    <span class="kd">public</span> <span class="kd">func</span> <span class="nf">collectionView</span><span class="p">(</span><span class="n">_</span> <span class="nv">collectionView</span><span class="p">:</span> <span class="kt">UICollectionView</span><span class="p">,</span> <span class="n">cellForItemAt</span> <span class="nv">indexPath</span><span class="p">:</span> <span class="kt">IndexPath</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">UICollectionViewCell</span> <span class="p">{</span>
+        <span class="nf">return</span> <span class="p">(</span><span class="n">_requiredMethodsDataSource</span> <span class="p">??</span> <span class="n">collectionViewDataSourceNotSet</span><span class="p">)</span><span class="o">.</span><span class="nf">collectionView</span><span class="p">(</span><span class="n">collectionView</span><span class="p">,</span> <span class="nv">cellForItemAt</span><span class="p">:</span> <span class="n">indexPath</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="c1">/// For more information take a look at `DelegateProxyType`.</span>
+    <span class="kd">open</span> <span class="k">override</span> <span class="kd">func</span> <span class="nf">setForwardToDelegate</span><span class="p">(</span><span class="n">_</span> <span class="nv">forwardToDelegate</span><span class="p">:</span> <span class="kt">UICollectionViewDataSource</span><span class="p">?,</span> <span class="nv">retainDelegate</span><span class="p">:</span> <span class="kt">Bool</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">_requiredMethodsDataSource</span> <span class="o">=</span> <span class="n">forwardToDelegate</span> <span class="p">??</span> <span class="n">collectionViewDataSourceNotSet</span>
+        <span class="k">super</span><span class="o">.</span><span class="nf">setForwardToDelegate</span><span class="p">(</span><span class="n">forwardToDelegate</span><span class="p">,</span> <span class="nv">retainDelegate</span><span class="p">:</span> <span class="n">retainDelegate</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<h2 id="rxcocoa使用">RxCocoa使用</h2>
+
+<p>下面就先感受下RxCocoa的便捷之处吧，只需要几行代码就可以绑定数据源到CollectionView，并且不需要额外定义任何全局变量和方法。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">items</span> <span class="o">=</span> <span class="kt">Observable</span><span class="o">.</span><span class="nf">just</span><span class="p">([</span>
+            <span class="mi">1</span><span class="p">,</span>
+            <span class="mi">2</span><span class="p">,</span>
+            <span class="mi">3</span>
+        <span class="p">])</span>
+<span class="n">items</span><span class="o">.</span><span class="nf">bind</span><span class="p">(</span><span class="nv">to</span><span class="p">:</span> <span class="n">collectionView</span><span class="o">.</span><span class="n">rx</span><span class="o">.</span><span class="n">items</span><span class="p">)</span> <span class="p">{</span> <span class="p">(</span><span class="n">collectionView</span><span class="p">,</span> <span class="n">row</span><span class="p">,</span> <span class="n">element</span><span class="p">)</span> <span class="k">in</span>
+
+    <span class="k">let</span> <span class="nv">indexPath</span> <span class="o">=</span> <span class="kt">IndexPath</span><span class="p">(</span><span class="nv">row</span><span class="p">:</span> <span class="n">row</span><span class="p">,</span> <span class="nv">section</span><span class="p">:</span> <span class="mi">0</span><span class="p">)</span>
+
+    <span class="k">let</span> <span class="nv">cell</span> <span class="o">=</span> <span class="n">collectionView</span><span class="o">.</span><span class="nf">dequeueReusableCell</span><span class="p">(</span><span class="nv">withReuseIdentifier</span><span class="p">:</span> <span class="s">"Cell"</span><span class="p">,</span> <span class="nv">for</span><span class="p">:</span> <span class="n">indexPath</span><span class="p">)</span>
+
+    <span class="n">cell</span><span class="o">.</span><span class="n">numberLabel</span><span class="o">.</span><span class="n">text</span> <span class="o">=</span> <span class="s">"</span><span class="se">\(</span><span class="n">element</span><span class="se">)</span><span class="s"> @ </span><span class="se">\(</span><span class="n">row</span><span class="se">)</span><span class="s">"</span>
+
+    <span class="k">return</span> <span class="n">cell</span>
+
+<span class="p">}</span>
+<span class="o">.</span><span class="nf">disposed</span><span class="p">(</span><span class="nv">by</span><span class="p">:</span> <span class="n">disposeBag</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>下面我们来逐行分析下如何通过两行代码实现CollectionView的DataSource的。首先看下Observal对象中bind这个方法</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">bind</span><span class="o">&lt;</span><span class="kt">R1</span><span class="p">,</span> <span class="kt">R2</span><span class="o">&gt;</span><span class="p">(</span><span class="n">to</span> <span class="nv">binder</span><span class="p">:</span> <span class="p">(</span><span class="k">Self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">(</span><span class="kt">R1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">R2</span><span class="p">,</span> <span class="nv">curriedArgument</span><span class="p">:</span> <span class="kt">R1</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">R2</span> <span class="p">{</span>
+         <span class="k">return</span> <span class="nf">binder</span><span class="p">(</span><span class="k">self</span><span class="p">)(</span><span class="n">curriedArgument</span><span class="p">)</span>
+    <span class="p">}</span>
+</code></pre></div></div>
+
+<p>本质上来讲是把一个闭包参数，封装成一个Binder，然后接收Observal的事件响应，那我们看下传递的闭包collectionView.rx.items到底又是个什么结构，代码如下:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">items</span><span class="o">&lt;</span><span class="kt">Sequence</span><span class="p">:</span> <span class="kt">Swift</span><span class="o">.</span><span class="kt">Sequence</span><span class="p">,</span> <span class="kt">Source</span><span class="p">:</span> <span class="kt">ObservableType</span><span class="o">&gt;</span>
+        <span class="p">(</span><span class="n">_</span> <span class="nv">source</span><span class="p">:</span> <span class="kt">Source</span><span class="p">)</span>
+        <span class="o">-&gt;</span> <span class="p">(</span><span class="n">_</span> <span class="nv">cellFactory</span><span class="p">:</span> <span class="kd">@escaping</span> <span class="p">(</span><span class="kt">UICollectionView</span><span class="p">,</span> <span class="kt">Int</span><span class="p">,</span> <span class="kt">Sequence</span><span class="o">.</span><span class="kt">Element</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">UICollectionViewCell</span><span class="p">)</span>
+        <span class="o">-&gt;</span> <span class="kt">Disposable</span> <span class="k">where</span> <span class="kt">Source</span><span class="o">.</span><span class="kt">Element</span> <span class="o">==</span> <span class="kt">Sequence</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="p">{</span> <span class="n">cellFactory</span> <span class="k">in</span>
+            <span class="k">let</span> <span class="nv">dataSource</span> <span class="o">=</span> <span class="kt">RxCollectionViewReactiveArrayDataSourceSequenceWrapper</span><span class="o">&lt;</span><span class="kt">Sequence</span><span class="o">&gt;</span><span class="p">(</span><span class="nv">cellFactory</span><span class="p">:</span> <span class="n">cellFactory</span><span class="p">)</span>
+            <span class="k">return</span> <span class="k">self</span><span class="o">.</span><span class="nf">items</span><span class="p">(</span><span class="nv">dataSource</span><span class="p">:</span> <span class="n">dataSource</span><span class="p">)(</span><span class="n">source</span><span class="p">)</span>
+        <span class="p">}</span>
+        
+    <span class="p">}</span>
+</code></pre></div></div>
+
+<p>从上面的方法可以看出来items会接受一个闭包的参数，然后传递给RxCollectionViewReactiveArrayDataSourceSequenceWrapper这个类，它会把cellFactory存储下来。然后调用self.items(dataSource: dataSource)(source)这个函数，参数是一个Observal类型也就是事件源和RxCollectionViewReactiveArrayDataSourceSequenceWrapper对象，接下来我们看下返回的函数是什么</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">func</span> <span class="n">items</span><span class="o">&lt;</span>
+            <span class="kt">DataSource</span><span class="p">:</span> <span class="kt">RxCollectionViewDataSourceType</span> <span class="o">&amp;</span> <span class="kt">UICollectionViewDataSource</span><span class="p">,</span>
+            <span class="kt">Source</span><span class="p">:</span> <span class="kt">ObservableType</span><span class="o">&gt;</span>
+        <span class="p">(</span><span class="nv">dataSource</span><span class="p">:</span> <span class="kt">DataSource</span><span class="p">)</span>
+        <span class="o">-&gt;</span> <span class="p">(</span><span class="n">_</span> <span class="nv">source</span><span class="p">:</span> <span class="kt">Source</span><span class="p">)</span>
+        <span class="o">-&gt;</span> <span class="kt">Disposable</span> <span class="k">where</span> <span class="kt">DataSource</span><span class="o">.</span><span class="kt">Element</span> <span class="o">==</span> <span class="kt">Source</span><span class="o">.</span><span class="kt">Element</span>
+          <span class="p">{</span>
+        <span class="k">return</span> <span class="p">{</span> <span class="n">source</span> <span class="k">in</span>
+            <span class="c1">// This is called for sideeffects only, and to make sure delegate proxy is in place when</span>
+            <span class="c1">// data source is being bound.</span>
+            <span class="c1">// This is needed because theoretically the data source subscription itself might</span>
+            <span class="c1">// call `self.rx.delegate`. If that happens, it might cause weird side effects since</span>
+            <span class="c1">// setting data source will set delegate, and UICollectionView might get into a weird state.</span>
+            <span class="c1">// Therefore it's better to set delegate proxy first, just to be sure.</span>
+            <span class="n">_</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">delegate</span>
+            <span class="c1">// Strong reference is needed because data source is in use until result subscription is disposed</span>
+            <span class="k">return</span> <span class="n">source</span><span class="o">.</span><span class="nf">subscribeProxyDataSource</span><span class="p">(</span><span class="nv">ofObject</span><span class="p">:</span> <span class="k">self</span><span class="o">.</span><span class="n">base</span><span class="p">,</span> <span class="nv">dataSource</span><span class="p">:</span> <span class="n">dataSource</span><span class="p">,</span> <span class="nv">retainDataSource</span><span class="p">:</span> <span class="kc">true</span><span class="p">)</span> <span class="p">{</span> <span class="p">[</span><span class="k">weak</span> <span class="n">collectionView</span> <span class="o">=</span> <span class="k">self</span><span class="o">.</span><span class="n">base</span><span class="p">]</span> <span class="p">(</span><span class="nv">_</span><span class="p">:</span> <span class="kt">RxCollectionViewDataSourceProxy</span><span class="p">,</span> <span class="n">event</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Void</span> <span class="k">in</span>
+                <span class="k">guard</span> <span class="k">let</span> <span class="nv">collectionView</span> <span class="o">=</span> <span class="n">collectionView</span> <span class="k">else</span> <span class="p">{</span>
+                    <span class="k">return</span>
+                <span class="p">}</span>
+                <span class="n">dataSource</span><span class="o">.</span><span class="nf">collectionView</span><span class="p">(</span><span class="n">collectionView</span><span class="p">,</span> <span class="nv">observedEvent</span><span class="p">:</span> <span class="n">event</span><span class="p">)</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里就非常清晰了，把source事件源，绑定到了刚才接收参数闭包的类里面，也就是items = Observable.just([1,2,3])每发射一个元素，都会调用我们传递的闭包参数，同时传递给之前讲到的DelegateType实现的DataSource的代理事件，这样完整的数据源就传递给了UICollectionView的datasource。</p>
+
+<p>下面代码是扩展了UIImagePickerController这个类，让其具备RxSwift的能力，其实上面在讲解原理的时候已经分析过了，如何扩展ios基础控件具备RxSwift能力，下面就简单说下。</p>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">class</span> <span class="kt">RxImagePickerDelegateProxy</span> <span class="p">:</span>
+    <span class="kt">DelegateProxy</span><span class="o">&lt;</span><span class="kt">UIImagePickerController</span><span class="p">,</span>
+    <span class="kt">UIImagePickerControllerDelegate</span> <span class="o">&amp;</span> <span class="kt">UINavigationControllerDelegate</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="kt">DelegateProxyType</span><span class="p">,</span>
+    <span class="kt">UIImagePickerControllerDelegate</span><span class="p">,</span>
+<span class="kt">UINavigationControllerDelegate</span> <span class="p">{</span>
+    
+    <span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="nv">imagePicker</span><span class="p">:</span> <span class="kt">UIImagePickerController</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">super</span><span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">parentObject</span><span class="p">:</span> <span class="n">imagePicker</span><span class="p">,</span>
+                   <span class="nv">delegateProxy</span><span class="p">:</span> <span class="kt">RxImagePickerDelegateProxy</span><span class="o">.</span><span class="k">self</span><span class="p">)</span>
+    <span class="p">}</span>
+    
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">registerKnownImplementations</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">register</span> <span class="p">{</span> <span class="kt">RxImagePickerDelegateProxy</span><span class="p">(</span><span class="nv">imagePicker</span><span class="p">:</span> <span class="nv">$0</span><span class="p">)</span> <span class="p">}</span>
+    <span class="p">}</span>
+    
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">currentDelegate</span><span class="p">(</span><span class="k">for</span> <span class="nv">object</span><span class="p">:</span> <span class="kt">UIImagePickerController</span><span class="p">)</span>
+        <span class="o">-&gt;</span> <span class="p">(</span><span class="kt">UIImagePickerControllerDelegate</span> <span class="o">&amp;</span> <span class="kt">UINavigationControllerDelegate</span><span class="p">)?</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="n">object</span><span class="o">.</span><span class="n">delegate</span>
+    <span class="p">}</span>
+    
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">setCurrentDelegate</span><span class="p">(</span>
+        <span class="n">_</span> <span class="nv">delegate</span><span class="p">:</span> <span class="p">(</span><span class="kt">UIImagePickerControllerDelegate</span>
+        <span class="o">&amp;</span> <span class="kt">UINavigationControllerDelegate</span><span class="p">)?,</span>
+        <span class="n">to</span> <span class="nv">object</span><span class="p">:</span> <span class="kt">UIImagePickerController</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">object</span><span class="o">.</span><span class="n">delegate</span> <span class="o">=</span> <span class="n">delegate</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">extension</span> <span class="kt">Reactive</span> <span class="k">where</span> <span class="kt">Base</span><span class="p">:</span> <span class="kt">UIImagePickerController</span> <span class="p">{</span>
+    
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">pickerDelegate</span><span class="p">:</span> <span class="kt">DelegateProxy</span><span class="o">&lt;</span><span class="kt">UIImagePickerController</span><span class="p">,</span>
+        <span class="kt">UIImagePickerControllerDelegate</span> <span class="o">&amp;</span> <span class="kt">UINavigationControllerDelegate</span> <span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="kt">RxImagePickerDelegateProxy</span><span class="o">.</span><span class="nf">proxy</span><span class="p">(</span><span class="nv">for</span><span class="p">:</span> <span class="n">base</span><span class="p">)</span>
+    <span class="p">}</span>
+    
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">showPicker</span><span class="p">(</span><span class="n">_</span> <span class="nv">controller</span><span class="p">:</span><span class="kt">UIViewController</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt">UIImagePickerController</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="nv">picker</span> <span class="o">=</span> <span class="kt">UIImagePickerController</span><span class="p">()</span>
+        <span class="k">let</span> <span class="nv">barTitleDict</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="kt">NSAttributedString</span><span class="o">.</span><span class="kt">Key</span><span class="o">.</span><span class="nv">font</span><span class="p">:</span> <span class="kt">UIFont</span><span class="o">.</span><span class="nf">systemFont</span><span class="p">(</span><span class="nv">ofSize</span><span class="p">:</span> <span class="mi">18</span><span class="p">,</span> <span class="nv">weight</span><span class="p">:</span> <span class="o">.</span><span class="n">medium</span><span class="p">),</span>
+            <span class="kt">NSAttributedString</span><span class="o">.</span><span class="kt">Key</span><span class="o">.</span><span class="nv">foregroundColor</span><span class="p">:</span> <span class="kt">UIColor</span><span class="o">.</span><span class="n">white</span>
+        <span class="p">]</span>
+        <span class="n">picker</span><span class="o">.</span><span class="n">navigationBar</span><span class="o">.</span><span class="n">titleTextAttributes</span> <span class="o">=</span> <span class="n">barTitleDict</span>
+        <span class="n">picker</span><span class="o">.</span><span class="n">navigationBar</span><span class="o">.</span><span class="n">tintColor</span> <span class="o">=</span> <span class="kt">UIColor</span><span class="o">.</span><span class="n">white</span>
+        <span class="n">picker</span><span class="o">.</span><span class="n">navigationBar</span><span class="o">.</span><span class="n">barStyle</span> <span class="o">=</span> <span class="o">.</span><span class="n">black</span>
+        <span class="n">picker</span><span class="o">.</span><span class="n">navigationBar</span><span class="o">.</span><span class="n">backgroundColor</span> <span class="o">=</span> <span class="kt">UIColor</span><span class="o">.</span><span class="n">background</span>
+        <span class="k">let</span> <span class="nv">observal</span> <span class="o">=</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="kt">UIImagePickerController</span><span class="o">&gt;.</span><span class="n">create</span> <span class="p">{</span> <span class="p">(</span><span class="n">obsever</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Disposable</span> <span class="k">in</span>
+            <span class="n">picker</span><span class="o">.</span><span class="n">modalPresentationStyle</span> <span class="o">=</span> <span class="o">.</span><span class="n">fullScreen</span>
+            <span class="n">picker</span><span class="o">.</span><span class="n">sourceType</span> <span class="o">=</span> <span class="o">.</span><span class="n">photoLibrary</span>
+            <span class="n">controller</span><span class="o">.</span><span class="nf">present</span><span class="p">(</span><span class="n">picker</span><span class="p">,</span> <span class="nv">animated</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nv">completion</span><span class="p">:</span> <span class="kc">nil</span><span class="p">)</span>
+            
+            <span class="k">let</span> <span class="nv">dismissDisposable</span> <span class="o">=</span> <span class="kt">Observable</span>
+                <span class="o">.</span><span class="nf">merge</span><span class="p">(</span><span class="n">picker</span><span class="o">.</span><span class="n">rx</span><span class="o">.</span><span class="n">didFinishPickingMediaWithInfo</span><span class="o">.</span><span class="n">map</span> <span class="p">{</span> <span class="n">_</span> <span class="nf">in</span> <span class="p">()</span> <span class="p">},</span><span class="n">picker</span><span class="o">.</span><span class="n">rx</span><span class="o">.</span><span class="n">didCancel</span><span class="p">)</span>
+                <span class="o">.</span><span class="nf">subscribe</span><span class="p">(</span><span class="nv">onNext</span><span class="p">:</span> <span class="p">{</span>  <span class="n">_</span> <span class="k">in</span>
+                    <span class="n">obsever</span><span class="o">.</span><span class="nf">on</span><span class="p">(</span><span class="o">.</span><span class="n">completed</span><span class="p">)</span>
+                <span class="p">})</span>
+            
+            <span class="n">obsever</span><span class="o">.</span><span class="nf">onNext</span><span class="p">(</span><span class="n">picker</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kt">Disposables</span><span class="o">.</span><span class="nf">create</span><span class="p">(</span><span class="n">dismissDisposable</span><span class="p">,</span> <span class="kt">Disposables</span><span class="o">.</span><span class="n">create</span> <span class="p">{</span>
+                <span class="n">picker</span><span class="o">.</span><span class="nf">dismiss</span><span class="p">(</span><span class="nv">animated</span><span class="p">:</span> <span class="kc">true</span><span class="p">,</span> <span class="nv">completion</span><span class="p">:</span> <span class="kc">nil</span><span class="p">)</span>
+            <span class="p">})</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">observal</span>
+    <span class="p">}</span>
+    
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">didFinishPickingMediaWithInfo</span><span class="p">:</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="p">[</span><span class="kt">UIImagePickerController</span><span class="o">.</span><span class="kt">InfoKey</span> <span class="p">:</span> <span class="kt">AnyObject</span><span class="p">]</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">pickerDelegate</span>
+            <span class="o">.</span><span class="nf">methodInvoked</span><span class="p">(</span><span class="kd">#selector(</span><span class="nf">UIImagePickerControllerDelegate.imagePickerController(_:didFinishPickingMediaWithInfo:)</span><span class="kd">)</span><span class="p">)</span>
+            <span class="o">.</span><span class="nf">map</span><span class="p">({</span> <span class="p">(</span><span class="n">a</span><span class="p">)</span> <span class="k">in</span>
+                <span class="k">return</span> <span class="k">try</span> <span class="nf">castOrThrow</span><span class="p">(</span><span class="kt">Dictionary</span><span class="o">&lt;</span><span class="kt">UIImagePickerController</span><span class="o">.</span><span class="kt">InfoKey</span><span class="p">,</span> <span class="kt">AnyObject</span><span class="o">&gt;.</span><span class="k">self</span><span class="p">,</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="p">})</span>
+    <span class="p">}</span>
+    
+    <span class="kd">public</span> <span class="k">var</span> <span class="nv">didCancel</span><span class="p">:</span> <span class="kt">Observable</span><span class="o">&lt;</span><span class="p">()</span><span class="o">&gt;</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">pickerDelegate</span>
+            <span class="o">.</span><span class="nf">methodInvoked</span><span class="p">(</span><span class="kd">#selector(</span><span class="nf">UIImagePickerControllerDelegate.imagePickerControllerDidCancel(_:)</span><span class="kd">)</span><span class="p">)</span>
+            <span class="o">.</span><span class="n">map</span> <span class="p">{</span><span class="n">_</span> <span class="nf">in</span> <span class="p">()</span> <span class="p">}</span>
+    <span class="p">}</span>
+    
+<span class="p">}</span>
+
+<span class="kd">private</span> <span class="kd">func</span> <span class="n">castOrThrow</span><span class="o">&lt;</span><span class="kt">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">_</span> <span class="nv">resultType</span><span class="p">:</span> <span class="kt">T</span><span class="o">.</span><span class="k">Type</span><span class="p">,</span> <span class="n">_</span> <span class="nv">object</span><span class="p">:</span> <span class="kt">Any</span><span class="p">)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">T</span> <span class="p">{</span>
+    <span class="k">guard</span> <span class="k">let</span> <span class="nv">returnValue</span> <span class="o">=</span> <span class="n">object</span> <span class="k">as?</span> <span class="kt">T</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">throw</span> <span class="kt">RxCocoaError</span><span class="o">.</span><span class="nf">castingError</span><span class="p">(</span><span class="nv">object</span><span class="p">:</span> <span class="n">object</span><span class="p">,</span> <span class="nv">targetType</span><span class="p">:</span> <span class="n">resultType</span><span class="p">)</span>
+    <span class="p">}</span>
+    
+    <span class="k">return</span> <span class="n">returnValue</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>首先我们扩展了Reative使UIImagePickerController具备RxSwift能力。其次我们要创建一个Proxy的类，这个类要实现DelegateProxyType和所有的UIImagePickerController用到的delegate。创建这个类的时候，记得要实现registerKnownImplementations方法，这样就可以自动实现Proxy类的创建了，由于UIImagePickerController的代理方法都没有返回参数，所以我们就不用自定义这些代理方法了，直接用下面的方法就可以扩展所有的代理响应了。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">pickerDelegate</span>
+            <span class="o">.</span><span class="nf">methodInvoked</span><span class="p">(</span><span class="kd">#selector(</span><span class="nf">UIImagePickerControllerDelegate.imagePickerController(_:didFinishPickingMediaWithInfo:)</span><span class="kd">)</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>这样我们就把一个不具备RxSwift能力的UIImagePickerController类，扩展为了具备RxSwift能里的类，就可以方便的使用响应式编程了。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>从上面的讲解可以看出，RxCocoa基本扩展了ios所有控件的属性，每个方法都可以用RxSwift响应式的方式编程。自此就可以感受到RxSwift代码的便捷和优雅了。不过虽然说RxSwift可以快捷的绑定数据到UI上，但是也有一些弊端。比如在做响应式编程的时候，由于一般很多第三方库都是命令式的方法，需要写大量的方法进行扩展，以适配响应式编程的方式。还有一个弊端就是用RxSwift写的项目往往在调试的时候，堆栈信息会过长，不太利于调试。不过RxSwift整个编程的思想源于事件驱动，对于客户端UI数据的绑定尤其有用，Rx本质上也是函数式编程的一种思想，将来在服务器开发方面，并发编程的优势也会体现出来。希望Rx社区能越来越好。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

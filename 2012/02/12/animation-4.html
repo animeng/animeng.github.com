@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>第四章 关键帧动画 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2012/02/12/animation-4.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="第四章 关键帧动画">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2012/02/12/animation-4.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">第四章 关键帧动画</h1>
+  
+  <span class="post-meta">02月 12日, 2012</span><br>
+  
+  <span class="post-meta small">14 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>核心动画为你提供了一个完全控制动画的方法。这种控制是以关键帧动画（keyframe animation）形式存在的。关键帧动画是你能够，给动画的每个主要步骤分配你想要的值，剩下的就帮你填充。</p>
+
+<p>描述关键帧动画的这个术语是来自于电影工业。随着电影中的动画发展到计算机里，在关键帧之间填充成为创建平滑动画必不可少的部分，上述过程的这个概念就叫补间动画（tweening)。核心动画同样没有什么不同的。你在动画中指定了关键帧，那么核心动画就帮你处理补间动画的过程。它可以基于你在动画中指定的属性，计算出在每个关键帧之间还有什么需要做，然后就插入需要的值。它相当的方便，可以使动画的代码任务变的非常的简单。</p>
+
+<p>这章中，我们将讨论如何从基础动画过度到关键帧动画中。它如此的简单，因此过度应该也是很顺利的。我们也介绍给你层的旋转，和如何通过画一些路径来给层增加内容。</p>
+
+<h3 id="随着时间改变值">随着时间改变值</h3>
+
+<p>核心动画提供了一系列你可以做动画的属性。关键帧动画是一个可以随时改变这些属性的过程。你可以想象下，关键帧动画就是一组动画捆扎在一起，然后按顺序运行。</p>
+
+<p>对于核心动画来说，插值（和电影中的补间动画相似）利用每个关键帧之间的属性值，来计算出附近关键帧的开始值和结束值。换个角度考虑，你可以想象成一个棒球内场中的垒。每一个垒就是一个关键帧，跑手知道，当击球时，如果他想得到一分，他必须跑到第一个垒，然后第二个，第三个，最后到主垒（这个过程中，他不能被赶出去）。他不必担心每两个垒之间的步骤，但是他必须跑到这些垒的每一个。简单的说，关键帧中的动画就是按照顺序跑到每一个目的点（关键帧），直到所有的目的地都到达。</p>
+
+<p>当然了，在棒球内场这种情况下，你的最后一帧的值应该和第一帧一样。</p>
+
+<h3 id="指定关键帧目的地的两个方法">指定关键帧目的地的两个方法</h3>
+
+<p>当你想要使一个属性做动画时，要么你指定一序列的属性值，让动画按顺序到达这些序列值，或者你指定一个核心图形的路径：</p>
+
+<p>一个列值数组很容易被使用一些东西指定，例如背景颜色的改变值，边框或者边框的宽度，还有框架的大小，甚至CGImage(内容的图片)都能被作为关键路径。你通过指定一列CATransform3D对象给数组，来给旋转（transform）这个属性做动画。</p>
+
+<p>使用核心图形路径，可以在屏幕上移动物体从一点到另一点。无论什么时候，只要CGPoint属于属性的类型，一个核心图像路径很可能就是正确的选择。你可以使用anchorPoint和position这个两个属性来使路径做动画。</p>
+
+<p>按照优先级，一个路径会覆盖一组值。这就意味着如果你通过-setPath指定了一个路径，通过-setValues调用的任何值都将被忽略。列表4-1和4-2分别演示了怎么来使用核心图像路径和一组值。清单看起来相似，但是结果却完全不同。在清单4-1中的动画，会引起层按照抛物线的路径跳动。而清单4-2会引起层按照直角的锯齿跳动。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">CAAnimation</span><span class="o">*</span><span class="p">)</span><span class="n">pathAnimation</span><span class="p">;</span>
+<span class="p">{</span>
+  <span class="n">CGMutablePathRef</span> <span class="n">path</span> <span class="o">=</span> <span class="n">CGPathCreateMutable</span><span class="p">();</span>
+  <span class="n">CGPathMoveToPoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span><span class="mi">50</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">120</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">CGPathAddCurveToPoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span><span class="mi">50</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">275</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">150</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">275</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">150</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">120</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">CGPathAddCurveToPoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span><span class="mi">150</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">275</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">250</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">275</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">250</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">120</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">CGPathAddCurveToPoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span><span class="mi">250</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">275</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">350</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">275</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">350</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">120</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">CGPathAddCurveToPoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span><span class="mi">350</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">275</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">450</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">275</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">450</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">120</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+
+  <span class="n">CAKeyframeAnimation</span> <span class="o">*</span>
+  <span class="n">animation</span> <span class="o">=</span> <span class="p">[</span><span class="n">CAKeyframeAnimation</span>
+  <span class="nl">animationWithKeyPath:</span><span class="err">@”</span><span class="n">position</span><span class="err">”</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">animation</span> <span class="nf">setPath</span><span class="p">:</span><span class="n">path</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">animation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">3</span><span class="p">.</span><span class="mi">0</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">animation</span> <span class="nf">setAutoreverses</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+  <span class="n">CFRelease</span><span class="p">(</span><span class="n">path</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">animation</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<center>清单4-1 路径动画</center>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">CAAnimation</span><span class="o">*</span><span class="p">)</span><span class="n">valuesAnimation</span><span class="p">;</span>
+<span class="p">{</span>
+  <span class="n">NSPoint</span> <span class="n">pt0</span> <span class="o">=</span> <span class="n">NSMakePoint</span><span class="p">(</span><span class="mi">50</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">120</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">NSPoint</span> <span class="n">pt1</span> <span class="o">=</span> <span class="n">NSMakePoint</span><span class="p">(</span><span class="mi">50</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">275</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">NSPoint</span> <span class="n">pt2</span> <span class="o">=</span> <span class="n">NSMakePoint</span><span class="p">(</span><span class="mi">150</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">275</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">NSPoint</span> <span class="n">pt3</span> <span class="o">=</span> <span class="n">NSMakePoint</span><span class="p">(</span><span class="mi">150</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">120</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">NSPoint</span> <span class="n">pt4</span> <span class="o">=</span> <span class="n">NSMakePoint</span><span class="p">(</span><span class="mi">150</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">275</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">NSPoint</span> <span class="n">pt5</span> <span class="o">=</span> <span class="n">NSMakePoint</span><span class="p">(</span><span class="mi">250</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">275</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">NSPoint</span> <span class="n">pt6</span> <span class="o">=</span> <span class="n">NSMakePoint</span><span class="p">(</span><span class="mi">250</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">120</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">NSPoint</span> <span class="n">pt7</span> <span class="o">=</span> <span class="n">NSMakePoint</span><span class="p">(</span><span class="mi">250</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">275</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">NSPoint</span> <span class="n">pt8</span> <span class="o">=</span> <span class="n">NSMakePoint</span><span class="p">(</span><span class="mi">350</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">275</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">NSPoint</span> <span class="n">pt9</span> <span class="o">=</span> <span class="n">NSMakePoint</span><span class="p">(</span><span class="mi">350</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">120</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">NSPoint</span> <span class="n">pt10</span> <span class="o">=</span> <span class="n">NSMakePoint</span><span class="p">(</span><span class="mi">350</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">275</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">NSPoint</span> <span class="n">pt11</span> <span class="o">=</span> <span class="n">NSMakePoint</span><span class="p">(</span><span class="mi">450</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">275</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+  <span class="n">NSPoint</span> <span class="n">pt12</span> <span class="o">=</span> <span class="n">NSMakePoint</span><span class="p">(</span><span class="mi">450</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">120</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+
+  <span class="n">NSArray</span> <span class="o">*</span><span class="n">values</span> <span class="o">=</span> <span class="p">[</span><span class="nf">NSArrayarrayWithObjects</span><span class="p">:</span>
+  <span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">pt0</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">pt1</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">pt2</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">pt3</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">pt4</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">pt5</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">pt6</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">pt7</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">pt8</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">pt9</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">pt10</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">pt11</span><span class="p">],</span>
+  <span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithPoint</span><span class="p">:</span><span class="n">pt12</span><span class="p">],</span>
+  <span class="nb">nil</span><span class="p">];</span>
+
+  <span class="n">CAKeyframeAnimation</span>
+  <span class="o">*</span><span class="n">animation</span> <span class="o">=</span> <span class="p">[</span><span class="n">CAKeyframeAnimation</span>
+  <span class="nl">animationWithKeyPath:</span><span class="err">@”</span><span class="n">position</span><span class="err">”</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">animation</span> <span class="nf">setValues</span><span class="p">:</span><span class="n">values</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">animation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">3</span><span class="p">.</span><span class="mi">0</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">animation</span> <span class="nf">setAutoreverses</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+  <span class="k">return</span> <span class="n">animation</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<center>清单4-2 值动画</center>
+
+<p>在图4-1中你会看到两种模式。你可以通过给数组增加更多的点来接近于是用路径获得的模式，但是是用路径是更加的方便。</p>
+
+<p><img src="/images/animation-4-1.gif" alt="图4-1 动画模式，路径vs值" /></p>
+
+<p>图4-2展示了2各层以前以后的运动：绿色的是弧线运动，路径是被清单4-1指定，而直角锯齿模式是红色的层按照清单4-2指定的每个值运动。</p>
+
+<p><img src="/images/animation-4-2.gif" alt="图4-2 两个关键帧的方式的demo" /></p>
+
+<p>从基础动画到关键帧动画
+一个基础动画仅仅需要要你指定一个开始的值和一个结束的值，或者目前的值，关键帧动画可以使你指定：</p>
+
+<p>每个关键帧的一个数组值，例如，你可以给一个CGColorRef对象的一个数组，用来改变背景的颜色。</p>
+
+<p>在0.0和1.0之间的一个数组值，用来给每个帧指定总时间中所占的百分比的时间。</p>
+
+<p>一个时间功能对象的数组（CAMediaTimingFunction），用来指定每帧动画的时间步调。这个区域会使用一个预设的值来指定，例如kCAMediaTimingFunctionEaseIn，动画出来时慢，然后加速。</p>
+
+<p>关键帧动画真的相当的简单。首先，你需要考虑的是，成功的使用关键帧动画，你需要做的基本步骤：</p>
+
+<ol>
+  <li>
+    <p>决定你想要做动画的属性（例如，框架，背景，锚点，位置，边框，等等）</p>
+  </li>
+  <li>
+    <p>在动画对象值的区域中，指定开始，结束，和中间的值。这些都是你的关键帧（看清单4-2）</p>
+  </li>
+  <li>
+    <p>使用duration这个字段指定动画的时间</p>
+  </li>
+  <li>
+    <p>通常来讲，通过使用times这个字段，来给每帧动画指定一个时间。如果你没有指定这些，核心动画就会通过你在values这个字段指定的值分割出时间段。</p>
+  </li>
+  <li>
+    <p>通常，指定时间功能来控制步调。</p>
+  </li>
+</ol>
+
+<p>这些都是你需要做的。你创建你的动画和增加他们到层中。调用-addAnimation就开始了动画。</p>
+
+<h3 id="关键帧动画的时间">关键帧动画的时间</h3>
+
+<p>核心动画提供了一个高标准的间隔尺寸，来指定你的动画如何播放。默认情况下，一帧动画的播放，分割的时间是动画的总时间除以帧数减去一。你可以通过下面的公式决定每帧动画的时间：总时间/(总帧数-1)。例如，如果你指定了一个5帧，10秒的动画，那么每帧的时间就是2.5秒钟：10/(5-1)=2.5。你可以做更多的控制通过使用keyTimes关键字，你可以给每帧动画指定总时间之内的某个时间点。5帧动画，每帧动画占总时间的25%。如果你使用keyTimes关键字设置动画的时间，本质上和默认的动画一样的，代码如清单4-3.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">animation</span> <span class="nf">setCalculationMode</span><span class="p">:</span><span class="n">kCAAnimationLinear</span><span class="p">];</span>
+<span class="p">[</span><span class="n">animation</span> <span class="nf">setKeyTimes</span><span class="p">:</span>
+<span class="p">[</span><span class="n">NSArray</span> <span class="nf">arrayWithObjects</span><span class="p">:</span>
+<span class="p">[</span><span class="nf">NSNumbernumberWithFloat</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">],</span>
+<span class="p">[</span><span class="nf">NSNumbernumberWithFloat</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">25</span><span class="p">],</span>
+ <span class="p">[</span><span class="n">NSNumber</span> <span class="nf">numberWithFloat</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">50</span><span class="p">],</span>
+<span class="p">[</span><span class="nf">NSNumbernumberWithFloat</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">75</span><span class="p">],</span>
+<span class="p">[</span><span class="nf">NSNumbernumberWithFloat</span><span class="p">:</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">],</span> <span class="nb">nil</span><span class="p">]];</span>
+</code></pre></div></div>
+
+<center>清单4-3 显示地设置关键时间模拟默认动画</center>
+
+<p>在清单4-3中，你可能注意到了我们指定了5个值，可能不匹配公式中的值。然而，如果你明白值(0.0)是简单的开始值，那么就会明白我们仅仅指定了4个目的时间，这样就匹配先前所说的公式了。</p>
+
+<p>就是在清单4-3中，你不指定关键时间，你看到的动画也是一致的。这里仅仅是为了展示如何来指定关键时间。你可以增加或者减少每个关键帧的时间。需要记得序列中的每个值，后一个要比前一个大，并且最后一个不能超过1.0。帧的总数和时间给核心动画提供了足够的信息，来插入每个值，简单的通过总时间除以总帧数减去1.</p>
+
+<p>根据calculationMode关键字段，关键时间是如清单4-3中被使用。当你指定步调(kCAAnimationPaced),关键时间就会被忽略。这就像你没指定关键时间一样。当你指定了一个线性(kCAAnimationLinear)，被插入的每个关键帧上的时间，那意味着你会在帧之间看到每步动画。这就是我们上一章讨论的补间动画。如果你指定作为离散的(kCAAnimationDiscrete)，仅仅展示关键帧，在每帧之间没有任何插入。如果你移动一个层到窗口上随机的一点，事实上，你不会看到层移动到每个点。相反，你会看到层跳到每个点，当关键帧的时间到达时。</p>
+
+<h3 id="监视关键帧的目的">监视关键帧的目的</h3>
+
+<p>为了进一步理解怎么来应用关键时间的公式，进入合作网站informit.com/coreframeworks并且打开叫做关键帧步调的示例程序。你会注意到我们增加了定时器，在动画的每个阶段开启用来展示在动画中到达的点。在关键帧步调的例子代码中，我们使一个点在一个五角星的边上做动画，如图表4-3展示。随着动画到达每个点，我们都会从先前的点到下一个点画上一段路径；这些都是有定时器做的。首先，这里要决定我们需要多少关键帧并且决定我们需要多少时间。</p>
+
+<p><img src="/images/animation-4-3.gif" alt="图表4-3 关键帧步调演示程序" /></p>
+
+<p>在示例代码中，我们指定了动画的执行时间为10秒钟。为了决定每两个点之间做动画要花费的时间，我们要应用基于关键帧数量和时间的公式。包含动画的开始和结束点，总共有6个关键帧。我们应用下面的动画时间公式：时间段/(关键帧数-1) = 每帧的时间 10/(6-1) = 2.0.</p>
+
+<p>在清单4-4中，注意到定时器在动画期间每2秒钟使用一次。这就造成了，当每个目的地到达时，路径就是会被更新和绘制来展示走的路径。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">startAnimation</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span><span class="p">{</span>
+
+    <span class="k">if</span><span class="p">(</span> <span class="n">starPath</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="c1">// Reset our starPathCGMutablePathRef if // it has already run before CFRelease(starPath);</span>
+
+        <span class="p">[</span><span class="n">self</span> <span class="nf">createPath</span><span class="p">];</span>
+
+        <span class="p">[[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">setNeedsDisplay</span><span class="p">];</span> 
+    <span class="p">}</span>
+    <span class="c1">// Define a path for the starshape.</span>
+    <span class="n">CGMutablePathRef</span> <span class="n">path</span> <span class="o">=</span><span class="n">CGPathCreateMutable</span><span class="p">();</span> 
+
+    <span class="n">CGPathMoveToPoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span><span class="mi">240</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">280</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+
+    <span class="n">CGPathAddLineToPoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span> <span class="mi">181</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">99</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span> 
+
+    <span class="n">CGPathAddLineToPoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">335</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">210</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+    <span class="n">CGPathAddLineToPoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">144</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">210</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span> 
+    <span class="n">CGPathAddLineToPoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span> <span class="mi">298</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">99</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span> 
+    <span class="n">CGPathCloseSubpath</span><span class="p">(</span><span class="n">path</span><span class="p">);</span>
+
+    <span class="n">CAKeyframeAnimation</span><span class="o">*</span><span class="n">animation</span> <span class="o">=</span> <span class="p">[</span><span class="n">CAKeyframeAnimation</span>
+    <span class="nl">animationWithKeyPath:</span><span class="err">@”</span><span class="n">position</span><span class="err">”</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">animation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">10</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span> 
+    <span class="p">[</span><span class="n">animation</span> <span class="nf">setDelegate</span><span class="p">:</span><span class="n">self</span><span class="p">];</span>
+
+    <span class="c1">// Set the animation’s path</span>
+    <span class="p">[</span><span class="n">animation</span> <span class="nf">setPath</span><span class="p">:</span><span class="n">path</span><span class="p">];</span> <span class="c1">//Release the path CFRelease(path);</span>
+    <span class="p">[</span><span class="nf">dotLayeraddAnimation</span><span class="p">:</span><span class="n">animation</span> <span class="nf">forKey</span><span class="p">:</span><span class="err">@”</span><span class="n">position</span><span class="err">”</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">NSTimerscheduledTimerWithTimeInterval</span><span class="p">:</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span> <span class="nf">target</span><span class="p">:</span><span class="n">self</span>
+    <span class="nl">selector:</span><span class="k">@selector</span><span class="p">(</span><span class="n">legOne</span><span class="o">:</span><span class="p">)</span><span class="n">userInfo</span><span class="o">:</span><span class="nb">nil</span>
+    <span class="nl">repeats:</span><span class="nb">NO</span><span class="p">];</span>
+
+    <span class="p">[</span><span class="n">NSTimer</span> <span class="nf">scheduledTimerWithTimeInterval</span><span class="p">:</span><span class="mi">4</span><span class="p">.</span><span class="mi">0</span>
+    <span class="nl">target:selfselector:</span><span class="k">@selector</span><span class="p">(</span><span class="nf">legTwo</span><span class="p">:)</span> <span class="n">userInfo</span><span class="o">:</span><span class="nb">nil</span>
+    <span class="nl">repeats:</span><span class="nb">NO</span><span class="p">];</span>
+
+    <span class="p">[</span><span class="nf">NSTimerscheduledTimerWithTimeInterval</span><span class="p">:</span><span class="mi">6</span><span class="p">.</span><span class="mi">0</span> <span class="nf">target</span><span class="p">:</span><span class="n">self</span>
+    <span class="nl">selector:</span><span class="k">@selector</span><span class="p">(</span><span class="n">legThree</span><span class="o">:</span><span class="p">)</span><span class="n">userInfo</span><span class="o">:</span><span class="nb">nil</span>
+    <span class="nl">repeats:</span><span class="nb">NO</span><span class="p">];</span>
+
+    <span class="p">[</span><span class="nf">NSTimerscheduledTimerWithTimeInterval</span><span class="p">:</span><span class="mi">8</span><span class="p">.</span><span class="mi">0</span> <span class="nf">target</span><span class="p">:</span><span class="n">self</span>
+    <span class="nl">selector:</span><span class="k">@selector</span><span class="p">(</span><span class="n">legFour</span><span class="o">:</span><span class="p">)</span><span class="n">userInfo</span><span class="o">:</span><span class="nb">nil</span>
+    <span class="nl">repeats:</span><span class="nb">NO</span><span class="p">];</span>
+
+    <span class="p">[</span><span class="nf">NSTimerscheduledTimerWithTimeInterval</span><span class="p">:</span><span class="mi">10</span><span class="p">.</span><span class="mi">0</span> <span class="nf">target</span><span class="p">:</span><span class="n">self</span>
+    <span class="nl">selector:</span><span class="k">@selector</span><span class="p">(</span><span class="n">legFive</span><span class="o">:</span><span class="p">)</span><span class="n">userInfo</span><span class="o">:</span><span class="nb">nil</span>
+    <span class="nl">repeats:</span><span class="nb">NO</span><span class="p">];</span>
+
+    <span class="c1">// Tell the root layer tocall drawLayer</span>
+    <span class="p">[[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">setNeedsDisplay</span><span class="p">];</span> 
+
+<span class="p">}</span>
+</code></pre></div></div>
+<center>清单4-4 安装动画和创建定时器监视动画的过程</center>
+
+<p>当每个时间到达时，另一个点就会被增加到starpath路径中，然后根层就会更新显示，如清单4-5所示。最后调用legFive方法，关闭路径。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">legOne</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span> <span class="p">{</span>
+    <span class="n">CGPathAddLineToPoint</span><span class="p">(</span><span class="n">starPath</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span> <span class="mi">181</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">99</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">[[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">setNeedsDisplay</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">legTwo</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span> <span class="p">{</span>
+    <span class="n">CGPathAddLineToPoint</span><span class="p">(</span><span class="n">starPath</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span> <span class="mi">335</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">210</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">[[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">setNeedsDisplay</span><span class="p">];</span> 
+<span class="p">}</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">legThree</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span> <span class="p">{</span>
+    <span class="n">CGPathAddLineToPoint</span><span class="p">(</span><span class="n">starPath</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span> <span class="mi">144</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">210</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">[[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">setNeedsDisplay</span><span class="p">];</span> 
+<span class="p">}</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">legFour</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span> <span class="p">{</span>
+    <span class="n">CGPathAddLineToPoint</span><span class="p">(</span><span class="n">starPath</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span> <span class="mi">298</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">99</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+    <span class="p">[[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">setNeedsDisplay</span><span class="p">];</span> 
+<span class="p">}</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">legFive</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span> <span class="p">{</span>
+    <span class="n">CGPathCloseSubpath</span><span class="p">(</span><span class="n">starPath</span><span class="p">);</span>
+    <span class="p">[[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">setNeedsDisplay</span><span class="p">];</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<center>清单4-5 每次定时器完成时就增加新的点到路径</center>
+
+<p>当我们在根层上调用-setNeedDisplay时，-drawLayer被调用和根据目前状态的路径画到层上，如清单4-6所示。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">drawLayer</span><span class="p">:(</span><span class="n">CALayer</span><span class="o">*</span><span class="p">)</span><span class="nv">layer</span> <span class="nf">inContext</span><span class="p">:(</span><span class="n">CGContextRef</span><span class="p">)</span><span class="nv">context</span> <span class="p">{</span>
+
+<span class="k">if</span><span class="p">(</span> <span class="n">layer</span> <span class="o">==</span> <span class="p">[[</span><span class="nf">windowcontentView</span><span class="p">]</span> <span class="nf">layer</span><span class="p">]</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="n">CGColorRef</span> <span class="n">white</span> <span class="o">=</span>
+    <span class="n">CGColorCreateGenericRGB</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span> <span class="n">CGContextSetStrokeColorWithColor</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">white</span><span class="p">);</span><span class="n">CFRelease</span><span class="p">(</span><span class="n">white</span><span class="p">);</span>
+    <span class="n">CGContextBeginPath</span><span class="p">(</span><span class="n">context</span><span class="p">);</span><span class="n">CGContextAddPath</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">starPath</span><span class="p">);</span>
+    <span class="n">CGContextSetLineWidth</span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="mi">3</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span> <span class="n">CGContextStrokePath</span><span class="p">(</span><span class="n">context</span><span class="p">);</span>
+  <span class="p">}</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<center>清单4-6每次定时器开启时绘制路径</center>
+
+<p>清单4-6每次调用的绘制都是一样的，但是路径在定时器每次调用时，都已经被扩展，从一点到下一个点，从而能成功的绘制。</p>
+
+<h3 id="关键帧动画的ui提示">关键帧动画的UI提示</h3>
+
+<p>核心动画本来是为iphone平台写的，但是在mac OS X平台也是可用的。如果你曾经看到过iphone和itouch中的行为，你就会目击到核心动画，因为在这个平台下几乎所有的UI行为都有核心动画。你是否使用过下面的带转孔的按钮（可以使视图从一边滑出或者滑入），或者你关闭你目前的应用程序，然后返回到主屏幕时，图标开始做从两边同时做的动画，你就可以看到核心动画的效果。</p>
+
+<p>当你长按一个应用程序图标时，一个有趣的动画会发生。这会引起所有的应用程序图标扭动，就像我们试图要拿走他们一样。在这种编辑状态下，你可以移动应用程序的图标，以便于组织成你需要的情况(看图4-4)。另一个你需要注意的是在应用程序图标左上角的删除关闭框，你可以通过它从iphone或者touch中删除应用程序。如果你按下了home键，所有的图标都将停止抖动，然后返回到正常状态。</p>
+
+<p><img src="/images/animation-4-4.gif" alt="图4-4" /></p>
+
+<p>这个用户体验可以帮助用户知道iphone和ipod是在不同的状态，然后你就可以改变一些东西。这不能立即明显的表明那东西是什么。然而，一旦你开始点击并且拖拽，它就很明显出现你想要做的事了。像这种提高用户体验的提示可以使应用程序更加的直观。这也是核心动画最有用的特征，因此让我看看怎么做。</p>
+
+<h3 id="利用核心动画实现图标的抖动">利用核心动画实现图标的抖动</h3>
+
+<p>我们用cocoa，在OSx上实现这个抖动的动画，然而在iphone是一样的。我们创建这个动画，播放时间长一点，以便于我们可以看到每个动画参数是怎么影响动画实际运行的效果的。然后我们再按照你实际在iphone和ipod上看到的效果，设定运行时间。</p>
+
+<p>你可能想要打开例子程序，看下效果。我们提供了OS X和iphone平台上的例子工程。他们叫做Icon Dance for OS X和Icon Dance for Iphone。</p>
+
+<p>Icon Dance应用程序的某些特征可能不同于你在iphone主屏幕上看到的情况。因为Cocoa的触摸功能在桌面应用程序中目前不可用，你不能触摸屏幕来开始或者停止图标的动画，或者用你的手指拖动图标。然而，这些方法和关联的代码演示了我们怎么实现这个图标的抖动，并且工作在不管任一平台上，就像你马上看到的一样。</p>
+
+<p>图4-5和4-6展示了当在OS X下运行时，我们的应用程序看起来会是怎样。图4-5展示了当我们增加关闭框之前时，它又看起来怎么样，4-6展示了在我们增加关闭框之后，看起来怎么样。</p>
+
+<p><img src="/images/animation-4-5.gif" alt="图4-5 图标跳动示例程序" /></p>
+
+<p><img src="/images/animation-4-6.gif" alt="图4-6 带关闭盒子的图标跳动" /></p>
+
+<p>使用以下的步骤实现一个关键帧动画（看先前的章节，从基础动画到关键帧动画），让我们用图表列出来实现的每一步。如表格4-1</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>实现步骤</th>
+      <th style="text-align: right">有用的值</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>指定动画的属性</td>
+      <td style="text-align: right">transform.rotation.x</td>
+    </tr>
+    <tr>
+      <td>指定每一个帧使用的值</td>
+      <td style="text-align: right">-2,2,-2</td>
+    </tr>
+    <tr>
+      <td>指定动画的总执行时间</td>
+      <td style="text-align: right">2秒</td>
+    </tr>
+    <tr>
+      <td>指定时间段</td>
+      <td style="text-align: right">没使用，我们运行核心动画自动的分割每帧动画的时间</td>
+    </tr>
+    <tr>
+      <td>指定时间步调</td>
+      <td style="text-align: right">2秒</td>
+    </tr>
+    <tr>
+      <td>指定动画的总执行时间</td>
+      <td style="text-align: right">所有的帧都使用kCAMediaTimingFunctionLinear</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>我们将仅仅指定三个关键帧的值来保证例子足够的简单。（另外，这也是我们需要的全部动画。）我简单的设定了一个最大的重复数，它可以不停的循环。</p>
+
+<p>看下清单4-7中，动画创建的代码。3个关键帧被指定用NSNumber对象，这个对象是通过调用一个有用的函数DegreesToNumber。你可以在清单4-8中看到这个函数的声明。DegreesToNumber使用一个CGFloat值作为参数，然后返回一个NSNumber把度数转化成弧度，通过调用函数DegreesToRadians。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="n">CAAnimation</span><span class="o">*</span><span class="p">)</span><span class="n">shakeAnimation</span><span class="p">;</span> <span class="p">{</span>
+  <span class="n">CAKeyframeAnimation</span> <span class="o">*</span><span class="n">animation</span><span class="p">;</span> <span class="n">animation</span> <span class="o">=</span> <span class="p">[</span><span class="n">CAKeyframeAnimation</span>
+  <span class="nl">animationWithKeyPath:</span><span class="err">@”</span><span class="n">transform</span><span class="p">.</span><span class="n">rotation</span><span class="p">.</span><span class="n">z</span><span class="err">”</span><span class="p">];[</span><span class="n">animation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="p">];</span>
+  <span class="p">[</span><span class="nf">animationsetRepeatCount</span><span class="p">:</span><span class="mi">10000</span><span class="p">];</span>
+
+  <span class="c1">// Try to get the animationto begin to start with a small offset // that makes it shake out of sync withother layers. srand([[NSDate date] timeIntervalSince1970]);</span>
+  <span class="kt">float</span> <span class="n">rand</span> <span class="o">=</span> <span class="p">(</span><span class="kt">float</span><span class="p">)</span><span class="n">random</span><span class="p">();</span>
+
+  <span class="p">[</span><span class="n">animation</span> <span class="nf">setBeginTime</span><span class="p">:</span><span class="n">CACurrentMediaTime</span><span class="p">()</span> <span class="o">+</span> <span class="n">rand</span> <span class="o">*</span> <span class="p">.</span><span class="mo">0000000001</span><span class="p">];</span>
+  <span class="n">NSMutableArray</span> <span class="o">*</span><span class="n">values</span> <span class="o">=</span><span class="p">[</span><span class="n">NSMutableArray</span> <span class="nf">array</span><span class="p">];</span> <span class="c1">// Turn right</span>
+  <span class="p">[</span><span class="nf">valuesaddObject</span><span class="p">:</span><span class="n">DegreesToNumber</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)];</span> <span class="c1">// Turn left</span>
+  <span class="p">[</span><span class="nf">valuesaddObject</span><span class="p">:</span><span class="n">DegreesToNumber</span><span class="p">(</span><span class="mi">2</span><span class="p">)];</span> <span class="c1">// Turn right</span>
+  <span class="p">[</span><span class="nf">valuesaddObject</span><span class="p">:</span><span class="n">DegreesToNumber</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">)];</span> <span class="c1">// Set the values for the animation</span>
+  <span class="p">[</span><span class="n">animation</span> <span class="nf">setValues</span><span class="p">:</span><span class="n">values</span><span class="p">];</span><span class="k">return</span> <span class="n">animation</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<center>表4-7</center>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">NSNumber</span><span class="o">*</span><span class="nf">DegreesToNumber</span><span class="p">(</span><span class="n">CGFloat</span> <span class="n">degrees</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="p">[</span><span class="nf">NSNumbernumberWithFloat</span><span class="p">:</span> <span class="n">DegreesToRadians</span><span class="p">(</span><span class="n">degrees</span><span class="p">)];</span>
+<span class="p">}</span>
+
+<span class="n">CGFloatDegreesToRadians</span><span class="p">(</span><span class="n">CGFloat</span> <span class="n">degrees</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">return</span> <span class="n">degrees</span> <span class="o">*</span> <span class="n">M_PI</span> <span class="o">/</span> <span class="mi">180</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<center>表4-8</center>
+
+<p>在表4-7中第一帧转2个度数到右边，第二帧转2个度数到左边，然后第三帧再转两个度数到右边。当动画完成时，它再次启动然后通过调用setRepeatCount:10000来重复10000次。视觉上就是在中轴上不停的抖动。要停止动画，可以通过调用-removeAnimationForKey:@”rotate”这个函数从层上面移除动画。</p>
+
+<h3 id="旋转轴和层的几何特性">旋转轴和层的几何特性</h3>
+
+<p>在这个例子中，层是以中心点为轴旋转的。这个是层默认的锚点(0.5,0.5)。如果你想以不同的轴旋转，例如左下角，你需要给层指定一个新的锚点，通过调用-setAnchorPoint:CGPointMake(0.0,0.0)。对于这个例子，然而默认的就是合适的。层的几何特性在第六章“层的筛选器”中会详细讲解。</p>
+
+<h3 id="完美的效果">完美的效果</h3>
+
+<p>通过一些微小的改变duration参数和每个帧的值，我们可以得到正确的效果。如果你用清单4-7中的代码运行，你会注意到抖动的效果看起来有点慢。为了更快，简单的改变duration到更合适的值。我们目前是告诉动画在一秒钟的一半0.5完成。如果你改变成一秒钟的1/4（改变setDuration:0.5到setDuration:0.15)，这个动画就是你渴望的效果了。</p>
+
+<h3 id="增加关闭的框">增加关闭的框</h3>
+
+<p>工程的这个部分和关键帧动画没有关系，但是它将展示给你怎么完成这个效果，然后介绍给你如何在层中绘画。</p>
+
+<p>当动画正在运行时，你会注意到圆形框中带着一个X在里面。这个表明一个应用程序可以被删除在iphone/iPod touch上。在图标跳动应用程序中，关闭框什么也不做，仅仅用来展示效果的。</p>
+
+<p>例如我们将按照下面做：</p>
+
+<ol>
+  <li>
+    <p>设置关闭框的边框为3像素</p>
+  </li>
+  <li>
+    <p>设置整个框架为30x30像素</p>
+  </li>
+  <li>
+    <p>设置圆角率为15，使它看起来想圆形</p>
+  </li>
+  <li>
+    <p>设置背景颜色为黑色</p>
+  </li>
+  <li>
+    <p>设定阴影颜色为黑色</p>
+  </li>
+  <li>
+    <p>设定阴影的圆角率为5像素</p>
+  </li>
+  <li>
+    <p>设定阴影的透明度为1.0</p>
+  </li>
+</ol>
+
+<p>在清单4-9中的代码实现了每步。注意到我们设定了层的代理为self。这使我们可以调用-(void)drawLayer:(CALayer*)theLayerinContext:(CGContextRef) theContext(看清单4-10的开始)，这让我们可以增加代码来给关闭框的层上绘制X。这个绘制X的代码（清单4-10）使用了CoreGraphics路径和设定了点然后画第一个线，然后设定第二个点画第二条线。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="n">CALayer</span><span class="o">*</span><span class="p">)</span><span class="n">closeBoxLayer</span><span class="p">{</span>
+    <span class="n">CGColorRef</span> <span class="n">white</span> <span class="o">=</span><span class="n">CGColorCreateGenericRGB</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span> 
+
+    <span class="n">CGColorRef</span> <span class="n">black</span> <span class="o">=</span><span class="n">CGColorCreateGenericRGB</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+
+    <span class="n">CALayer</span> <span class="o">*</span><span class="n">layer</span> <span class="o">=</span> <span class="p">[</span><span class="nf">CALayerlayer</span><span class="p">];</span> 
+
+    <span class="p">[</span><span class="n">layer</span> <span class="nf">setFrame</span><span class="p">:</span><span class="n">CGRectMake</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">kCompositeIconHeight</span> <span class="o">-</span> <span class="mi">30</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">30</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">.</span><span class="mi">0</span><span class="p">)];</span>
+
+    <span class="p">[</span><span class="nf">layersetBackgroundColor</span><span class="p">:</span><span class="n">black</span><span class="p">];</span> 
+
+    <span class="p">[</span><span class="n">layer</span> <span class="nf">setShadowColor</span><span class="p">:</span><span class="n">black</span><span class="p">];</span> 
+
+    <span class="p">[</span><span class="nf">layersetShadowOpacity</span><span class="p">:</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">];</span> 
+
+    <span class="p">[</span><span class="n">layer</span> <span class="nf">setShadowRadius</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="p">];</span> 
+
+    <span class="p">[</span><span class="n">layer</span> <span class="nf">setBorderColor</span><span class="p">:</span><span class="n">white</span><span class="p">];[</span><span class="n">layer</span> <span class="nf">setBorderWidth</span><span class="p">:</span><span class="mi">3</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">layer</span> <span class="nf">setCornerRadius</span><span class="p">:</span><span class="mi">15</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">layer</span> <span class="nf">setDelegate</span><span class="p">:</span><span class="n">self</span><span class="p">];</span> <span class="c1">// Release the color refs</span>
+    <span class="n">CFRelease</span><span class="p">(</span><span class="n">white</span><span class="p">);</span>
+
+    <span class="n">CFRelease</span><span class="p">(</span><span class="n">black</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">layer</span><span class="p">;</span> 
+<span class="p">}</span>
+             <span class="n">LISTING</span> <span class="mi">4</span><span class="o">-</span><span class="mi">9</span> <span class="err">关键帧动画关闭盒子</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">toggleShake</span><span class="p">;</span> <span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span> <span class="p">[</span><span class="n">self</span> <span class="nf">isRunning</span><span class="p">]</span> <span class="p">)</span> <span class="p">{</span>
+      <span class="p">[</span><span class="n">self</span> <span class="nf">stopShake</span><span class="p">];</span> 
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+      <span class="p">[</span><span class="n">self</span> <span class="nf">startShake</span><span class="p">];</span>
+    <span class="p">}</span> 
+<span class="p">}</span>
+<span class="p">(</span><span class="n">BOOL</span><span class="p">)</span><span class="n">isRunning</span><span class="p">;{</span>
+  <span class="k">return</span> <span class="p">([</span><span class="nf">selfanimationForKey</span><span class="p">:</span><span class="err">@”</span><span class="n">rotate</span><span class="err">”</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">startShake</span><span class="p">;</span> <span class="p">{</span>
+    <span class="p">[</span><span class="nf">selfaddSublayer</span><span class="p">:</span><span class="n">closeLayer</span><span class="p">];</span>
+    <span class="c1">// Tell the closeLayer todraw its contents which is</span>
+    <span class="c1">// an ‘X’ to indicate a closebox.</span>
+    <span class="p">[</span><span class="n">closeLayer</span> <span class="nf">setNeedsDisplay</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">self</span> <span class="nf">addAnimation</span><span class="p">:[</span><span class="nf">selfshakeAnimation</span><span class="p">]</span> <span class="nf">forKey</span><span class="p">:</span><span class="err">@”</span><span class="n">rotate</span><span class="err">”</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">stopShake</span><span class="p">;</span> <span class="p">{</span>
+    <span class="p">[</span><span class="nf">closeLayerremoveFromSuperlayer</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">selfremoveAnimationForKey</span><span class="p">:</span><span class="err">@”</span><span class="n">rotate</span><span class="err">”</span><span class="p">];</span> 
+<span class="p">}</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">drawLayer</span><span class="p">:(</span><span class="n">CALayer</span><span class="o">*</span><span class="p">)</span><span class="nv">layer</span> <span class="nf">inContext</span><span class="p">:(</span><span class="n">CGContextRef</span><span class="p">)</span><span class="nv">context</span> <span class="p">{</span>
+<span class="err">￼￼￼￼</span>
+    <span class="err">￼￼</span><span class="c1">// Make sure the call isapplied to the close // box layer</span>
+    <span class="k">if</span><span class="p">(</span> <span class="n">layer</span> <span class="o">==</span> <span class="n">closeLayer</span> <span class="p">){</span>
+      <span class="c1">// Create the path ref</span>
+      <span class="n">CGMutablePathRef</span> <span class="n">path</span> <span class="o">=</span><span class="n">CGPathCreateMutable</span><span class="p">();</span>
+      
+      <span class="c1">// Set the first point andadd a line</span>
+      <span class="n">CGPathMoveToPoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span><span class="mi">10</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span><span class="mi">10</span><span class="p">.</span><span class="n">f</span><span class="p">);</span>
+      <span class="n">CGPathAddLineToPoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">20</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">20</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+
+      <span class="c1">// Set the second point andadd a line</span>
+      <span class="n">CGPathMoveToPoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span><span class="mi">10</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span><span class="mi">20</span><span class="p">.</span><span class="n">f</span><span class="p">);</span>
+      <span class="n">CGPathAddLineToPoint</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="mi">20</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">10</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+
+      <span class="c1">// Set the stroke color towhite</span>
+      <span class="n">CGColorRef</span> <span class="n">white</span> <span class="o">=</span>
+      <span class="n">CGColorCreateGenericRGB</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+      <span class="n">CGContextSetStrokeColorWithColor</span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="n">white</span><span class="p">);</span> 
+      <span class="n">CGColorRelease</span><span class="p">(</span><span class="n">white</span><span class="p">);</span>
+
+      <span class="c1">// Start drawing the path</span>
+      <span class="n">CGContextBeginPath</span><span class="p">(</span><span class="n">context</span><span class="p">);</span>
+      <span class="n">CGContextAddPath</span><span class="p">(</span><span class="n">context</span><span class="p">,</span> <span class="n">path</span><span class="p">);</span>
+
+      <span class="c1">// Set the line width to 3pixels</span>
+      <span class="n">CGContextSetLineWidth</span><span class="p">(</span><span class="n">context</span><span class="p">,</span><span class="mi">3</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span> <span class="c1">// Draw the path</span>
+      <span class="n">CGContextStrokePath</span><span class="p">(</span><span class="n">context</span><span class="p">);</span>
+
+      <span class="c1">// Release the path</span>
+      <span class="n">CGPathRelease</span><span class="p">(</span><span class="n">path</span><span class="p">);</span> 
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<center>清单4-10在关闭盒子中画X</center>
+
+<h3 id="开始和停止动画">开始和停止动画</h3>
+
+<p>核心动画没有提供直接的开始和停止方法。然而，当你增加动画到层上时，动画就开始，当你从层上移除动画时，动画就结束。为了判断一个动画是否正在运行，需要查询动画字典来决定是否动画仍然在这。如果在，动画是仍然在运行。如果不在，动画就停止了。</p>
+
+<p>清单4-11 演示了如何来开始和停止动画的。当动画开始时，首先增加关闭盒子层然后使用关键字rotate增加动画。这个关键字是重要的，因为它是被用来引用这个动画的，方便你停止它和观看它是否仍然在运行。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">toggleShake</span> <span class="p">{</span>
+    <span class="k">if</span><span class="p">(</span> <span class="p">[</span><span class="n">self</span> <span class="nf">isRunning</span><span class="p">]</span> <span class="p">)</span> <span class="p">{</span>
+      <span class="p">[</span><span class="n">self</span> <span class="nf">stopShake</span><span class="p">];</span> 
+    <span class="p">}</span>
+    <span class="k">else</span> <span class="p">{</span>
+      <span class="p">[</span><span class="n">self</span> <span class="nf">startShake</span><span class="p">];</span>
+    <span class="p">}</span> 
+<span class="p">}</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="n">BOOL</span><span class="p">)</span><span class="n">isRunning</span><span class="p">{</span>
+    <span class="k">return</span> <span class="p">([</span><span class="nf">selfanimationForKey</span><span class="p">:</span><span class="err">@”</span><span class="n">rotate</span><span class="err">”</span><span class="p">]</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">startShake</span> <span class="p">{</span>
+    <span class="p">[</span><span class="n">self</span> <span class="nf">addSublayer</span><span class="p">:</span><span class="n">closeLayer</span><span class="p">];</span>
+
+    <span class="c1">// Tell the closeLayer todraw its contents which is</span>
+    <span class="c1">// an ‘X’ to indicate a closebox.</span>
+    <span class="p">[</span><span class="n">closeLayer</span> <span class="nf">setNeedsDisplay</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">self</span> <span class="nf">addAnimation</span><span class="p">:[</span><span class="nf">selfshakeAnimation</span><span class="p">]</span> <span class="nf">forKey</span><span class="p">:</span><span class="err">@”</span><span class="n">rotate</span><span class="err">”</span><span class="p">];</span>
+<span class="p">}</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">stopShake</span> <span class="p">{</span>
+    <span class="p">[</span><span class="nf">closeLayerremoveFromSuperlayer</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">selfremoveAnimationForKey</span><span class="p">:</span><span class="err">@”</span><span class="n">rotate</span><span class="err">”</span><span class="p">];</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<center>清单4-11</center>
+
+<p>当-stopShake是被调用，关闭框层从父层移除时，我们也会从层中移除动画。来判断是否动画仍在运行，-isRunning可以检查是否动画是在动画字典中。如果在，动画在运行，否则，不在运行。</p>
+
+<h3 id="总结">总结</h3>
+
+<p>基础动画是被作为单一的关键帧动画。这种定义帮助你解释关键帧动画提供了什么。在动画中的关键帧就像CABasicAnimation涉及到的字段toValue：目的值的一个列表。提供给关键帧动画的列表值要么使用values要么使用path这个字段。这个值的每一个都是目的地，在动画期间到达每个点。</p>
+
+<p>关键帧动画提供了一个强大的方法，使用一个简单的列表来做动画，通过自动的插入值到动画中，这使开发者开发更加容易了。这样就使创建动画的用户体验更加直接方便去实现了。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

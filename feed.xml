@@ -1,0 +1,1352 @@
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2021-06-13T20:21:11+08:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">经验的成本</title><link href="https://mengtnt.com/2021/06/13/exp-cost.html" rel="alternate" type="text/html" title="经验的成本" /><published>2021-06-13T16:51:35+08:00</published><updated>2021-06-13T16:51:35+08:00</updated><id>https://mengtnt.com/2021/06/13/exp-cost</id><content type="html" xml:base="https://mengtnt.com/2021/06/13/exp-cost.html">&lt;p&gt;最近想对博客的源码做自动化的CI，原本想着使用github的workflow配置，提交博客源码后让github自动编译发布博客。不过由于还要部署一些其他的内容，所以索性就想着自己写个github的webhook，当提交博客源码时，服务器运行CI工具，顺便发布下自己部署的其他服务。&lt;/p&gt;
+
+&lt;p&gt;做这个事情本身并不难，其实只要在github上把博客源码的仓库，增加一个webhook，然后服务器后台部署自己的CI工具就行了。在做这个事情之前，突然想到，自己一直从事的是客户端的开发。服务器部署的经验比较少，做这个事情大概要花多久时间哪？然后就尝试从网上看一些教程和文章，从网上一些描述来讲，做这个事情可能只需要花费1到2个小时的时间。然后在做这个事情的过程中，我就记录了解决整个问题的过程和时间。对比下花费的时间和精力。下面我就逐个描述下当时解决问题的过程。&lt;/p&gt;
+
+&lt;h2 id=&quot;docker环境&quot;&gt;Docker环境&lt;/h2&gt;
+
+&lt;p&gt;部署服务自然少不了使用Docker。然后自己就根据博客使用的环境开始写DockerFile了。因为博客用的jekyll框架，自然需要ruby的环境。凭借自己之前仅记的一些Docker知识，自然的写了下面这行代码&lt;code class=&quot;highlighter-rouge&quot;&gt;FROM ruby:2.7.0&lt;/code&gt;,然后又想着还需要node环境，然后DockerFile代码就变成这样子了。&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+FROM ruby:2.7.0
+FROM node:latest
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;如果了解Docker工作原理的自然就懂了，跟在FROM后面所有的指令，都是在FROM这层镜像环境上做的。所以当DockerFile执行到 &lt;code class=&quot;highlighter-rouge&quot;&gt;RUN bundle install&lt;/code&gt;时候，就报错说没有找到bundle命令。最开始自己还没有意识到时这个错误，然后就开始查找Docker下ruby环境的相关错误，然后本地写了DockerFile增加如下代码:&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+FROM ruby:2.7.0
+RUN &lt;span class=&quot;nb&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; /home/blogsource
+WORKDIR /home/blogsource
+COPY &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; /home/blogsource
+RUN bundle &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;发现都是正确的，然后对比源码才发现可能是FROM指令的问题，然后仔细查询了FROM指令用法，发现Docker17.05老的版本只支持一条FROM指令，新的Docker版本支持多条。但是Docker只会部署最后一条FROM指令的环境。下面就引用下网上的Docker学习的一些资料.&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;多个 FROM 指令并不是为了生成多根的层关系，最后生成的镜像，仍以最后一条 FROM 为准，之前的 FROM 会被抛弃，那么之前的FROM 又有什么意义呢？每一条 FROM 指令都是一个构建阶段，多条 FROM 就是多阶段构建，虽然最后生成的镜像只能是最后一个阶段的结果，但是，能够将前置阶段中的文件拷贝到后边的阶段中，这就是多阶段构建的最大意义。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这是我犯的第一个错误，等我解决完这个问题，大概消耗了1个多小时的时间。(PS 由于自己服务器带宽比较小，每次运行Docker拉取镜像时间很久大概要10分钟，也是浪费时间的一个原因)。&lt;/p&gt;
+
+&lt;h2 id=&quot;cmd命令的使用&quot;&gt;CMD命令的使用&lt;/h2&gt;
+
+&lt;p&gt;开心的解决完第一个问题，然后又开始了编译Docker镜像。其实我心里早有准备不可能有这么顺利的，果然控制台又开始报错了，看下我写的DockerFile.&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+FROM ruby:2.7.0
+RUN &lt;span class=&quot;nb&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; /home/blogsource
+WORKDIR /home/blogsource
+COPY &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; /home/blogsource
+RUN bundle &lt;span class=&quot;nb&quot;&gt;install
+&lt;/span&gt;CMD &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;cd&quot;&lt;/span&gt;, &lt;span class=&quot;s2&quot;&gt;&quot;_nodejs/&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+
+RUN curl &lt;span class=&quot;nt&quot;&gt;-sL&lt;/span&gt; https://deb.nodesource.com/setup_14.x | bash -&lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; apt-get &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-qq&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--no-install-recommends&lt;/span&gt; nodejs &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; npm &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;这是我犯的第二个错误，想当然的以为CMD命令就可以把工作目录转到nodejs的文件夹中，然后安装node环境。环境安装完后运行&lt;code class=&quot;highlighter-rouge&quot;&gt;npm install&lt;/code&gt; 就报错说找不到package文件。然后当时就想，是不是CMD命令的问题就用了下面的方法重新试了下。&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+RUN curl &lt;span class=&quot;nt&quot;&gt;-sL&lt;/span&gt; https://deb.nodesource.com/setup_14.x | bash -&lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; apt-get &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-qq&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--no-install-recommends&lt;/span&gt; nodejs &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; ./_nodejs/ &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; npm &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;发现这样子安装就没有问题了，然后就查询了下CMD和RUN命令的用法，下面的差异就是关键点。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;CMD 指令：类似于 RUN 指令，用于运行程序，但二者运行的时间点不同；CMD 在docker run 时运行，而非docker build;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;看到这里就明白了，在安装环境的时候用RUN指令，而真正运行容器的时候采用CMD，这两点的差别就造成了这个问题。还好这个问题也就浪费了半小时的时间。接下来看下个问题吧。&lt;/p&gt;
+
+&lt;h2 id=&quot;docker运行问题&quot;&gt;Docker运行问题&lt;/h2&gt;
+
+&lt;p&gt;终于编译Docker文件没有问题了，但是发现Docker容器只要运行就退出一直显示 &lt;code class=&quot;highlighter-rouge&quot;&gt;exit(0)&lt;/code&gt;。当时着实没有了思路，感觉编译的过程都正确为啥运行不了那。就通过 &lt;code class=&quot;highlighter-rouge&quot;&gt;docker exec&lt;/code&gt;进入到容器中，执行&lt;code class=&quot;highlighter-rouge&quot;&gt;nmp start&lt;/code&gt;发现没有问题啊。于是开始查找下了docker退出的原因，关键字自然是exit(0),然后很快找到了下面的答案.&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;之前介绍容器的时候曾经说过，Docker 不是虚拟机，容器就是进程。既然是进程，那么在启动容器的时候，需要指定所运行的程序及参数。CMD 指令就是用于指定默认的容器主进程的启动命令的。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;看到这里自己就有点明白了，查看了下自己写的DockerFile的脚本代码，&lt;code class=&quot;highlighter-rouge&quot;&gt;CMD [&quot;nohup&quot;,&quot;npm&quot;,&quot;start&quot;]&lt;/code&gt;发现为了让node在后台运行，自己特意加了nohup，反而是弄巧成拙，造成Docker容器运行完就自动退出了。&lt;/p&gt;
+
+&lt;p&gt;其实解决这个问题花了自己蛮久的时间，一直把Docker当成了虚拟机的概念在想这个逻辑，Docker本质上还是一个进程，只是使用了linux用户定义分组的能力，如果知道这个前提就不容易犯错了。这看起来和苹果的沙盒原有异曲同工之妙，也正是这个错误的认知，自己决定之后一定要看下Docker源码的逻辑，看一下Docker设计的方式。&lt;/p&gt;
+
+&lt;h2 id=&quot;git配置问题&quot;&gt;Git配置问题&lt;/h2&gt;
+
+&lt;p&gt;前面的三个问题，其实已经花了自己咖啡馆一下午的时间了。然后编译运行Docker，发现没有问题了。就去github，打开了webhook的设置，配置上去后，按照文档把nodejs的代码写好了，逻辑很简单如下:&lt;/p&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;req&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;commits&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;message&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;command&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;message&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;message&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;command&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;publish&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;res&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;status&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;200&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;send&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;receive success start publish...&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;execute&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;cd .. &amp;amp;&amp;amp; git pull origin master &amp;amp;&amp;amp; ./publish.sh&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;error&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;null&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;publish successful&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;execute&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;command&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;process&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;require&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;child_process&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;process&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;exec&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;command&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;stdout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;stderr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;stdout:&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;stdout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;stderr:&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;stderr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;error:&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+      &lt;span class=&quot;nx&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;然后就提交了下github的源码，看了下Docker运行的日志，发现git没有权限的报错，然后自己想了下，Docker是按照group用户的概念隔离进程的，那自然不能重用服务器上的sshkey了，那在Docker镜像build的时候应该把sshkey文件复制进去，至此完整的DockerFile代码就如下:&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;FROM ruby:2.7.0
+USER root
+
+&lt;span class=&quot;c&quot;&gt;#在image中创建文件夹&lt;/span&gt;
+RUN &lt;span class=&quot;nb&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; /home/blogsource
+&lt;span class=&quot;c&quot;&gt;# 将工程下所有文件拷贝到文件夹中&lt;/span&gt;
+COPY &lt;span class=&quot;nb&quot;&gt;.&lt;/span&gt; /home/blogsource
+
+&lt;span class=&quot;c&quot;&gt;#使用RUN命令执行npm install安装工程依赖库&lt;/span&gt;
+SHELL &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;/bin/bash&quot;&lt;/span&gt;, &lt;span class=&quot;s2&quot;&gt;&quot;-o&quot;&lt;/span&gt;, &lt;span class=&quot;s2&quot;&gt;&quot;pipefail&quot;&lt;/span&gt;, &lt;span class=&quot;s2&quot;&gt;&quot;-c&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+RUN bundle &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; curl &lt;span class=&quot;nt&quot;&gt;-sL&lt;/span&gt; https://deb.nodesource.com/setup_14.x | bash -&lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; apt-get update &lt;span class=&quot;nt&quot;&gt;-qq&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; apt-get &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-qq&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;--no-install-recommends&lt;/span&gt; nodejs &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; apt-get clean &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;cd&lt;/span&gt; ./_nodejs/ &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; npm &lt;span class=&quot;nb&quot;&gt;install&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;mkdir&lt;/span&gt; /root/.ssh &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;cp&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-r&lt;/span&gt; ./gitconfig/&lt;span class=&quot;k&quot;&gt;*&lt;/span&gt; /root/.ssh/ &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; git config &lt;span class=&quot;nt&quot;&gt;--global&lt;/span&gt; user.email &lt;span class=&quot;s2&quot;&gt;&quot;animeng68@gmail.com&quot;&lt;/span&gt; &lt;span class=&quot;se&quot;&gt;\&lt;/span&gt;
+  &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; git config &lt;span class=&quot;nt&quot;&gt;--global&lt;/span&gt; user.name &lt;span class=&quot;s2&quot;&gt;&quot;mengtnt&quot;&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;#暴露给主机的端口号&lt;/span&gt;
+EXPOSE 9999
+&lt;span class=&quot;c&quot;&gt;#执行npm start命令，启动Node工程&lt;/span&gt;
+WORKDIR /home/blogsource/_nodejs
+CMD &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;&quot;npm&quot;&lt;/span&gt;, &lt;span class=&quot;s2&quot;&gt;&quot;start&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;自此终于把博客自动化ci的工具搭建成功了，自己记录了下时间大概花了8小时左右才完成。我相信如果是一个Docker运维很有经验的人，搞这些源码，可能只需要1到2个小时就能部署和调试完成，我这里很多时间都是浪费在解决问题上了。这本质上就是经验的成本。&lt;/p&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;所以何为经验，就是在某个领域解决问题的效率。拿上面的例子，如果是一个经验不丰富的人，可能要花费3倍于经验丰富的人，才能解决这个问题，这个就是生产效率的问题。试问企业更愿意雇佣那种人，显而易见如果企业用1个月就可以赚到3个月的钱时，就愿意拿3倍工资招聘一个经验丰富的人，而不会用平均的工资水平招聘一个经验不足的人。&lt;/p&gt;
+
+&lt;p&gt;对于企业来讲，生产效率是他们立于不败之地的重要手段。很多工具的发明也正是为了提升生产效率。所以作为打工人的我们要考虑，为什么企业要用你，自己的价值何在？工作的时候，一些重复的劳动，就要想有没有什么办法可以做自动化。这不仅节省了企业的成本，重要的是也让自己学到了经验，那将来其他公司也很乐于雇佣你，因为你帮企业提高了生产力，企业就更乐意拿高于没经验人的工资来聘用你。所以在职场上，要不断的增加自己解决问题的经验，然后树立自己的核心竞争力，这样才能立于不败之地。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近想对博客的源码做自动化的CI，原本想着使用github的workflow配置，提交博客源码后让github自动编译发布博客。不过由于还要部署一些其他的内容，所以索性就想着自己写个github的webhook，当提交博客源码时，服务器运行CI工具，顺便发布下自己部署的其他服务。</summary></entry><entry><title type="html">好文章与坏文章</title><link href="https://mengtnt.com/2021/05/03/recoginze.html" rel="alternate" type="text/html" title="好文章与坏文章" /><published>2021-05-03T16:05:10+08:00</published><updated>2021-05-03T16:05:10+08:00</updated><id>https://mengtnt.com/2021/05/03/recoginze</id><content type="html" xml:base="https://mengtnt.com/2021/05/03/recoginze.html">&lt;p&gt;看到这个标题，不要误解。我并不是为了给文章打一个非好及坏标签，我也没这个能力打标签。这里先说下本文说的文章的范围，主要是针对技术领域的内容。所以这里的好文章，更精确的定义应该是让想要学习这个领域的人，能够更容易理解的文章。不过初学者不容易理解的文章就是坏文章么？那当然不是，但是针对于这个人群来说，这类文章的价值意义肯定比不过”好文章”。&lt;/p&gt;
+
+&lt;p&gt;技术类的文章和书籍自己阅读过不少，下面就谈谈关于”好文章和坏文章”的几点心得和看法。&lt;/p&gt;
+
+&lt;h2 id=&quot;有自己的观点不要人云亦云&quot;&gt;有自己的观点，不要人云亦云&lt;/h2&gt;
+
+&lt;p&gt;我经常会看到，有一些技术文章来教大家的安装过程。并不是说这类文章没有意义，而是说这类文章和技术文档其实没什么大的区别。如果能在介绍安装步骤的过程中，讲解下为何要这样安装其实就很有意义了，而不是简单的记流水账。&lt;/p&gt;
+
+&lt;p&gt;还有一类文章，就是翻译的文章，往往容易出现坏文章。因为译者的话毕竟不是作者，一些观点理解难免有误差。再加上如果这个领域不了解的话，就会更加的糟糕。相信你一定读过翻译很烂的技术文章。我下面举一个例子。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;This is an opaque data type and use xxx api accessed directly.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;很多技术文章的翻译是，”这是一种不透明的数据类型，使用xxx来访问”。&lt;code class=&quot;highlighter-rouge&quot;&gt;transparent or opaque type&lt;/code&gt;这两个词在英语中形容一些实物挺形象，但是翻译出来，如果译者不加思考的直译的话，对初学者来讲真的很难理解。如果能补充一句说，”这是一种不透明的数据类型，也就是具体的数据结构没有公开方法，只能通过xxx api来访问”。这种就好理解多了。所以如果翻译的文章，没有吃透作者表达的原理，就很容易人云亦云，照着字面意思翻译。&lt;/p&gt;
+
+&lt;h2 id=&quot;不需要整的高大上简单就好&quot;&gt;不需要整的高大上，简单就好&lt;/h2&gt;
+
+&lt;p&gt;有些技术博客，特别是讲架构的技术博客。上来就是&lt;code class=&quot;highlighter-rouge&quot;&gt;kafka dubbo zookeeper&lt;/code&gt;各种新概念。然后复杂无比的架构图一展示，然后使用各种专业名词解释&lt;code class=&quot;highlighter-rouge&quot;&gt;xxxRPC&lt;/code&gt;进行模块间通信，相信这类文章也会遇到不少。这类文章我想说的是，到底是讲给谁听的，如果是讲给想了解这个领域的人听的，别人可能看了几个名词后，就会去搜索这个名词了，然后也不见得会回来再读。讲给这个领域的专家，可能看了开头也不会读下去，不知道到底要表达什么。&lt;/p&gt;
+
+&lt;p&gt;所以写技术文章一定要有个核心，比如讲某个架构是要解决什么问题，可以把问题先定义清楚。因为问题往往比较简答，比如说用户量过大，单台服务器无法满足要求，想动态扩展。然后再来讲架构，讲架构的时候特别遇到一些新的名词时，如果能表述下这个新事物的来龙去脉，发展历程那就很容易吸引读者。&lt;/p&gt;
+
+&lt;p&gt;技术文章不需要一下子讲完所有的东西，只要抓住一个点讲解清楚就完成了任务，因为一个人看一篇文章往往也不会理解太多的东西。所以文章不在于多，在与精简。&lt;/p&gt;
+
+&lt;h2 id=&quot;能够融会贯通的一定是好文章&quot;&gt;能够融会贯通的，一定是好文章&lt;/h2&gt;
+
+&lt;p&gt;什么是融会贯通，就是能把一个复杂的东西，通过一些身边常见的例子，很简单的表述出来了，这就叫融会贯通。很多作者在讲解一个技术点时，自己确实理解的也很透彻，但是讲给别人听的时候，就复杂无比，别人听的云里雾里，这其中就没有把握讲解的核心”大道至简”。&lt;/p&gt;
+
+&lt;p&gt;我这里想吐槽的是很多数学类的书籍，尤其教科书简直就是劝退的书籍。举个线性代数的例子，一上来就把矩阵的式子列出来，然后各种变换的方法讲解起来。上大学的时候读这种书时，我就怀疑人生了，这到底是要干嘛，学这些有什么用。可是当我读到一本叫《漫画傅里叶变换》这本书的时候，书中一开始并没有解释数学公式，而是从两个音乐系的学生在争论一些乐器的声音开始，然后逐步解释了傅里叶变换公式的推导。当时我读完的时候，真是茅厕顿开，解答了困惑自己很多的问题，也明白了这些数学公式到底有什么用。&lt;/p&gt;
+
+&lt;p&gt;所以数学其实很多公式都是很有趣的，设计的非常精妙。只是我们讲解的时候，都是死板的按照公式来的，根本没有结合实际应用融会贯通。造成很多概念极其抽象，完全没有现实中类比的对象。&lt;/p&gt;
+
+&lt;h2 id=&quot;能够讲故事的一定也是好文章&quot;&gt;能够讲故事的，一定也是好文章&lt;/h2&gt;
+
+&lt;p&gt;自己曾经读到过一篇公众号的文章《我是一个线程》。通过讲解一个人在工厂里工作的经历，描述了一个线程的创建，运行和销毁。我感觉讲的非常的好。通过类比我们身边常见的故事，讲解一些晦涩的技术感念，非常的巧妙。对于初学者来讲，通过这种类比，就很容易理解。&lt;/p&gt;
+
+&lt;p&gt;最近也看了《我是一个线程》作者出的《码农翻身》这本书，自己也在学习作者的讲解方法。尤其书中通过漫画和实例相结合的方式，讲解的非常的生动。这类文章就是通过一些有趣的故事，然后就把一个技术点的来龙去脉分析的非常透彻。并且故事和技术点的结合也非常的贴切，这其实需要作者大量的思考才能总结出来这些方法。所以好的文章，不仅需要你理解这个技术点，同时也要很好的能讲解这个技术点。&lt;/p&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;个人觉得进入一个行业的门槛，跟这个行业的教育水平有很大的关系。其实我觉得IT行业就挺好，有大量高质量的文章和资料输出。只有这样的文章多起来，才能更好的让初学者进入这一行。我在想例如数学和物理一些理论学科，如果能有更多高质量和有趣的讲解，相信这两门学科比我们想象的有趣多了。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">看到这个标题，不要误解。我并不是为了给文章打一个非好及坏标签，我也没这个能力打标签。这里先说下本文说的文章的范围，主要是针对技术领域的内容。所以这里的好文章，更精确的定义应该是让想要学习这个领域的人，能够更容易理解的文章。不过初学者不容易理解的文章就是坏文章么？那当然不是，但是针对于这个人群来说，这类文章的价值意义肯定比不过”好文章”。</summary></entry><entry><title type="html">深入解析OSX和iOS读后感</title><link href="https://mengtnt.com/2021/03/13/read-bsd.html" rel="alternate" type="text/html" title="深入解析OSX和iOS读后感" /><published>2021-03-13T16:53:28+08:00</published><updated>2021-03-13T16:53:28+08:00</updated><id>https://mengtnt.com/2021/03/13/read-bsd</id><content type="html" xml:base="https://mengtnt.com/2021/03/13/read-bsd.html">&lt;p&gt;自己做了这么久苹果应用的开发，其实还没有认真的看过苹果系统的整个架构。最近看了“深入解析Mac OS X &amp;amp; iOS操作系统”这本书，也算是对自己之前工作的回顾。如果你已经在这个领域从事了很多年，然后再看这个领域的一些基础的理论知识，和你要学习一门新技术而看这方面的书籍，感受是完全不同的。往往我看一些新技术的书籍时，遇到介绍的新知识点，内心的OS：“不过如此么？不就是xx技术加了一个美丽的外壳么？换汤不换药“。而看你一直从事的工作的书籍时，自己的感受是：”原来这个技术点设计的这么美妙啊，自己用了这么多年这个技术，都没理解这个精髓，真是惭愧啊“。内心有种老友重逢的感觉，有很多话想说，所以自己暂且就把读这本书的一些心得写了下来。下面介绍下自己看到的几个技术点的一些感想。&lt;/p&gt;
+
+&lt;h2 id=&quot;达尔文进化史&quot;&gt;达尔文进化史&lt;/h2&gt;
+
+&lt;p&gt;看到这个标题，不要误解并不是讲解进化论，而是想回顾下苹果系统从诞生到现在的历程。因为之前经常听说Darwin是苹果系统内核,其实从来没深究过Darwin是从何而来的，之前只是知道”UNIX”、”XNU”、”FreeBSD”但是他们之间又有什么千丝万缕的联系，从来没关心过。从这本书里得知他们之间的历史还是很有趣的，我这里挑几个关键点介绍下。&lt;/p&gt;
+
+&lt;p&gt;大名鼎鼎的UNIX内核大家应该都知道，是现代操作系统的鼻祖，1960年左右计算机刚诞生时，为了大家可以共享这个庞然大物，美国电信公司(AT&amp;amp;T)旗下的贝尔实验室研发了一套使用计算机硬件的多任务处理的复杂系统(Uniplexed Information and Computing Service，UnICS)，简称叫做UNIX，里面两个大名鼎鼎的工程师叫做肯·汤普逊和丹尼斯·里奇，这两个人就不多做介绍相信大部人都知道。&lt;/p&gt;
+
+&lt;p&gt;讲到这里自己想说一句，在现代的社会里，任何发明都是科学家的梦想和商业世界博弈的结果，科学追逐梦想，商业追求实用型，一实一虚成就了现代的世界。UNIX刚出现的时候是完全免费的给学术机构和大型企业用，但是随着用户量的增多，AT&amp;amp;T公司意识到这玩意可以赚钱了，就不再把源码授权给企业和学术界用了。并且申请了UNIX这个商标，任何系统都不能再叫做UNIX了，导致有很多这方面的专利官司。&lt;/p&gt;
+
+&lt;p&gt;之后很多机构都不能使用UNIX系统了，不得已人们根据UNIX内核的设计理念，就做出了很多类似的系统。其中加州大学伯利克分校为了学术研究，就开发了一套伯利克套件(BSD)产品，诞生于学术研究的BSD发展很迅速，根据开源协议的不同，BSD出现了FreeBSD，OpenBSD，NetBSD各种版本。&lt;/p&gt;
+
+&lt;p&gt;苹果的Darwin内核就是基于FreeBSD开发出来的，当时很多企业和学术机构，为了避免使用UNIX系统商标被官司缠身，就声明了他们的系统不是Unix，例如苹果就声明自己用的内核是XUN(X not unix),所以Mac系统OSX后面的X也就是从这里由来的。由于苹果的内核其实是开源的BSD发展来的，所以要遵循开源的一些协议，Darwin内核也一直是开源的，只是基于上面开发的软件套件是闭源的。所以苹果系统跟windows系统还是有很大区别的，windows系统的前身是DOS系统，完全是一个闭源的商业化操作系统，没有经历过任何开源的洗礼。&lt;/p&gt;
+
+&lt;p&gt;基于UNIX内核设计的开源系统如雨后春笋的发展起来，但是每个系统都是不同的学术机构和企业开发出来的，商业的社会大家都有各种自己的心思，一不小心就触犯了专利，尤其学术界对此非常的反感。为了自由总会有人站出来的，在1983年9月27日时，理查德·斯托曼在麻省理工学院公开发起一个计划。它的目标是创建一套完全自由的操作系统，称为GNU(G is Not Unix)。&lt;/p&gt;
+
+&lt;p&gt;GNU计划不仅要造出完全自由免费的操作系统，还要基于系统上造出各种免费的软件套件。但是这个计划是很美好，现实很骨感，在没有商业利益的情况下，GNU组织一直没能开发出来一个完全免费的操作系统。直到1991年，林纳斯·托瓦兹编写出了与UNIX内核兼容的Linux操作系统，之后Linux与GNU结合后，一个完全自由的操作系统正式诞生。许多程序员参与了Linux的开发与修改，也经常将Linux当成开发GNU计划软件的平台。但Linux本身不属于GNU计划的一部分。&lt;/p&gt;
+
+&lt;p&gt;据说GNU的Hurd内核现在仍然在开发，还没有发布1.0版本。虽然GNU计划并没有完全的实施完毕，但是开源的计划促进了很多软件的发展，例如shell、mark、vi等一系列开发编辑的软件都是在GNU计划中诞生的。还有大家都知道的Android系统也是基于Linux内核开发的，可以说也是得益GNU计划，同样Android系统也遵循了GNU计划的初衷，所有的内核代码都是开源的。&lt;/p&gt;
+
+&lt;p&gt;说来也惭愧，读了这本书之后，才真正的把目前主流的操作系统的前世今生关联起来，之前只是知其然不知所以然。下面也介绍几个读完此书后，自己经常使用但是不知所以然的几个知识点。&lt;/p&gt;
+
+&lt;h2 id=&quot;魔数&quot;&gt;魔数&lt;/h2&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;chomod +x&lt;/code&gt;这个操作我们经常使用，都知道这是告诉操作系统改变一个文件成为可执行文件，但是操作系统怎么识别这个文件是可执行文件那？其实过程很简单，就是会给这个文件打上一个标志。告诉操作系统将这个文件读入内存，然后寻找一个头签名。这个头签名就是”魔数(magic)”。每个操作系统都会定义可执行文件的魔数，然后根据不同的魔数正确加载和解析二进制文件，下面列出常用的一些魔数。&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;可执行格式&lt;/th&gt;
+      &lt;th&gt;魔数&lt;/th&gt;
+      &lt;th&gt;用途&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;PE32/PE32+&lt;/td&gt;
+      &lt;td&gt;M2&lt;/td&gt;
+      &lt;td&gt;window系统的可执行文件&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;ELF&lt;/td&gt;
+      &lt;td&gt;\x7FELF&lt;/td&gt;
+      &lt;td&gt;Linux和大部分Unix系统的可执行文件，Mac OS不支持&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;脚本&lt;/td&gt;
+      &lt;td&gt;#!&lt;/td&gt;
+      &lt;td&gt;系统内核会寻找#!之后的文本开始执行&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Universal Binary&lt;/td&gt;
+      &lt;td&gt;0xcafebabe(小尾顺序) 0xbebafeca(大尾顺序)&lt;/td&gt;
+      &lt;td&gt;通用二进制文件 OS X上支持&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Mach-O&lt;/td&gt;
+      &lt;td&gt;0xfeedface(32位) 0xfeedfacf(64位)&lt;/td&gt;
+      &lt;td&gt;OS X原生二进制文件&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这里我想说的是，自己经常写脚本的时候默认都写 &lt;code class=&quot;highlighter-rouge&quot;&gt;&lt;span class=&quot;c&quot;&gt;#! /bin/bash&lt;/span&gt;&lt;/code&gt;，但是很少去深究为啥要带上&lt;code class=&quot;highlighter-rouge&quot;&gt;#!&lt;/code&gt;这个标志。想一想如果当年开发脚本的大师们用了&lt;code class=&quot;highlighter-rouge&quot;&gt;#@&lt;/code&gt;,可能现在的脚本都要带上这个标志了。虽然是个小小的知识点，但是也能考察出自己学习东西的认真程度。&lt;/p&gt;
+
+&lt;h2 id=&quot;沙盒机制&quot;&gt;沙盒机制&lt;/h2&gt;
+
+&lt;p&gt;沙盒机制是苹果很早就具备的能力，尤其是iOS系统，一诞生就有了这个机制，其实在Unix系统下，想实现这个机制还是相对比较容易的，因为Unix系统内核当初开发的时候，就是为了多用户共享使用硬件的资源，共享的前提必须要做好隔离，例如现在的Docker技术就是使用了这个思想，进行容器隔离的。不过苹果使用的方案是不同的，下面就大概了解下苹果系统是怎么完成沙盒机制的。
+沙盒机制上面描述起来简单，但是如果内核支持的不好的话，真正的要实现难度还是很大的，因为现在进程的拦截技术很容易打破这些沙盒能力。BSD内核有一层Mac(mandatory access control)层,是专门用来处理沙盒机制的。用户态的进程在访问操作系统资源的时候，会先进入到Mac层,系统会读取entitlement文件，然后决定此进程的权限，从而分配不同的能力。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/read-bsd-system-1.png&quot; alt=&quot;img1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;我们在开发苹果下的应用时，需要通过我们的证书生成entitlement.plist文件，这个文件苹果在官方文档中介绍的比较少，只是说用来提供进程的可访问的能力，其实本质上是苹果用来做沙盒控制的一个手段。苹果会通过Mac层对进程的代码签名进行检查，只有苹果自己颁发的证书的签名才能通过，然后根据entitlement.plist配置授予相应的权限。所以越狱的话，本质上就是要打破内核的Mac层，从而使用户的进程具备系统的root权限。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;这里想说一个知识点，就是在iOS下改变一个应用程序权限的时候，例如关闭一个应用程序的麦克风权限，这个程序就需要重启。如果你了解上面苹果实现沙盒机制的原理，就很容易理解，因为权限的分配是在加载程序之前就需要决定的，自然必须要重启应用。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;内存破坏问题&quot;&gt;内存破坏问题&lt;/h2&gt;
+
+&lt;p&gt;编程问题中，遇到的最多的两类问题就是内存问题和线程问题。如果能很好的解决这两大类问题，基本90%以上的问题都可以解决。下面就基于这本书的介绍，讨论下这内存问题发生时，如何更好的定位。&lt;/p&gt;
+
+&lt;p&gt;内存问题一般包含两类：缓冲区溢出和堆内存破坏。在很多情况下，导致上面崩溃的代码往往相隔甚远，所以从bug出现到程序崩溃往往不在一个时间点，这样就很难定位bug的位置。&lt;/p&gt;
+
+&lt;p&gt;苹果系统为了方便定位这些问题，在&lt;code class=&quot;highlighter-rouge&quot;&gt;malloc&lt;/code&gt;操作的时候，允许开发者设置如下的环境变量，便于定位问题。下面的表格列出mac系统提供的相关的内存检测的环境变量。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/read-bsd-system-2.png&quot; alt=&quot;img1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;下面介绍下系统的libgmalloc.dylib这个动态库，如何来定位一些内存的bug的。这个库的大致原理就是通过拦截libsystem库的内存分配函数，给分配函数的内存打上不同的标记，从而定位问题。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;给进程分配的每个内存块上加上自定义的数据头，一般包含分配者的函数调用信息，这样当某块内存出问题时方便定位调用堆栈。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;给进程的每个内存块分配一个自己专有的页上，相邻的页面设置为不可写或者不可访问，这样一旦程序出现bug，例如缓存溢出或者访问了相邻的内存页面时，就会出现bad access的信号出现，这样就可以定位问题了。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;释放内存块时，解除分配的内存页面的读写权限，这样在过度释放相邻内存块的数据时，同样会引起崩溃的问题。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;通过上述的方法可以方便的定位到，是那行代码破坏了进程中的内存结构，不用等到运行到被破坏的结构时才会崩溃。所以本质上xcode的instrument工具，例如检测内存泄漏，用的都是类似于上述的方法。&lt;/p&gt;
+
+&lt;h2 id=&quot;mach任务概念&quot;&gt;Mach任务概念&lt;/h2&gt;
+
+&lt;p&gt;严格来讲苹果的系统没有标准的线程的概念，他使用的叫做Mach任务，其实这个数据结构可以看做是线程的概念。同时苹果在上层通过Mach任务也实现了linux的POSIX的线程能力。所以在MAC上也是可以使用Unix下标准的线程接口的。不过苹果开发文档还是建议开发者用苹果自己封装的线程队列(GCD)。&lt;/p&gt;
+
+&lt;p&gt;Mach任务是通过消息传递来实现各个任务的通信的，同样异常处理也是通过Mach消息(msg_send)下发的。下面就介绍下mach任务常见的一些异常处理。&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;#define EXC_BAD_ACCESS // 内存访问异常
+&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define EXC_BAD_INSTRUTION //指令执行异常,非法或者未定义的指令
+&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define EXC_ARITHMETIC // 算数计算异常
+&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define EXC_EMULATION // 模拟指令异常
+&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define EXC_SOFTWARE // 软件产生的异常，0-0xFFFF范围内的代码时给硬件的，0x1000-0x1FFF范围内的代码时给操作系统模拟的
+&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define EXC_BREAKPOINT // 跟踪或者断点相关的异常
+&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define EXC_SYSCALL // 系统调用的异常
+&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define EXC_RPC_ALERT // RPC 报警
+&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define EXC_CRASH // 异常的系统推出
+&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;上述这些错误都是早期的MAC系统定义的，其实现在还有很多其他错误没有包含进去，比如abort(系统终止)和segment(内存页错误)，都是操作系统通知进程的错误消息，只有充分了解了这些错误都是什么意思，以及如何发生才能更好的定位问题。&lt;/p&gt;
+
+&lt;h2 id=&quot;系统崩溃&quot;&gt;系统崩溃&lt;/h2&gt;
+
+&lt;p&gt;当用户登陆成功时，苹果系统会启动Finder进程而iOS下叫做SpringBoard，这两个都是操作系统的界面GUI。一旦这两个进程崩溃界面的UI就会卡死。&lt;/p&gt;
+
+&lt;p&gt;有意思的是，系统内核崩溃时，各个操作系统展示的默认样式是不同的。Linux喜欢将内容导出在黑白控制台上，windows更喜欢EGA的蓝屏风格，而Mac OS X更喜欢黑灰色的半透明画面，这个就是大家熟悉的死亡灰屏，本质上是调用内部的panic()函数，如果感兴趣的可以下载mac的内核，虚拟机上编译下，然后执行panic函数感受下死亡黑屏。&lt;/p&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;这本书对于做苹果开发的人员还是很值得一读，里面涉及的很多底层的知识，虽然平时开发很少用到里面的相关代码，但是对了解整个系统的架构，以及将来定位问题很有作用。当然上面只是介绍了这个书的几个知识点，里面还有大量有趣的知识点例如: 进程的优先级策略、如何实现POSIX标准的&lt;code class=&quot;highlighter-rouge&quot;&gt;poll select&lt;/code&gt;、网络utun接口抽象等等。不过从上面几个点中可以看出这本书传递给读者一些基本的理念，就是在平台上开发应用时，不仅要知其然，也要知其所以然。这样才能更好的写出来健壮的程序。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">自己做了这么久苹果应用的开发，其实还没有认真的看过苹果系统的整个架构。最近看了“深入解析Mac OS X &amp;amp; iOS操作系统”这本书，也算是对自己之前工作的回顾。如果你已经在这个领域从事了很多年，然后再看这个领域的一些基础的理论知识，和你要学习一门新技术而看这方面的书籍，感受是完全不同的。往往我看一些新技术的书籍时，遇到介绍的新知识点，内心的OS：“不过如此么？不就是xx技术加了一个美丽的外壳么？换汤不换药“。而看你一直从事的工作的书籍时，自己的感受是：”原来这个技术点设计的这么美妙啊，自己用了这么多年这个技术，都没理解这个精髓，真是惭愧啊“。内心有种老友重逢的感觉，有很多话想说，所以自己暂且就把读这本书的一些心得写了下来。下面介绍下自己看到的几个技术点的一些感想。</summary></entry><entry><title type="html">代码重构实践</title><link href="https://mengtnt.com/2021/02/10/rx-refactor.html" rel="alternate" type="text/html" title="代码重构实践" /><published>2021-02-10T15:02:59+08:00</published><updated>2021-02-10T15:02:59+08:00</updated><id>https://mengtnt.com/2021/02/10/rx-refactor</id><content type="html" xml:base="https://mengtnt.com/2021/02/10/rx-refactor.html">&lt;p&gt;  最近因为需求的变更，重构了几个5000多行的大类。完成了之后自然感觉清爽不少。在重构的过程中，自己也在思考，是什么造成了代码需要重构，我曾经重构过的一个类，大概是快6000行代码，类的成员变量有50多个，方法大概也有50个左右。这样的类以后维护起来就容易造成牵一发而动全身，用下图可以形象的表述。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/2021-02-10-1.jpg&quot; alt=&quot;img1&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;臃肿的代码从何而来&quot;&gt;臃肿的代码从何而来&lt;/h2&gt;
+
+&lt;p&gt;  冰冻三尺非一日之寒，我看了下这个类的git记录，有5年多的历史，陆陆续续有几十个人修改过。驱使这个类变的如此大。本质上和过多的业务逻辑增加到了同一个类中有很大关系。这是造成代码臃肿的本质原因，根据自己以往代码的经验来看，下面几种情况极易造成庞大的类出现。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;业务单例类—单例本质上是让代码能更好的重用，但是如果把所有的业务逻辑都放进去，就等于打开了恶魔的盒子，这个单例的类必然会越来越大。比如XXXNetworkCenter这种把业务的所有网络接口放到里面去，这时候大家就容易无脑的不管什么业务都往里面放置，必然会越来越庞大。所以还是要针对不同的业务独立的能拆分出来需要的网路接口最关键。在oc开发中，常见的方式就是扩展NetworkCenter+xxxExtension。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;工具类—我们往往喜欢把所有业务无关的代码抽离出来，放到一个公共的类中，其实这样做对代码的重用有很大的好处的，但是无止境的往工具类中放代码，也会造成代码臃肿的问题。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;过多的类变量和函数—面对有些复杂业务的逻辑，我们习惯上用一些共享的变量，来存储计算的结果，方便其他地方使用，这样做固然是好。但是如果一个类的变量超过了10个，或者提供给外部调用的函数超过了10个，这样对以后代码的可阅读性和维护性极其不利。因为对个人来讲，记忆超过10个物体的改变状态，其实是很难的挑战。所以当你的类一旦扩展到这种程度时，就要想办法通过好的架构缩减这些共享的变量和方法。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;如何消除臃肿的代码&quot;&gt;如何消除臃肿的代码&lt;/h2&gt;
+
+&lt;p&gt;  软件工程中，经常讨论架构，好的架构本质上就是消除臃肿的代码，让代码读起来更容易，修改起来更简单。软件架构重要的原则就是Keep it simple。这句话说出来简单，可是想把复杂的东西变简单并不是那么容易的事情，所以各种设计模式就应运而生。这里我讲几个自己实践过程中常用的几个原则。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;开闭原则，当你设计一个类的时候，尽量完成后不要修改类内部的设计，但是这个类要具备拓展能力，那很多人问，我不修改类的实现怎么来拓展能力哪？这里往往就需要针对相关的业务，有合理的底层通信机制来保证类的拓展性。比如现在操作系统的微内核，就是通过消息传递的方式，来分离系统的各个模块，让你的系统具备拓展能力，同时不用修改内核的代码。其实还有现在的微服务架构，比如RPC服务框架HSF就是通过合理的消息服务机制来分离和拓展各种微服务。当然上面说的都是很庞大的架构，必然实现非常复杂，我在下面的实践代码中，相对来讲分离的方式比较简单，但是麻雀虽小五脏俱全，其中也是可以看出如何分离各个业务模块的代码的。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;尽量减少有副作用函数暴露。现在很多架构，都是想要消除函数的副作用，本质上就要是消除引起公共变量改变的函数。所以有副作用的函数尽量放置到内部处理，外部的入口尽量减少。尤其当类有大量可读写的变量暴露时，这时就要考虑架构是否合理了，如果这时不去改变，公共变量将成为你的噩梦。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;多变的模块做隔离，少做依赖、少变的代码，可以多做依赖。这个原则本质上就是业务的分层设计，让频繁变动的业务层代码最好放在最上层，不要有其他类对它做过多的依赖，否则及其容易牵一发而动全身，引起很多问题。所以同一层的业务代码，分离后尽量不要做依赖。分层设计的目的主要是减少类的大小，便于频繁变动的业务代码的修改。想起来看过的驱动领域设计这本书，描述过抽象出业务领域的语言对于系统的架构非常关键。其实本质上业务领域语言，就是那些少变的底层代码分离出来，放在最下层，而把频繁变化的业务放在最上层。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;以上就是自己常用的几个原则，也不一定准确的对应某种设计模式，因为就像刚才所说的保持简洁才是最终的目的，不能为了设计模式而把代码搞的复杂了。&lt;/p&gt;
+
+&lt;h2 id=&quot;实践操作&quot;&gt;实践操作&lt;/h2&gt;
+
+&lt;p&gt;  简单描述下重构的会议和电话首页的大概模块划分，如下图所示:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/2021-02-10-2.jpg&quot; alt=&quot;img2&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;重构之前所有的UI和业务逻辑都是写在一个类中，造成这个类大概有5000多行代码，从模块图可以看出，应该拆分更多层才合理。根据上面提到的重构的原则，为了解耦，首先我们要找到一个方式来提供各个模块消息的通信。其实通信的方式很多，我这里借鉴了ReactX的信号方式进行通信，类图如下:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/2021-02-10-3.jpg&quot; alt=&quot;img3&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/2021-02-10-4.jpg&quot; alt=&quot;img4&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;这样各个模块在上层依赖下层时，通过依赖ColdEvent模块进行调用，ColdEvent通信避免了大量的如下的回调写法：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-oc&quot;&gt;- (void)getLatestMessage:(void (^ BOOL)(void ))complete;
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;减少了公开的方法调用。并且同层模块不相互依赖，实现了各个模块通信的解耦。&lt;/p&gt;
+
+&lt;p&gt;通过这样解耦的方式，如果将来业务复杂了，需要把MeetingModle要分为voiceMeeting和videoMeeting，就可以把MeetingModel再进行横向扩展。其实本质上也是了保持类的简单，避免大量公开的方法。&lt;/p&gt;
+
+&lt;p&gt;通过上述的方式，同时视图层和逻辑层，我借鉴了VIPER的架构方式，把原有的类，拆出了10个类左右，各个类代码在200行左右，类变量和公开方法也保持在10个左右，这样对于代码的阅读性大大增加，同时对维护以及扩展功来说成本也会小很多。整个重构做完之后的感觉，就向下图所示:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/2021-02-10-5.jpg&quot; alt=&quot;img5&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;展望和感悟&quot;&gt;展望和感悟&lt;/h2&gt;
+
+&lt;p&gt;  上述的代码在重构的过程中也用到了很多设计模式，我这里想表述的是设计模式不是软件架构的银弹。有时候不能为了使用设计模式而过度设计类，还是之前提过的原则，保持代码简单。比如一些简单的业务功能，把所有逻辑都放到一个类中也只要100多行代码时，这时就不要犹豫写一个类就好。不用过度的设计和架构，因为软件架构的原则就是保持代码简单，避免复杂，这时候再用各种设计就有点画蛇贴足了。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">  最近因为需求的变更，重构了几个5000多行的大类。完成了之后自然感觉清爽不少。在重构的过程中，自己也在思考，是什么造成了代码需要重构，我曾经重构过的一个类，大概是快6000行代码，类的成员变量有50多个，方法大概也有50个左右。这样的类以后维护起来就容易造成牵一发而动全身，用下图可以形象的表述。</summary></entry><entry><title type="html">SimpleCoreData实践</title><link href="https://mengtnt.com/2020/09/14/coredata-swift.html" rel="alternate" type="text/html" title="SimpleCoreData实践" /><published>2020-09-14T11:51:28+08:00</published><updated>2020-09-14T11:51:28+08:00</updated><id>https://mengtnt.com/2020/09/14/coredata-swift</id><content type="html" xml:base="https://mengtnt.com/2020/09/14/coredata-swift.html">&lt;p&gt;面向协议编程是Swift语言的一个很大的特点，wwdc中有一节经典的Session&lt;a href=&quot;https://developer.apple.com/videos/play/wwdc2015/408/&quot;&gt;面向协议编程&lt;/a&gt;对Swift这个语法特性做了详细的分析。下面分享的内容主要是利用Swift面向协议编程特性，封装CoreData数据库的API。至于为何要选择CoreData数据库也是因为Coredata很多API其实对于初学者非常不友好，也是想通过Swift语言的一些优秀特性来简化API的操作，也特意为此起了一个名字叫SimpleCoredata。&lt;/p&gt;
+
+&lt;h2 id=&quot;coredata的基本思想&quot;&gt;CoreData的基本思想&lt;/h2&gt;
+
+&lt;p&gt;CoreData核心思想就是，操控数据库时，避免写繁琐的sql语句，而用更友好的对象操控的方式来使用数据库。CoreData如果你不太了解的话，建议看下苹果的&lt;a href=&quot;https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/CoreData/index.html#//apple_ref/doc/uid/TP40001075-CH2-SW1&quot;&gt;官方文档&lt;/a&gt;。这篇博客并不会对CoreData进行详细的讲解，我主要是想分享下如何利用Swift语言的一些特性设计合理的API。&lt;/p&gt;
+
+&lt;p&gt;CoreData虽然说可以简化写代码的量，但是也有很多负面问题，比如coredata对象操控造成没办法很好的指定主键，保证数据唯一性时要做一些过多的操作。还有对象模型合并时，需要写大量的合并代码，以及读写性能的问题等等。其实业界对CoreData的吐槽也很多，对于一些大型的项目确实Coredata还是有一些坑存在。&lt;/p&gt;
+
+&lt;p&gt;这几年苹果的开发者大会经常有CoreData的相关Session，也在不停的优化和改善CoreData的体验。如果想使用CoreData数据库作为项目开发，建议最好观看下&lt;a href=&quot;https://developer.apple.com/videos/play/wwdc2018/224/&quot;&gt;Core Data Best Practices&lt;/a&gt;这个session，里面的讲解对CoreData优化方面都有详细的解释。之后你看完这篇文章就会发现，其实用CoreData操作数据库存储，可以如此简单，只要几行代码即可，所以你想要做一些小项目使用到数据库时，CoreData还是蛮合适的。&lt;/p&gt;
+
+&lt;p&gt;好了暂时对CoreData的解释就这么多了，下面开始分享下Swift面向协议编程的思想了。&lt;/p&gt;
+
+&lt;h2 id=&quot;swift的面向协议编程&quot;&gt;Swift的面向协议编程&lt;/h2&gt;
+
+&lt;p&gt;首先解释下为什么苹果要提出面向协议编程，其实跟OOP遇到的问题有很大的关系，由于现在很多项目越来越复杂，设计类的继承结构非常的深，造成开发者阅读起来比较困难，并且还经常会出现修改了一个子类的方法，莫名其妙的影响到了其他类的实现。&lt;/p&gt;
+
+&lt;p&gt;在OOP中为了解决此问题使用了很多设计模式。其实设计模式大多是利用组合、代理、装饰来减弱继承过多的问题。设计模式本质上是迫不得已才引入的，虽然很有效但是大家必须要遵守设计模式的规则去实现代码。可是如果大家不遵守这个规则，语言层面也不会报错，就会造成之后代码的可维护性越来越差。为了语言层面上解决这些问题，就出现面向协议编程(POP)。Swift语言也就是顺应了这个潮流。&lt;/p&gt;
+
+&lt;h3 id=&quot;extension用法&quot;&gt;extension用法&lt;/h3&gt;
+
+&lt;p&gt;下面我结合代码来说下Swift的protocol中extension用法是如何避免继承的。先来看下OOP编程中为了重用一个类的方法，往往用如下的写法:&lt;/p&gt;
+
+&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;ParentClass&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;learnSwift&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nf&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;learn swift&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;childClass&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;ParentClass&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;advanceCourse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nf&quot;&gt;learnSwift&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;使用swift语言protocol协议的extension语法特性，可以扩展一个方法的实现就可以这样写。&lt;/p&gt;
+
+&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;protocol&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;ParentProtocol&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;learnSwift&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;extension&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;ParentProtocol&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;learnSwift&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nf&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;learn swift&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;childClass&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;ParentProtocol&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;advanceCourse&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nf&quot;&gt;learnSwift&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;可以看出来，代码量有一定增加，但是把&lt;code class=&quot;highlighter-rouge&quot;&gt;learnSwift&lt;/code&gt;作为一个公共的方法定义到接口中，明显比这个方法隐藏在父类中，增加了可读性。下面再来看一段代码。&lt;/p&gt;
+
+&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;protocol&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;FatherProtocol&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;weight&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;CGFloat&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;extension&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;FatherProtocol&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;weight&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;CGFloat&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;60&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;protocol&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;MatherProtocol&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;height&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;CGFloat&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;extension&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;MatherProtocol&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;height&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;CGFloat&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;175&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;PersonClass&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;FatherProtocol&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;MatherProtocol&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;BMI&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nf&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;BMI index height &lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;height&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;, weight &lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;weight&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;从上面的使用可以看出，协议和扩展功能可以解决横向多态问题。如果是OOP编程的话，想把一个父类拆分，往往的做法是父类再增加一个父类，造成继承越来越深。现在利用Swift语言的特性就可以用组合的方式提炼出来公共方法，然后进行横向扩展，代码可读性会大大增加。&lt;/p&gt;
+
+&lt;h3 id=&quot;associatedtype的使用&quot;&gt;associatedtype的使用&lt;/h3&gt;
+
+&lt;p&gt;相对于OOP类对象，接口中往往缺少实例变量的概念。所以类中的实例变量如果需要重用的话，在protocol中应该如何设计哪？这就要利用Swift语法protocol的另一个特性associatedtype。这个就相当于给协议定义了一个公共的实例变量。下面看个例子&lt;/p&gt;
+
+&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;protocol&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Container&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;associatedtype&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Equatable&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;mutating&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;count&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;nf&quot;&gt;subscript&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Item&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;这个协议是所有集合类都要实现的，因为集合类都要存储实例变量，所以&lt;code class=&quot;highlighter-rouge&quot;&gt;associatedtype Item&lt;/code&gt;就定义了公共的实例变量。然后所有实现的类用模板语法来定义就可以达到重用的目的,例如Stack的定义。&lt;/p&gt;
+
+&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Stack&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Element&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Container&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;items&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Element&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]()&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;mutating&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;push&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Element&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;items&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;mutating&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;pop&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Element&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;items&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;removeLast&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;mutating&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;append&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Element&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;push&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;count&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;items&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;count&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;nf&quot;&gt;subscript&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Element&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;items&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;i&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;其实associatedtype的很多概念设计到了Swift模板语法的特性，如果要深入了解可以看下&lt;a href=&quot;https://docs.swift.org/swift-book/LanguageGuide/Generics.html&quot;&gt;swift Generics语法&lt;/a&gt;官方文档。&lt;/p&gt;
+
+&lt;h2 id=&quot;simplecoredata实践&quot;&gt;SimpleCoreData实践&lt;/h2&gt;
+
+&lt;p&gt;上面讲了这么多铺垫，下面说下&lt;code class=&quot;highlighter-rouge&quot;&gt;SimpleCoreData&lt;/code&gt;框架的实践，首先看下这个框架的UML类图结构。
+&lt;img src=&quot;/images/simple-coredata.jpg&quot; alt=&quot;UML1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;从类图里面可以看出来，&lt;code class=&quot;highlighter-rouge&quot;&gt;CoreDataStroage&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;NSManagedObjectContext&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;NSManagedObject&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;CoreDataObservable&lt;/code&gt;这几个类是协议的真正实现，将来如果替换成其他类型的数据库，上层protocol的设计可以不用改变，方便了底层的替换。其实这在OOP中是运用了设计模式的一个重要原则依赖接口，不依赖实现(IOC)。&lt;/p&gt;
+
+&lt;p&gt;这里就简单说下Objective-c语言中实现IOC的方法，往往需要一个容器来记录哪些接口被实现了，因此要定义一个&lt;code class=&quot;highlighter-rouge&quot;&gt;IOCContainer&lt;/code&gt;的共有类，然后通过&lt;code class=&quot;highlighter-rouge&quot;&gt;registorComplement&lt;/code&gt;方法把所有实现对应的&lt;code class=&quot;highlighter-rouge&quot;&gt;Protocol&lt;/code&gt;接口，注册到&lt;code class=&quot;highlighter-rouge&quot;&gt;IOCContainer&lt;/code&gt;中。然后上层代码的调用都使用&lt;code class=&quot;highlighter-rouge&quot;&gt;Protocol&lt;/code&gt;的方法，这样就实现了接口依赖。Objective-c为何用这么麻烦的方法实现，显然是因为语法上不支持这种特性，并且这样实现容易出现的问题是，假如有一些&lt;code class=&quot;highlighter-rouge&quot;&gt;protocol&lt;/code&gt;的实现没有注册到Container中时，这个问题不容易被发现，一旦上层调用就容易崩溃。&lt;/p&gt;
+
+&lt;p&gt;下面看下Swift如何实现这个设计模式的，这里可能要用到Swift一个新的语法&lt;a href=&quot;https://docs.swift.org/swift-book/LanguageGuide/OpaqueTypes.html&quot;&gt;OpaqueTypes&lt;/a&gt;。这个是通用类型定义，具体我们看下面的代码。&lt;/p&gt;
+
+&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;protocol&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Storage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;CustomStringConvertible&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Equatable&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;storePath&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;URL&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Context&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;get&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;CoreDataStorage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Storage&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;storeFileName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;mainContext&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Context&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;required&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;objectModelName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;fileName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;bundle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Bundle&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Bundle&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// todo&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Context&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;mainContext&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;storePath&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;URL&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;URL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;fileURLWithPath&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;documentsDirectory&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;appendingPathComponent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;storeFileName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;openDB&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;objectModelName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;dbName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;some&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Storage&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;db&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;DBFactory&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;manager&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;containers&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dbName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;synchronized&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;lock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;CoreDataStorage&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;db&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;CoreDataStorage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;objectModelName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;objectModelName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;fileName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dbName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;DBFactory&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;manager&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;containers&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dbName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;db&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;some Storage&lt;/code&gt;定义了实现&lt;code class=&quot;highlighter-rouge&quot;&gt;Storage&lt;/code&gt;协议这一类型的返回对象，通过这个语法就可以把所有的实现都封装起来，只暴露接口给上层。然后上层的调用只要简单的一行代码就可以搞定。&lt;/p&gt;
+
+&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;database&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;some&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Storage&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;DBFactory&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;openDB&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;objectModelName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;SimpleDataBase&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;dbName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;TestCoreData&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;这样底层数据库的实现替换了也不会影响上层的代码。&lt;strong&gt;注意我上面的代码是简化了框架中的实现，具体的实现要看下源码，会复杂一些但是思想是一样的。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;entity实践&quot;&gt;Entity实践&lt;/h3&gt;
+
+&lt;p&gt;针对之前提到的Swift协议中extension用法，这里看下&lt;code class=&quot;highlighter-rouge&quot;&gt;SimpleCoreData&lt;/code&gt;中时如何应用的。&lt;/p&gt;
+
+&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;protocol&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Entity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Equatable&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;primeKey&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;get&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;syncDictionary&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;jsonObject&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Any&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Entity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;lhs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;rhs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Bool&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lhs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;primeKey&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rhs&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;primeKey&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;数据库存储的对象，很重要的一个属性就是&lt;code class=&quot;highlighter-rouge&quot;&gt;primeKey&lt;/code&gt;。往往在比较两个对象是否一样的时候，只要&lt;code class=&quot;highlighter-rouge&quot;&gt;primeKey&lt;/code&gt;一致就可以了。所以Entity协议就把比较操作抽离出来作为一个公共方法。而&lt;code class=&quot;highlighter-rouge&quot;&gt;syncDictionary&lt;/code&gt;这个方法是把数据存储到数据库中常用的手段，这里就需要实现的类完成这个操作了。&lt;/p&gt;
+
+&lt;h3 id=&quot;dbobservable实践&quot;&gt;DBObservable实践&lt;/h3&gt;
+
+&lt;p&gt;数据库存储中，上层经常会用到一个方法，就是当存储的数据变化时，通知上层做一些UI方面的刷新。下面就来看下如何利用associatedtype把数据库这个公共操作抽离出来。&lt;/p&gt;
+
+&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;protocol&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;DBObservable&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;associatedtype&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Elment&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Entity&lt;/span&gt;
+    &lt;span class=&quot;nf&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Context&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;observer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;closure&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kd&quot;&gt;@escaping&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;StorageDataChange&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Elment&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Void&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;enum&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;StorageDataChange&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Entity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;update&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;delete&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;insert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;fetch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;T&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;T&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;switch&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;update&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;object&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;delete&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;object&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;insert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;object&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;fetch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;object&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;object&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;isDeletion&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Bool&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;delete&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;isUpdate&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Bool&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;update&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;isInsertion&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Bool&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;insert&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;isFetch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Bool&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fetch&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;从上面的代码中可以看出数据库观察者有重要的两个属性，首先要知道要观察的实体对象是什么，这里就用到了通用的&lt;code class=&quot;highlighter-rouge&quot;&gt;associatedtype&lt;/code&gt;方法，其次就要知道数据库当前的&lt;code class=&quot;highlighter-rouge&quot;&gt;context&lt;/code&gt;，也就是数据的内存中分布的情况。然后可以定义数据库更新常用操作的枚举(update,delete,insert,fetch)，就可以方便的抽离出来公共方法，然后实现的类，只要关注&lt;code class=&quot;highlighter-rouge&quot;&gt;func observer(_ closure:@escaping ([StorageDataChange&amp;lt;Elment&amp;gt;]) -&amp;gt; Void) -&amp;gt; Void&lt;/code&gt;方法实现就可以了。&lt;/p&gt;
+
+&lt;h2 id=&quot;swift-package管理&quot;&gt;swift package管理&lt;/h2&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;SimpleCoreData&lt;/code&gt; 目前是使用Swift Package来管理的。相对于pod中心化的仓库管理，Swift Package是去中心化的，更像Carthage的用法。如果想了解详细的用法可以参考苹果的文档&lt;a href=&quot;https://swift.org/package-manager/&quot;&gt;swift package&lt;/a&gt;。苹果还提供了xcode工程&lt;a href=&quot;https://developer.apple.com/documentation/xcode/adding_package_dependencies_to_your_app&quot;&gt;如何快速集成swift package的方法&lt;/a&gt;。&lt;/p&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;SimpleCoreData&lt;/code&gt; 完整的实现，已经放在了GitHub上&lt;a href=&quot;https://github.com/animeng/SimpleCoreData&quot;&gt;链接地址&lt;/a&gt;。这个是自己对Swift语言面向协议编程的一个实践，还有很多不完善的地方,抛砖引玉，希望大家多多给些意见。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">面向协议编程是Swift语言的一个很大的特点，wwdc中有一节经典的Session面向协议编程对Swift这个语法特性做了详细的分析。下面分享的内容主要是利用Swift面向协议编程特性，封装CoreData数据库的API。至于为何要选择CoreData数据库也是因为Coredata很多API其实对于初学者非常不友好，也是想通过Swift语言的一些优秀特性来简化API的操作，也特意为此起了一个名字叫SimpleCoredata。</summary></entry><entry><title type="html">程序员的自我修养读后感</title><link href="https://mengtnt.com/2020/07/13/book_thoughts.html" rel="alternate" type="text/html" title="程序员的自我修养读后感" /><published>2020-07-13T12:46:00+08:00</published><updated>2020-07-13T12:46:00+08:00</updated><id>https://mengtnt.com/2020/07/13/book_thoughts</id><content type="html" xml:base="https://mengtnt.com/2020/07/13/book_thoughts.html">&lt;p&gt;最近又换了工作，从一个很佛系的公司换到了一个&lt;code class=&quot;highlighter-rouge&quot;&gt;Ambition&lt;/code&gt;的公司。自己也是考虑了很久，担心能不能适应接下来的环境。最后我还是选择了改变，因为在自己的职业生涯里，再大的阻力也抵不过自己的好奇心。在换工作的空档期有些时间，重温了下&lt;code class=&quot;highlighter-rouge&quot;&gt;程序员的自我修养-链接、装载与库&lt;/code&gt;。这本书自己刚毕业那会有看过，当时主要是冲着潘爱民老师的名声来的，毕竟大学他的&lt;code class=&quot;highlighter-rouge&quot;&gt;数据结构&lt;/code&gt;是人人皆知。现在再重新看完这本书，更是深刻感觉到不管掌握了多少新技术，其实都是从这些基础的计算机知识衍生出来的，所以也很推荐给大家看下。下面就自己这些年学习过的一些新技术结合这本书中的观点，分析下底层的一些原理。&lt;/p&gt;
+
+&lt;h2 id=&quot;变量和函数的符号化&quot;&gt;变量和函数的符号化&lt;/h2&gt;
+
+&lt;p&gt;书中讲过一个例子c++在引用c语言的库时，由于c++语言会对变量和函数在符号化的时候加入一些辨识符号。所以在c++语言引用c语言的接口时，一定要增加&lt;code class=&quot;highlighter-rouge&quot;&gt;extern c&lt;/code&gt;来声明。表示此处是c语言的变量和接口，在编译器符号化时，不要使用c++的规则，这样在link的时候，才能从c语言库中找到正确的变量和函数的符号。自己曾经在学习swift语言，看到swift语言调用oc语言时需要增加&lt;code class=&quot;highlighter-rouge&quot;&gt;@objc&lt;/code&gt;标志，就想到swift对变量和函数符号化的规则和oc一定是有区别，才需要这种调用规则。而oc在调用c语言时，就完全不用增加任何编译选项，就说明oc的符号化，是和c语言一样的，我们可以打开一个oc的静态库，观察下里面的函数的符号化就会发现其实和c语言一模一样。但是oc在调用c++语言时，就需要改变文件类型为mm，目的就是要告诉编译器，编译时要注意需要用c++规则进行符号化。所以不管什么新语言，想要桥接另一个语言库时，在编译link的时候，符号化一定要适配不同语言，不管java的jni，以及最近很火的flutter框架中dart语言的ffi，都是同样的道理。&lt;/p&gt;
+
+&lt;h2 id=&quot;并发和锁&quot;&gt;并发和锁&lt;/h2&gt;
+
+&lt;p&gt;这个是任何软件开发都要了解的技术。以前在学习多线程中，&lt;code class=&quot;highlighter-rouge&quot;&gt;互斥量&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;临界区&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;条件变量&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;读写锁&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;乐观锁&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;悲观锁&lt;/code&gt; 这些各种概念充斥其中，刚开始接触真的摸不到头脑。其实如果了解最底层的设计原则，再来看这些感念，你会觉得这些都是是基于&lt;code class=&quot;highlighter-rouge&quot;&gt;原子性操作&lt;/code&gt;的不同概念罢了。多线程是可以让程序的汇编指令乱序的执行，如果需要顺序执行某个事情就需要锁。在讲解锁的时候，一般都会说到一个概念原子性，什么是原子性。结合汇编代码，本质上就是一个汇编指令就是具有原子性，也就是说所有的程序指令都是一个个汇编指令组合起来的，指令的最小单元就是一条汇编指令。也就好像是世界万物最小的单元是原子，原子是不能再分割了(虽说现在原子还能分割)，然后就用了原子性来表明这种特性。通过这本书提到的原子性，正好分析下CAS的概念，定义如下:&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;比较并交换(compare and swap, CAS)，是原子操作的一种，可用于在多线程编程中实现不被打断的数据交换操作，从而避免多线程同时改写某一数据时由于执行顺序不确定性以及中断的不可预知性产生的数据不一致问题。该操作通过将内存中的值与指定数据进行比较，当数值一样时将内存中的数据替换为新的值。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;其实CAS操作是依赖一条很重要的汇编指令&lt;code class=&quot;highlighter-rouge&quot;&gt;cmpxchg &lt;/code&gt;&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;CMPXCHG r/m,r 将累加器AL/AX/EAX/RAX中的值与首操作数（目的操作数）比较，如果相等，第2操作数（源操作数）的值装载到首操作数，zf置1。如果不等，首操作数的值装载到AL/AX/EAX/RAX并将zf清0&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这个汇编指令是原子性的，就可以利用这条指令实现&lt;code class=&quot;highlighter-rouge&quot;&gt;乐观锁&lt;/code&gt;,乐观锁就不用阻塞其他线程的指令执行，而是利用cas操作不停的检测共享变量中的数据是否改变，来决定是否执行操作。所以比其他的锁性能要高很多。书中在介绍锁时，引入的汇编指令的原子操作解释，其实就更好的让大家理解各种锁的概念。因为很多不同的语言平台都有一些自己定义的锁，其实万变不离其宗。例如BSD中OSSpinLock锁，其实就是上面所说的乐观锁的概念，在不停的检测共享变量的改变，所以叫做自旋锁。明白了锁基本的设计原理，不管遇到什么概念都可以理解了。&lt;/p&gt;
+
+&lt;h2 id=&quot;内存映射&quot;&gt;内存映射&lt;/h2&gt;
+
+&lt;p&gt;在做日志系统的时候，很多人都知道&lt;code class=&quot;highlighter-rouge&quot;&gt;mmap&lt;/code&gt;内存映射可以保证日志文件实时回写到磁盘上，保证不丢失。至于为什么要用这种方式来做，如果看过这本书&lt;code class=&quot;highlighter-rouge&quot;&gt;内存装载过程&lt;/code&gt;章节，就很容易理解。这里先来说下虚拟内存地址，什么是虚拟内存地址，本质上是可执行程序对内部的变量和函数都有一个内存地址分配。在程序还未运行时，还不能完全确定这些数据所装载的真实物理内存位置，所以叫做虚拟内存地址。在程序准备执行时，加载的过程中，就会把这些虚拟内存地址映射到真实的内存空间地址中。这个过程是操作系统自动完成的。&lt;/p&gt;
+
+&lt;p&gt;下面就详细解释下我们使用的&lt;code class=&quot;highlighter-rouge&quot;&gt;mmap&lt;/code&gt;，其实在很多操作系统，都会把内存做分页的，也就是真实的物理地址，不会是一连片的，都是分布在不同的页中。有一个概念就要页交换技术，就是把经常不用的内存页交换到磁盘上，等需要的时候再交换回来，这样可以把空闲的内存给优先级更高的应用使用。然后我们程序中使用的&lt;code class=&quot;highlighter-rouge&quot;&gt;mmap&lt;/code&gt;，本质上就是利用这种特性，告诉操作系统这块内存可以映射到磁盘上，这样就节省了内存空间，又可以方便内容保存。&lt;/p&gt;
+
+&lt;p&gt;所以我们写下的&lt;code class=&quot;highlighter-rouge&quot;&gt;mmap&lt;/code&gt;这句代码，本质上是利用了操作系统的这种页交换技术特性，把程序的内存地址映射到存储的磁盘上，这样就保证程序退出时，操作系统可以把这块内存交换到磁盘上，从而保证了日志不会在内存中丢失。&lt;/p&gt;
+
+&lt;p&gt;这里再多说一下，大多数操作系统包含MacOS都是支持内存交换机制，但是在iOS系统并不支持，其实很多移动设备都不支持内存交换机制。移动设备上的大容量存储器通常是闪存（Flash），它的读写速度远远小于电脑所使用的硬盘，这就导致了在移动设备就算使用内存交换机制，也并不能提升性能。所以&lt;code class=&quot;highlighter-rouge&quot;&gt;mmap&lt;/code&gt;在移动端使用可以节省内存和防止数据丢失，但是却牺牲了数据的访问速度。&lt;/p&gt;
+
+&lt;h2 id=&quot;栈中的函数&quot;&gt;栈中的函数&lt;/h2&gt;
+
+&lt;p&gt;每个进程和线程在执行函数时，想必很多人都知道是放在栈中的，这样可以方便实现函数的递归调用。下面举个例子&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;16&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;38&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;53&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;这个函数在加载时在栈中的内存布局如下&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;top&lt;/span&gt;          &lt;span class=&quot;err&quot;&gt;栈顶&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;低地址&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;ret&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;            &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;16&lt;/span&gt;           &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;38&lt;/span&gt;           &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
+&lt;span class=&quot;mi&quot;&gt;53&lt;/span&gt;           &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;这里我想说的是常见的&lt;code class=&quot;highlighter-rouge&quot;&gt;printf&lt;/code&gt;不定参数是如何实现的？因为&lt;code class=&quot;highlighter-rouge&quot;&gt;printf&lt;/code&gt;的参数不仅数量不确定，而且类型也不定，所以&lt;code class=&quot;highlighter-rouge&quot;&gt;printf&lt;/code&gt;需要在格式化字符串中注明参数的类型，要这样调用&lt;code class=&quot;highlighter-rouge&quot;&gt;printf('this is %d',num)&lt;/code&gt;。这样函数参数才能知道自己在栈中占用多少空间，如果一旦将类型描述错误了，就会出现函数内存排列出问题，造成在函数调用时，获取的值发生改变。除了上面一点，栈中函数参数一般是从右向左排列的，好处就是方便计算格式化的第一个字符串参数的值。下面利用书中的一个例子解释。&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;#include &amp;lt;stdio.h&amp;gt;
+&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; 
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;printf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;%f%d%c&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;166&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;sc&quot;&gt;'a'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;在这个程序里,printf的第一个输出参数是一个int（4个字节），而我们告诉printf它是一个double（8字节以上），因此printf的输出会错误，由于printf在读取double的时候实际造成了越界，因此后面几个参数的输出也会失败。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;在学习很多弱类型语言中，编译器都有一个很重要的能力&lt;code class=&quot;highlighter-rouge&quot;&gt;类型推断&lt;/code&gt;。如果函数的参数类型没有确定，其实是无法真正装载运行的，需要利用语言类型的推断功能，在编译链接时确定了参数类型后，才能真正的加载运行。所以你在学习一门新的弱类型语言时，你就理解为什么函数的参数需要类型推断确定类型后才能运行。&lt;/p&gt;
+
+&lt;h2 id=&quot;系统调用&quot;&gt;系统调用&lt;/h2&gt;
+
+&lt;p&gt;下面我拿一个很简单代码来描述下系统调用的过程&lt;/p&gt;
+
+&lt;div class=&quot;language-c++ highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;cp&quot;&gt;#include &amp;lt;iostream&amp;gt;
+&lt;/span&gt; 
+&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;namespace&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;std&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+ 
+&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+   &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;50&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+ 
+   &lt;span class=&quot;n&quot;&gt;cout&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;请输入：&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+   &lt;span class=&quot;n&quot;&gt;cin&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+   &lt;span class=&quot;n&quot;&gt;cout&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;你的输入是： &quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;endl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+ 
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;在操作系统中，程序运行时本身没有权利访问系统资源的，因为系统资源有限，有可能被很多程序同时访问。因此需要系统加以保护，阻止应用程序直接访问，例如上面的键盘输入和输出，其实是IO操作。当程序调用&lt;code class=&quot;highlighter-rouge&quot;&gt;cin &amp;gt;&amp;gt; name&lt;/code&gt;时，首先会向操作系统申请一个中断，然后操作系统根据应用的权限判断是否有操作IO的权限，如果有，就会从用户模式切换到内核模式，然后操作系统会把这个操作注册在中断向量表中。cpu就会暂停当前执行的代码，根据中断的中断号，在中断向量表中找到对应的中断处理程序，上面也就是键盘输入程序，调用它。中断处理程序执行完成后，cpu会继续执行之前的代码，完成内核模式切换到用户模式。&lt;/p&gt;
+
+&lt;p&gt;这里要说下在实际执行中断向量函数之前，cpu首先还要进行函数栈的切换，用户态和内核态使用的是不同的函数栈，两者负责各自的函数调用，互不干扰。此外，寄存器SS的值还应该指向当前栈所在的内存页里面。下面引用书中描述的用户栈如何切换为内核栈然后再切换回来的过程。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;保存当前的ESP(堆栈栈顶指针)、SS(堆栈段寄存器)的值到内核的栈中。&lt;/li&gt;
+  &lt;li&gt;然后ESP、SS的值设置为内核栈的相应的值。&lt;/li&gt;
+  &lt;li&gt;恢复原来的ESP、SS的值切换到用户态。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;所以在程序崩溃的时候，会发现应用程序需要切换到内核态然后判断出错，再给应用程序发送崩溃指令，然后切换到用户态后接收到崩溃指令，这时崩溃的堆栈信息就是在此时抛出的，最后程序再崩溃。&lt;/p&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;过了几年，重新回顾下一本书，最大的收获是，结合这几年新获得的一些能力和书中的一些理论做一些对比，会有一种豁然开朗的感觉。其实一本好书的意义就在于不管经历了多少年，里面的道理总是可以拿来反复验证的。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近又换了工作，从一个很佛系的公司换到了一个Ambition的公司。自己也是考虑了很久，担心能不能适应接下来的环境。最后我还是选择了改变，因为在自己的职业生涯里，再大的阻力也抵不过自己的好奇心。在换工作的空档期有些时间，重温了下程序员的自我修养-链接、装载与库。这本书自己刚毕业那会有看过，当时主要是冲着潘爱民老师的名声来的，毕竟大学他的数据结构是人人皆知。现在再重新看完这本书，更是深刻感觉到不管掌握了多少新技术，其实都是从这些基础的计算机知识衍生出来的，所以也很推荐给大家看下。下面就自己这些年学习过的一些新技术结合这本书中的观点，分析下底层的一些原理。</summary></entry><entry><title type="html">浅谈软件开发的三个特点</title><link href="https://mengtnt.com/2020/06/30/new_product.html" rel="alternate" type="text/html" title="浅谈软件开发的三个特点" /><published>2020-06-30T12:05:28+08:00</published><updated>2020-06-30T12:05:28+08:00</updated><id>https://mengtnt.com/2020/06/30/new_product</id><content type="html" xml:base="https://mengtnt.com/2020/06/30/new_product.html">&lt;p&gt;最近大老板让开发一个很看好的产品，当然大老板想要开发的产品，大家都一定觉得是有前途的产品。经过辛苦的996了2个月开发，终于做出来了第一个版本。现在自己回过头来，总结下这个产品开发的整个过程，有值得学习的地方，也有引以为戒的地方。总体来讲，这个项目并不是很成功，甚至在自己看来是有些失败的。当然我作为项目里面ios的负责人，肯定有不可推卸的责任，一个很重要的原因，自己对产品本身idear还有开发的过程个人并不认同。自己当然也会总结下，遇到这种赶鸭子上架，不得不做的产品时，一些心得体验。&lt;/p&gt;
+
+&lt;p&gt;自己从事软件开发也有不少年头了，大大小小的产品也做了10几个。领悟到一个心得是，开发产品一定要有一个可持续发展的心态，切记不能操之过急，想要一口吃个胖子。因为往后开发产品的日子还长，如果因为开发一款产品，把大家的心态搞的崩溃，非常得不偿失。但是这对于急于要做一款要爆红的产品的负责人来讲，可持续发展是什么？肯定是放在最低优先级考虑的，恨不得明天出原型，后天出产品。产品带头人有激情是很好，如果能够感染给大家就完美。但是就怕一个人自high就很可怕。所以在开发一个新产品之前，团队的心态一定要齐心协力，用大老板的一个词叫热爱。如果大家真的是热爱这个产品，也就不必规定新产品开发必须晚上11点之后回去，周末来加班。因为遇到问题大家甚至会在睡觉的时候，突然想起来去解决，这就是心态的问题。强制规定规则的原因，往往是解决大家没兴趣但是又不得不做的事情。但是不可否认，这种做法有时候会成功，不过在我看来，这种从来不叫成功，叫做撞大运。个人理想的成功是，做一些自己感兴趣的事情，同时又能帮助到别人，正如自己很喜欢的一句俗语叫&lt;code class=&quot;highlighter-rouge&quot;&gt;我为人人，人人为我。&lt;/code&gt;成功`这个词在100个人眼里有100个看法。这里就不再扯了，否则就有点离题远了。&lt;/p&gt;
+
+&lt;p&gt;下面就讲下开发这个产品，遇到的三个问题，我这段时间在思考这三个问题的时候，总喜欢同CAP定理来作比较。这里简单对CAP定理做个介绍.&lt;/p&gt;
+&lt;blockquote&gt;
+  &lt;p&gt;CAP定理，又被称作布鲁尔定理,它指出对于一个分布式计算系统来说，不可能同时满足以下三点： 一致性 可用性 分区容错性 根据定理，分布式系统只能满足三项中的两项而不可能满足全部三项。理解CAP理论的最简单方式是想象两个节点分处分区两侧。允许至少一个节点更新状态会导致数据不一致，即丧失了C性质。如果为了保证数据一致性，将分区一侧的节点设置为不可用，那么又丧失了A性质。除非两个节点可以互相通信，才能既保证C又保证A，这又会导致丧失P性质。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/rapidly-1.jpg&quot; alt=&quot;CAP定理&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;下面来看下，我们产品立项之初，产品想要达到的三个特点&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;开发速度快，必须满足老板的需求短时间内产品做出来。这个无可厚非，因为很多产品都有一个红利期的，老板更多是基于市场的情况来定产品的周期的。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;稳定可用性，这往往是产品经理最看重的特点，就是我设计的产品一定要保证高还原性，高可用性，当然软件稳定是必不可少的。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;可复用性，这是软件的开发人员最希望看到的事情，可复用性强其实代表软件设计的一个很重要的原则DRY，不要重复造轮子是每个开发人员天天挂在嘴边的事情。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;当然满足这三个特点是所有软件开发都追求的，那么问题来了，同时满足这三个条件的可能性有多大，我下面就根据自己亲自经历的开发经验来谈一下。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/rapidly-2.jpg&quot; alt=&quot;项目开发&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;从上面的描述就可以很容易看出这三个特点其实是有优先级的&lt;code class=&quot;highlighter-rouge&quot;&gt;开发速度&amp;gt;稳定可用性&amp;gt;可复用性&lt;/code&gt;。在国内商业环境下，公司大多数都是产品驱动的，很自然技术需求放到优先级最低的位置。不过作为一个有理想有追求的开发人员，当然也不想简单放弃这个特点。&lt;/p&gt;
+
+&lt;h2 id=&quot;rapidly&quot;&gt;Rapidly&lt;/h2&gt;
+
+&lt;p&gt;为了满足老板要求1个半月内完成项目的需求，产品在立项的时候，就定了996住公司办公的规矩。很多开发人员听到这个着实有点蒙。这是国内软件开发很常见的一个做法，延长开发时间。我个人认为，开发人员随着开发投入时间的增加都有一个边际效益的，达到一定的值，再增加时间也不会产出成果，反而会出现其他问题。同样增加开发人数也是一样的，人数的增加同样有边际效益的，尤其软件开发初期，因为需求往往比较少，直接投入很多人来开发造成大家都没有事情干。所以上文中，我才提出软件开发一定是一个可持续发展的过程。要根据不同的阶段安排不同的人员有序的开发出来产品。想一口气吃个胖子还是很难的。我们开发的小团队大概在10个人左右，其实对于前期来讲算是足够了。但是我想说的是，为了我们软件的稳定性，我们服务器全部采用了中台化的方案。下面就开始说下稳定可用性。&lt;/p&gt;
+
+&lt;h2 id=&quot;rotustness&quot;&gt;Rotustness&lt;/h2&gt;
+
+&lt;p&gt;中台化好处当然很多，第一服务稳定，中台服务经历了好多产品的验证，稳定性肯定比重新开发一个功能要好。其次也”节省”了服务器人员的开发时间,这里的节省我打了引号下面会分析。好处说完就来分析下弊端，首先小团队开发的目的是追求效率，就是降低团队之间的沟通成本，因为大家都聚在一起讨论也方便。但是引入了中台后，就让小团队开发的优势完全丧失了，大大增加和中台的沟通成本。造成很多中台的人员入住到我们团队帮忙解决问题，其实小团队高效率的优势荡然无存。自然节省开发时间也是异想天开了，也违背了Rapidly这个特点。这里我举个例子，因为我们的IM通信服务使用中台化的方案，中台IM并不关心用户的信息，只关心IM消息，造成中台传递给客户端的IM消息无法带上用户的个人信息，这样客户端每次需要同步业务服务器的数据，就造成了开发过程中很多数据的不稳定，同时浪费了大量的调试时间。尤其为了满足我们产品的一些特殊需求，中台IM那里也要对一些功能进行改造，造成了项目很多不确定因素，所以一个项目早期为了稳定过早的引入中台化，开发效率会大大折扣。这里就可以看出来Rapidly和Rotustness之间的矛盾性了。&lt;/p&gt;
+
+&lt;h2 id=&quot;reuseability&quot;&gt;Reuseability&lt;/h2&gt;
+
+&lt;p&gt;为了可复用性，我们项目采用的是组件式开发。可复用性有一个简单的原则，就是拆分的颗粒度越小，可复用性越强。这个是显而易见的。好处我们不赘述了，上面已经说过。我这里主要分析下问题。我们这个项目第一个版本大概拆分出了20几个组件。前期主要2个人开发，在维护组件的接口问题以及静态化编译问题方面，前期需要投入大量的成本，对于快速迭代的项目来讲其实非常不适合。当项目规模大到一定程度时，组件化可以实现物理隔离，大大减少开发人员之前代码的冲突。可是当项目还在初期，组件化只会让维护的成本大大的高于开发人员实际投入开发的成本，并且由于小团队开发人员有限，往往会造成一个人维护很多组件库，这种切换的成本也会很高，大大降低了开发效率。另外一个隐形成本时，由于很多库是作为静态库引入的，调试起来当然没有源码来的直接，组件化造成了调试代码的成本有所提高。并且每个组件为了抽离出来，功能都相对通用，往往实现不了一些产品特质的功能，会造成一定的稳定性问题。比如我在使用相机组件的时候，由于产品UI做了一些特殊定制，需要实现到组件中，间接上造成了基础组件的通用性丧失。所以为了实现某个特定功能，是要适当放弃已有的组件，强行接入只会得不偿失。&lt;/p&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;所以从自己这个项目的开发经验来讲，这三个特点想要完美结合，并不是一蹴而就的。需要在不同的阶段采取不同的手段。中台化固然是好，如果项目对开发时间要求很高的时候，中台化的适当放弃，业务服务器来接管大部分的需求，可以大大提高开发效率。组件化开发当然在提高软件的复用性方面很强，他同样和开发时间有一些不可调和的矛盾。如果前期人力非常充沛，其实组件化开发，在提供软件可用性方面还是挺有帮助的，但是在开发人员有限的情况下，需要适当放弃。所以并不是说这三个特点，软件开发没法结合，只是说我们要在恰当的时间，选择恰当的手段，这样就可以真正达到我们软件开发的最高境界。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近大老板让开发一个很看好的产品，当然大老板想要开发的产品，大家都一定觉得是有前途的产品。经过辛苦的996了2个月开发，终于做出来了第一个版本。现在自己回过头来，总结下这个产品开发的整个过程，有值得学习的地方，也有引以为戒的地方。总体来讲，这个项目并不是很成功，甚至在自己看来是有些失败的。当然我作为项目里面ios的负责人，肯定有不可推卸的责任，一个很重要的原因，自己对产品本身idear还有开发的过程个人并不认同。自己当然也会总结下，遇到这种赶鸭子上架，不得不做的产品时，一些心得体验。</summary></entry><entry><title type="html">小程序移动端方案分享</title><link href="https://mengtnt.com/2020/05/04/mini-program.html" rel="alternate" type="text/html" title="小程序移动端方案分享" /><published>2020-05-04T09:42:36+08:00</published><updated>2020-05-04T09:42:36+08:00</updated><id>https://mengtnt.com/2020/05/04/mini-program</id><content type="html" xml:base="https://mengtnt.com/2020/05/04/mini-program.html">&lt;p&gt;前端时间有朋友咨询如何实现一个小程序的框架，可以方便的集成到自己的应用中，方便之后前端更新UI。之前自己曾经调研过小程序的技术原理，这里分享这篇博客目的是对小程序移动端的方案进行一些实践。下面就分享下小程序移动端的实践。首先看下小程序整体的一张架构图。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/mini-program-1.png&quot; alt=&quot;小程序架构图.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;其实小程序的核心思想还是逻辑层和渲染层分离，这样Native可以把逻辑层的代码放到一个单独的线程中，渲染层只负责页面的展示，从而提高了Webview上显示的效率。所以Native的开发核心就是约定逻辑层和渲染层同上层前端代码的协议。&lt;/p&gt;
+
+&lt;h2 id=&quot;小程序源码的分析&quot;&gt;小程序源码的分析&lt;/h2&gt;
+
+&lt;p&gt;首先可以看下微信小程序的IDE工具:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/mini-program-2.png&quot; alt=&quot;微信小程序.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;微信小程序的IDE工具主要是基于&lt;a href=&quot;https://nwjs.io/&quot;&gt;NW&lt;/a&gt;开源框架开发的，我们这里主要是基于&lt;a href=&quot;https://electronjs.org/&quot;&gt;electron&lt;/a&gt;这个web技术构建桌面应用框架，写的小程序IDE的demo。其实本质上两个框架是大同小异的。下面看下百度开源的小程序IDE工具的大致架构图:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/mini-program-3.png&quot; alt=&quot;百度小程序IED.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/mini-program-4.png&quot; alt=&quot;小程序IDE.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;基于上面的框架，构建了小程序IDE示例程序，demo的源码目录结构如下:
+&lt;img src=&quot;/images/mini-program-5.png&quot; alt=&quot;IDE目录.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;开发者主要是在app目录下开发，基于vue的模版语法进行页面编写，这个demo示例主要有index.cloud、index.css、index.js文件。
+index.cloud代码如下:&lt;/p&gt;
+
+&lt;div class=&quot;language-html highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;page&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;class=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;container&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;h1&amp;gt;&lt;/span&gt;hello&lt;span class=&quot;nt&quot;&gt;&amp;lt;/h1&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;p&amp;gt;&lt;/span&gt;!&lt;span class=&quot;nt&quot;&gt;&amp;lt;/p&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;p&amp;gt;&amp;lt;/p&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;br&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;button&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;click=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;say&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;666666&lt;span class=&quot;nt&quot;&gt;&amp;lt;/button&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;br&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;/&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;input&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;:value=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;content&quot;&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;change=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;handleInputChange&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&amp;lt;/input&amp;gt;&lt;/span&gt;
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;p&amp;gt;&amp;lt;/p&amp;gt;&lt;/span&gt;
+
+    &lt;span class=&quot;nt&quot;&gt;&amp;lt;button&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;@&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;click=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;go&quot;&lt;/span&gt;&lt;span class=&quot;nt&quot;&gt;&amp;gt;&lt;/span&gt;page 2!&lt;span class=&quot;nt&quot;&gt;&amp;lt;/button&amp;gt;&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;&amp;lt;/page&amp;gt;&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;index.css代码如下:&lt;/p&gt;
+
+&lt;div class=&quot;language-css highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;nc&quot;&gt;.container&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;100vw&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;height&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;100vh&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;padding&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;20px&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;display&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;flex&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;flex-direction&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;column&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;align-items&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;center&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;justify-content&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;center&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;box-sizing&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;border-box&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;nt&quot;&gt;button&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;100%&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;padding&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;15px&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;text-align&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;center&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;font-size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;18px&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;background&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;black&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;color&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;white&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;font-weight&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;900&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nt&quot;&gt;input&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;box-sizing&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;border-box&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;100%&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;padding&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;15px&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;text-align&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;center&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;font-size&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;18px&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;font-weight&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;m&quot;&gt;900&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;index.js代码如下:&lt;/p&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;nx&quot;&gt;Page&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;na&quot;&gt;who&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;xxxx&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;na&quot;&gt;what&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;uuu&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+            &lt;span class=&quot;na&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;empty!&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;watch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;who&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;val&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;ppppp&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;setData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;what&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;nnn&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;val&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;aaaa&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+                &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;setData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;what&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;ananana&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;mounted&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(){&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;setData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;who&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;ppppp&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+    &lt;span class=&quot;na&quot;&gt;methods&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;say&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(){&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;setData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;who&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;nb&quot;&gt;Math&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;random&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;toString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;36&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;substring&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;15&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;Math&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;random&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;toString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;36&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;substring&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;15&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;go&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(){&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;beacon&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;navigateTo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;page2&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;na&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;handleInputChange&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;this&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;setData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;content&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;然后小程序通过master来解析用户的逻辑代码，生成数据，通过setData的方式传递给小程序slave的渲染层，这个传递的过程在IDE中是通过调用simulator层来模拟的，其实放到客户端的话，就是客户端需要实现的逻辑层js的运行环境。由于百度开源的小程序，移动端的逻辑并没有开放，所以我们根据百度小程序IDE开源的实现，做了一些分析，实现了移动端native的代码逻辑。下面我们就结合我们移动端的demo来看下具体的实现。&lt;/p&gt;
+
+&lt;h2 id=&quot;ios小程序sdk的实现&quot;&gt;ios小程序sdk的实现&lt;/h2&gt;
+
+&lt;p&gt;首先我们先看下上面的IDE中main.js中注册的一些模拟器方法&lt;/p&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;nx&quot;&gt;slave&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;page&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;ready&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;payload&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;logger&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;payload&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;schemas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;simulator&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;webview&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;distributeMessage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;simulator&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;payload&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;setData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;payload&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;schemas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;simulator&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;webview&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;distributeMessage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;simulator&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;payload&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;master&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;page&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;startListen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(){&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;schemas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;native&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;page&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;navigateTo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;native/page/navigateTo&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;routes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]);&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;logger&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;slaveLocations&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]);&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;master&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;openDevTools&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;hook&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;payload&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;master&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;webContents&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;send&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;simulator&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;currPage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;payload&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;callFn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;payload&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;master&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;webContents&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;send&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;simulator&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;currPage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;payload&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;prepare&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+            &lt;span class=&quot;c1&quot;&gt;// 准备页面&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;master&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;webContents&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;send&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;simulator&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;currPage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;destroy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;page&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;logger&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;page&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;master&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;webContents&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;send&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;simulator&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;page&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;native&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nl&quot;&gt;page&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;navigateTo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;payload&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;logger&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`navigateTo &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;c1&quot;&gt;// 获取页面的对象序号，修改当前集中的页面到序号页面&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;currPage&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;routes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;findIndex&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;p&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&amp;gt;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;p&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;===&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;c1&quot;&gt;// 创建 webview ，获取 webviewid&lt;/span&gt;
+            &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;query&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;payload&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&amp;amp;&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;queryString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;stringify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;payload&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;location&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;host&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;.html&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;query&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;s2&quot;&gt;`?&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;''&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;logger&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;info&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`navigateTo &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;${&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;`&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;schemas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;simulator&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;webview&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;createWebview&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;location&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;currPage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;c1&quot;&gt;// 压入页面栈&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;push&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;
+                &lt;span class=&quot;na&quot;&gt;pageIndex&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;currPage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;na&quot;&gt;path&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;routes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;
+                &lt;span class=&quot;nx&quot;&gt;location&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                &lt;span class=&quot;na&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;payload&lt;/span&gt;
+                &lt;span class=&quot;c1&quot;&gt;// page&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;})&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;navigateBack&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;payload&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;isBottom&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;schemas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;master&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;page&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;destroy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;master/page/destroy&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;currPage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;schemas&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;simulator&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;webview&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;destroyWebview&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;currPage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;kd&quot;&gt;const&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;curr&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;pop&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;currPage&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;curr&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;pageIndex&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+        &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;getQuery&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+            &lt;span class=&quot;nx&quot;&gt;master&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;webContents&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;send&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;simulator&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;currPage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;getCurrentCache&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;().&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;query&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;app&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;onLaunch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+
+        &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+        &lt;span class=&quot;nx&quot;&gt;onShow&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;options&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;下面我分析下移动端如何配合前端代码，来实现最终渲染的。首先看下ios端小程序sdk的代码目录结构:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/mini-program-6.png&quot; alt=&quot;ios目录结构.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;ios的逻辑层代码是基于JSContext实现，渲染层是基于WKWebview实现。jscontext层的核心代码是实现下面的协议:&lt;/p&gt;
+
+&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;n&quot;&gt;typedef&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;JSCallBack&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;@protocol&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;NEBridgeProtocol&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSObject&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;@property&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nonatomic&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;readonly&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;JSValue&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;exception&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;evalJavascript&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;script&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;JSValue&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;callJSMethod&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;method&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSArray&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;listenJSEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;JSCallBack&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;@end&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;上面的代码是逻辑层和前端代码沟通的核心，等下我会配合刚才IDE的业务代码分析下如何通信的。&lt;/p&gt;
+
+&lt;p&gt;渲染端的核心代码如下:&lt;/p&gt;
+
+&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;@protocol&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;NEWebViewBridgeProtocol&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;@required&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;receiveMessageHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_Nullable&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;WKScriptMessage&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_Nonnull&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;message&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;completionHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;evaluateJavaScript&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_Nullable&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;javaScriptString&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;@end&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;客户端如何同前端通信&quot;&gt;客户端如何同前端通信&lt;/h2&gt;
+
+&lt;p&gt;有了前面基础理论的铺垫之后，我们来看下前端如何同客户端通信的，首先我们需要把逻辑层，也就是JSContext的运行环境放到一个单独的线程中,下面我贴出来一部分核心代码:&lt;/p&gt;
+
+&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;runJSCode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;code&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;@weakify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;nf&quot;&gt;dispatch_async&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;threadQueue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;kd&quot;&gt;@strongify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;jsBridge&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;evalJavascript&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;code&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;registerEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;JSCallBack&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;block&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;jsBridge&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;listenJSEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;block&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;然后就是注册逻辑层的监听事件，相当于模拟electron工程的simulater的实现。&lt;/p&gt;
+
+&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;kt&quot;&gt;NEBridgeContext&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NEBridgeContext&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;createInstance&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;netease&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;code&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;alloc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;initWithContentsOfFile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;path&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;encoding&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSUTF8StringEncoding&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;kd&quot;&gt;@weakify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;registerEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;startListen&quot;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSDictionary&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;@strongify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;nf&quot;&gt;dispatch_async&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;dispatch_get_main_queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;createWebview&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}];&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;registerEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;navigateBack&quot;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSDictionary&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;@strongify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;nf&quot;&gt;dispatch_async&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;dispatch_get_main_queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;navigationController&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;popViewControllerAnimated&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;YES&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}];&lt;/span&gt; 
+&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;registerEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;navigateTo&quot;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;@strongify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;isKindOfClass&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSArray&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]])&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;NSArray&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;paras&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSArray&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;queryData&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;paras&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+        &lt;span class=&quot;nf&quot;&gt;dispatch_async&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;dispatch_get_main_queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;navigationTo&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;paras&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]];&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}];&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;registerEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;setData&quot;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;@strongify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;handleSchema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;schema&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}];&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;registerEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;ready&quot;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;@strongify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;handleSchema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;schema&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}];&lt;/span&gt; 
+&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;registerEvent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;getQuery&quot;&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;schema&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nf&quot;&gt;dispatch_async&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;dispatch_get_main_queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(),&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;kt&quot;&gt;NSLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;Logic excute : %@&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;code&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;runJSCode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;code&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;});&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}];&lt;/span&gt; 
+&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;runJSCode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;code&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;其实上面的逻辑就是刚才提到的master做的主要事情。接收逻辑层的数据，然后通知客户端来创建webview，以及做一些native的控件和动画。之后进入到渲染层的处理，渲染层的代码逻辑如下:&lt;/p&gt;
+
+&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mpView&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;receiveMessageHandler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;WKScriptMessage&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_Nullable&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;message&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;kd&quot;&gt;@strongify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;receiveRenderMessage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;message&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;webView&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;mpView&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}];&lt;/span&gt;
+
+&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;receiveRenderMessage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;WKScriptMessage&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;message&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;webView&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;MNPWebView&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;currentWebView&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;NSArray&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;postMessages&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSArray&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;message&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;body&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;NSLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;Render message: %@&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;postMessages&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;postMessages&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;code&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;stringWithFormat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;communicator.emit(&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;NSInteger&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;index&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;id&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;para&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;postMessages&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;index&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;code&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;stringWithFormat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;%@&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;%@&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;,%ld&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;code&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;para&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;long&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;currentWebView&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pageIndex&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;code&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;stringWithFormat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;%@,&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;%@&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\&quot;&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;code&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;para&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;index&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;code&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NSString&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;stringWithFormat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;%@)&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;code&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;NEBridgeContext&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;NEBridgeContext&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;createInstance&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;netease&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;NSLog&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;@&quot;Logic excute:%@&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;code&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;context&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;runJSCode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;code&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;渲染层主要是接收一些用户触发的事件，然后告诉逻辑层来获得数据，逻辑层准备完毕数据后，就再给渲染层，渲染层来渲染页面，最终显示出来。
+至此客户端就把逻辑层和渲染层代码分离开了，可以分别的处理不同的事情。下面我们就看下demo的效果。&lt;/p&gt;
+
+&lt;h2 id=&quot;ide环境和小程序的demo&quot;&gt;IDE环境和小程序的Demo&lt;/h2&gt;
+
+&lt;p&gt;小程序的IDE其实是基于Electron的工程，我们需要启动Electron的模拟器和调试器，用户是通过编写VUE的模版代码和js代码来创建小程序的。如果说要实现客户端动态调试的话，其实是需要客户端创建websocket的连接，前端代码更新的时候，实时通知客户端进行渲染加载，目前demo还没有做这个事情，只是简单的分离了逻辑层和渲染层。下面我们看下我们demo的IDE的长的样子吧。&lt;/p&gt;
+
+&lt;p&gt;首先我们通过如下命令&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nb&quot;&gt;cd &lt;/span&gt;simulator-shell/
+node launch
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;启动模拟器的IDE环境，然后进到工程目录中启动当前小程序代码&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;npm run dev
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;结果如下图:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/mini-program-7.png&quot; alt=&quot;模拟器.png&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;小程序demo在编写完毕的时候，通过webpack打包输出master.js、page.js、index.html这些文件。然后客户端分别加载逻辑层master.js的代码和渲染层index.html运行这个demo。&lt;/p&gt;
+
+&lt;h2 id=&quot;小程序完整方案&quot;&gt;小程序完整方案&lt;/h2&gt;
+
+&lt;p&gt;逻辑层和渲染层分离只是小程序的一个核心功能，如果要做出来一个完成的小程序，当然还需要很多工程化的事情。这里就说下完整的方案需要的技术能力.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;Web资源离线缓存能力，小程序往往有大量的静态资源比如webpack打包好的渲染层的代码，以及图片音视频资源，这些如果能做离线缓存，就可以大大提升小程序的性能。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;静态资源更新的能力，这个就涉及到小程序更新的逻辑。由于静态资源远程加载一般都需要CDN来做加速，CDN节点往往都有资源缓存，所以对静态资源如何做更新哪？一般通用的方法时，更新静态资源版本号的方式，或者对资源做差量计算。这就要根据具体采用的方案进行细化了。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;小程序的远程调试能力。小程序开发者使用开发工具完成开发后，需要有一定的能力预览上线后的样式，然后可以远程调试定位问题。这里往往需要提供websocket的能力给开发者方便定位问题。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;native拓展能力，如果开发者，想要用native的代码做一些自定义动画，或者一些自定义控件的话，如果小程序可以方便的把一些native的控件和动画作为插件，集成到小程序的UI库中的话，就可以大大提升小程序的拓展能力。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;对一些JS语法能力的一些拓展。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;小程序前景展望&quot;&gt;小程序前景展望&lt;/h2&gt;
+
+&lt;p&gt;小程序的重要一点就是可以做到实时发布一些功能。尤其对一些轻量级的页面，比如一些活动页面特别的有用。同时小程序又能让开发者使用一些native的功能，让用户体验上接近native。其实对于很多第三方的app都有开发自己小程序的需求，如果说能够开放出来一个小程序的生态环境，相信会吸引很多开发者入住。目前w3c已经提出了&lt;a href=&quot;https://www.w3.org/TR/2019/WD-mini-app-white-paper-20190912/&quot;&gt;小程序草案&lt;/a&gt;。也是希望小程序有一个统一的标准，能更好的的服务广大的开发者。&lt;/p&gt;
+
+&lt;p&gt;当然我上面的分析只是针对小程序移动端sdk的一个笼统的介绍，如果需要做一个完善的小程序产品，还需要大量工程化的事情，比如我们要有大量的vue组件库和native的组件库，提供给开发者使用。IDE开发工具肯定也要做一些个性化的更改，比如热更新和调试功能。整个工程下来，可能并不像我这篇文章描述的这么简单，我这里只是分析了下目前小程序可行的一种方案。在技术方案可行的前提下，其实后期就是人力投入和产品打磨的过程了。往往一个成功的产品可能后期的打磨会更关键一些。也想借助这篇博客抛砖引玉，希望能够引起大家对小程序这个产品的兴趣。&lt;/p&gt;
+
+&lt;h2 id=&quot;参考&quot;&gt;参考&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/swan-team&quot;&gt;百度智能小程序&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;</content><author><name>mengtnt</name></author><summary type="html">前端时间有朋友咨询如何实现一个小程序的框架，可以方便的集成到自己的应用中，方便之后前端更新UI。之前自己曾经调研过小程序的技术原理，这里分享这篇博客目的是对小程序移动端的方案进行一些实践。下面就分享下小程序移动端的实践。首先看下小程序整体的一张架构图。</summary></entry><entry><title type="html">知识问答</title><link href="https://mengtnt.com/2020/04/10/new-idear.html" rel="alternate" type="text/html" title="知识问答" /><published>2020-04-10T10:17:22+08:00</published><updated>2020-04-10T10:17:22+08:00</updated><id>https://mengtnt.com/2020/04/10/new-idear</id><content type="html" xml:base="https://mengtnt.com/2020/04/10/new-idear.html">&lt;p&gt;什么是知识问答—帮助人解决问题，也可以说是知乎，准确的来讲是某个特定领域专业一对一的解答，当然特定领域是我熟悉的移动端和前端的开发。如果你感兴趣的话，可以阅读完这篇博文。&lt;/p&gt;
+
+&lt;h2 id=&quot;为何产生这个想法&quot;&gt;为何产生这个想法&lt;/h2&gt;
+
+&lt;p&gt;如果一个人在一个领域积累了10几年，那么他掌握这个领域的知识如何才能传承给下面的人那。就像牛顿所说的他的成就是站在巨人的肩膀人造就的。当然老师的职业也就应运而生，但是老师是一个基础知识的传承，那么相对专业的领域那，有职业培训。但是这些都是集中式的，有没有可以利用的分散的时间来解决一些人刚入行时遇到的问题，加速行业的成长哪？其实在IT领域做的很好，就是有大量的博客和教程分享。但是这些碎片式的检索信息对于初学者还是有难度，如果有一个经验比较丰富的人能言传身教，肯定可以加速这个学习的过程。这就是自己产生了这个想法知识问答。&lt;/p&gt;
+
+&lt;h2 id=&quot;互利互助的商业社会&quot;&gt;互利互助的商业社会&lt;/h2&gt;
+
+&lt;p&gt;最近加班比较多，在忙完一天工作时，有时候自己在想，我到底喜欢干的是事情是什么，其实自己一直有想当老师的愿望，但是老师其实有一定门槛，不仅仅是教师资格证，在学历、知名度都有一定的要求，在满足这些要求的过程中，有可能你就失去了这个爱好的信心。不过现在得益于互联网互利互助的商业模式，人人都可以成为老师。“老师”这个title可能给人的感觉一定要知识渊博，可以解决各种问题，我认为反而不是，老师的本质上就是帮助一些人解决当下遇到的一个小问题，被帮助的人可能需要花费很久的成本才能完成的事情，通过老师的指点，学生如果用更短的时间解决，就提升了效率，可以让学生完成更多有意义的事情，当然老师从中获取回报也是理所应当的。&lt;/p&gt;
+
+&lt;h2 id=&quot;我能做什么&quot;&gt;我能做什么&lt;/h2&gt;
+
+&lt;p&gt;上学的时候自己成绩一直比较好的，也非常喜欢帮同学解答问题，每次帮助一个同学解决了一个问题就特别有成就感。可能这就是人的性格，我记得高中的时候，和一个同学聊天，他说为啥别人问你问题，你总花费时间帮他们解决哪？他说我可没那时间，并且解决这个问题对我也没什么好处，并且问来问去好烦。之后工作中一直有朋友问自己问题，自己也很乐意帮他们解决。其实这里并不是说不帮助别人就是人品不行，这只是个人喜好问题，可能有些人特别爱好专研问题，感觉这种有成就感，而我就是感觉帮助别人解决了一个小问题就很有成就感，各有千秋，所以本质上就是兴趣使然，也并无道德高尚的区分。其实也是为什么自己一直以来渴望的职业是当老师，当然自己从事的工作和理想职业是否能匹配，也是各种因素导致的结果。&lt;/p&gt;
+
+&lt;p&gt;之前我和一些朋友做工具软件，他特别爱好创造产品，总是有突发的想法，他想出来的工具确实可以帮助一些人解决问题，不管是效率工具，还是平时用的拍摄工具，这样既满足了自己的爱好，也可以帮助了别人。但是他的职业确是一名设计师，我也很好奇为啥他不是产品经理。可能凡是总有机缘巧合吧，但是也不能阻止我们探索自己的兴趣爱好。&lt;/p&gt;
+
+&lt;p&gt;所以我的优势是什么？就是我的兴趣，也是因为科技的发展，互联网给任何一个人当老师的机会，你就是那些想进入这个领域的人的老师，这点大家可以去知乎中看看比比皆是。另外教育机构是不是可以代替这种问答的方式哪？不能完全替代，教育机构的老师虽然能帮学生系统的学习一个领域，可是并不能帮助每个学生解决单点的小问题，因为教育机构的培训总是有时长限制的，培训结束了，你只能求助于其他方式。那么像我这类人，反而是可以利用碎片时间，帮助一些已经准备进入这个领域的人，遇到的一些问题。这里延伸下这个话题，其实这本质上是教育培训的长尾市场，任何行业都有长尾市场，也就是任何行业的主要行为都是为了满足大多人的需求，而不能细节到满足所有人的需求。所以我这种行为是不同于长期的职业培训和系统的线上教程。&lt;/p&gt;
+
+&lt;h2 id=&quot;这是一种付费的问答&quot;&gt;这是一种付费的问答&lt;/h2&gt;
+
+&lt;p&gt;其实最开始自己帮助人从而不收费的。之前都是朋友介绍。但是自己经历了很多次这样的事情，就是朋友介绍的朋友说帮忙解决个程序的问题，然后解决了，对面就转账了100或者200的红包作为感谢，其实自己一般都不好意思收，做好事不留名，雷锋嘛😹。之前我也咨询过一个医生问题，完了之后给红包不要，其实现在想想为何不收费哪？现在创造的商业社会就是一个互利互助的社会，只是金钱是实现互利互助的一个工具而已。人类在商业社会还不发达的年代，大多是通过人际关系来实现互助互利的，不过这种效率显然不如商业社会靠谱。因为金钱的数字化明确了你帮了别人之后，你需要帮助的时候就立马可以用金钱去求助，而不会因为没有这方面的人际关系找不到帮助。其实这种好处是远远大于通过人际关系维护来的靠谱。不过对于比较熟悉的朋友，关系大于金钱的情况也是存在的。毕竟人这种动物也是很难捉摸的，有理智的一面，也有感性的一面，收朋友的钱自然面子和思想上过不去。&lt;/p&gt;
+
+&lt;p&gt;可能会有人问你有什么资格收取别人的钱，你的这些能力值这么多钱么？其实并不是说我知道某个知识点就比别人强，只是当下可以帮到人，所以很多人有一个误解，如果你赚钱，你必须要很努力，耗费了你很大精力才能做出来的东西给别人才能拿到钱。其实当今社会金钱真的是代表一个东西的真实价值么？是一个人努力花费时间的价值么？这个在经济学领域中是不成立了，更多的代表一种供需关系，也就是别人是不是需要这个东西，如果当下能帮到别人，可能就是一句话就点破了这个问题，这句话花费了我很多精力么？可能不需要精力，但是他难道没有价值么？当然有，帮助了别人提升效率，别人可能因此产出了更有价值的东西帮助了另一个人。反而有些人辛辛苦苦加班搞出来的东西，拿到市场没人使用，或者本身就是过剩的东西，本质上这反而是一种浪费，因为你的努力反倒是没帮助任何一个人，没给这个社会带来任何产出，也就是没有价值的。&lt;/p&gt;
+
+&lt;h2 id=&quot;个人经历&quot;&gt;个人经历&lt;/h2&gt;
+
+&lt;p&gt;居然帮人回答下问题就要收费，那说说自己牛逼的经历吧，那就让你失望了我没有什么牛逼的经历可以拿出来，做这个事情的初衷只是想在满足自己爱好的同时，可以有一些回报而已。那么简单的介绍下自己还是必要的，不然别人怎么知道你能解决问题哪？&lt;/p&gt;
+
+&lt;p&gt;自己从事移动端开发有10多年了，做的移动端的技术还是蛮多的。从0到1一款产品—“视频一对一聊天Tiki”。这个产品是和原来在淘宝工作的小伙伴一起搞的创业项目，从2014年到2019年5年时间，虽然没有十分的成功，但是也经历了一个产品从无到有，从日活几十个人到日活几十万人的技术迭代。至于一些大的产品技术如何运作，目前正在职网易云音乐团队，可以说是十分成熟的团队，DAU过千万的产品。在技术团队中，虽然不是核心角色，但是成熟团队技术方面的架构自己也基本了解到了。&lt;/p&gt;
+
+&lt;p&gt;对于自己爱好的老师职业自己当然也尝试过，自己曾经在业余的时间，在一个兴趣小组中，和一帮小伙伴翻译过一本ios coreAnimation的专业书籍，也做过腾讯Next课堂的Flutter入门开发的兼职讲师，发布过一些视频教程。对于站在初学者角度看问题这些方面，还是有了解一些基本常识。以上的这些经历也让自己有了一点勇气，可以从事这个知识问答这个事情。&lt;/p&gt;
+
+&lt;h2 id=&quot;我可以处理的问题&quot;&gt;我可以处理的问题&lt;/h2&gt;
+
+&lt;p&gt;这里我声明下，我很清楚我在问答中的技术定位，我只能帮你解决我能解决的问题，我并不是什么技术大牛。不过对于那些大牛，底层挖掘很深的人，一定适合帮人解答问题么？我认为不一定。因为大佬考虑问题的角度很多初学者可能根本get不到这个点，我遇到很多优秀的人，他们在帮人解决问题时，往往从自己的角度出发，而没有从一个初学者的姿态去考虑问题，这样初学者听的云里雾里，甚至搞不清楚话语中的很多专业术语，而对于演讲者来讲他认为已经表达的很清楚。而对于有些人往往是这样的，完全站在初学者角度来讲，所以讲东西总是很啰嗦，那些大牛会觉得这么简单不要讲了。所以这两种方式并不是说谁对谁错，而是适合那些人听，这点很关键。所以我往往看一些在线教程，有些很简答，感觉完全没必要听，但是确实有很多观众，对于一些初学者就很乐意观看，这点其实就不难理解。如果从另一个不同的视角出发，从中能帮助一些人何乐而不为哪？&lt;/p&gt;
+
+&lt;p&gt;下面我就拿之前一些朋友问过我的问题&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;提问者: 我集成了YYWebImage播放webp动画，但是一直报错说不支持 webp协议&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;我: 因为YYWebImage支持wepb要依赖一些其他库&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;n&quot;&gt;pod&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'YYWebImage'&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;pod&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'YYImage/WebP'&lt;/span&gt; 
+    &lt;span class=&quot;n&quot;&gt;pod&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'libwebp'&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;比如这种问题对于一些初学者，确实可以通过搜索库的用法来解决，但是如果有一个人的指点的话，就可以很快解决问题，并更能提高效率。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;提问者: 萌哥我想问一下，如果别人git上创了一个项目，你要参与进去，除了clone 到本地然后创建分支进行操作这种， 还有“在自己的github上创建一个repository然后与别人的repo创立联系”的方式吗&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;我: fork&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;提问者: 对啊&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这个问题看似很简单，但是第一次用Github的人你认为简单么？&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;提问者: 下面这个代码，遍历的顺序不应该是result在后面么？&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;genFuncWithReturn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;yield&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;yield&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;The result&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;logReturned&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;genObj&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;yield&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;genObj&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;p&quot;&gt;[...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;logReturned&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;genFuncWithReturn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())]&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;// The Result&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// 值为['a','b']&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;我: es6这个语法我不太熟，我先去看下&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;过了10分钟之后&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;我: https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/yield*&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;我: 你看下下面的代码。&lt;code class=&quot;highlighter-rouge&quot;&gt;function*&lt;/code&gt; 相当于这个函数是异步的，然后可以通过&lt;code class=&quot;highlighter-rouge&quot;&gt;yield&lt;/code&gt;关键字控制异步函数的执行顺序，你刚才的那个例子如果把result变量去掉，就是yield语法，控制异步函数的顺序执行，这里其实是协程的概念。由于用了yield*表达式，会立即返回函数的结果然后给result赋值，这样result先打印出来了。然后再通过&lt;code class=&quot;highlighter-rouge&quot;&gt;yield&lt;/code&gt;关键字，控制异步函数按照顺序执行结果。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;g4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;yield&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;foo&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;g5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;yield&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;g4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;iterator&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;g5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;iterator&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// { value: 1, done: false }&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;iterator&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// { value: 2, done: false }&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;iterator&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// { value: 3, done: false }&lt;/span&gt;
+&lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;iterator&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// { value: undefined, done: true }, &lt;/span&gt;
+                              &lt;span class=&quot;c1&quot;&gt;// 此时 g4() 返回了 { value: &quot;foo&quot;, done: true }&lt;/span&gt;
+
+&lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;          &lt;span class=&quot;c1&quot;&gt;// &quot;foo&quot;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;提问者: 懂了，其实跟网上说的也没有差别 怎么你一点我就明白了呢😂&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这就是我经常遇到一些提问者的困惑，就是网上明明有很多资料可以查看，为啥不如别人直接一句话来的直接明了哪？其实本质上就是信息的收敛问题，因为你不知道网上资料哪个知识点是真正解决你的问题的，就不能集中注意力在一个点上，容易分散注意力，问题就不容易解决，如果别人帮你点名了你应该集中在哪里，这时你就很容懂了。&lt;/p&gt;
+
+&lt;p&gt;这里我还想表达下，如果你在一个领域积累了很久，你会发现学习起来新东西会很快。很多人说年龄大，学东西就不行了。只是针对于全新的东西。就像孩子还是一张白纸，学新东西当然比年纪大的人快，因为年纪大的人脑子里有太多的条件约束了。但是如果针对某个你积累了很久的领域，再学这个领域的新内容，肯定比其他人快。比如Flutter开发，自己前前后后用了一周时间，基本就可以搭建一个简单应用的框架，然后一个月时间就和朋友一起开发了一款上架Appstore的应用，并且还得到了苹果的推荐。&lt;/p&gt;
+
+&lt;p&gt;当然我经常会遇到一些，我无法处理的问题，例如&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;提问者: 用webrtc帮我实现个视频聊天的功能吧。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;我：额，抱歉无能为力，你还是找个外包帮你开发吧。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;所以我能做的，是帮你解决一些遇到的一些困惑和难点，至于一些系统性的学习，还是求助于一些专业的教育机构吧。&lt;/p&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;看完上面的文章，如果你喜欢作者的话，还望能转发下此篇文章。如果恰巧你需要移动端一些开发知识点的话，可以&lt;a href=&quot;/contact/&quot;&gt;联系作者&lt;/a&gt;。另外声明下，本人还是有全职的工作要做的，在做好自己本职工作的情况下，再来做自己爱好的知识问答的事情，就像老罗说的，纯粹交个朋友不赚钱。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">什么是知识问答—帮助人解决问题，也可以说是知乎，准确的来讲是某个特定领域专业一对一的解答，当然特定领域是我熟悉的移动端和前端的开发。如果你感兴趣的话，可以阅读完这篇博文。</summary></entry><entry><title type="html">申请域名的艰难之路</title><link href="https://mengtnt.com/2020/02/11/submit-domain.html" rel="alternate" type="text/html" title="申请域名的艰难之路" /><published>2020-02-11T14:38:28+08:00</published><updated>2020-02-11T14:38:28+08:00</updated><id>https://mengtnt.com/2020/02/11/submit-domain</id><content type="html" xml:base="https://mengtnt.com/2020/02/11/submit-domain.html">&lt;p&gt;最近想申请个的域名，部署到自己国内服务器上，方便访问自己的一些资料。本来以为是个简单的过程，可是过程还是有点崎岖的。首先说下国外申请域名的过程，打开申请域名的网站，点击购买，绑定自己的服务器ip到域名上over。接下来看下国内我从申请域名到放弃的心路历程吧。&lt;/p&gt;
+
+&lt;h2 id=&quot;初次申请域名&quot;&gt;初次申请域名&lt;/h2&gt;
+
+&lt;p&gt;拿到自己购买的域名，然后把服务器ip指向了自己的域名上，发现访问自己域名，会友好的提示你，你的域名没有备案，请去相关部门备案。我服务器用的是腾讯云，按照提示就跳转到了域名备案的地方。然后开始填写各种信息，身份证、手机号、网站的名字、网站是用来干嘛的等等各种问题，基本把你问个底朝天。之后点击提交本以为结束了，然后跳出来一个需要人脸识别，经过若干次摆拍后，总算通过了，自己当时还嘀咕着，真麻烦。却全然不知其中的奥妙。&lt;/p&gt;
+
+&lt;h2 id=&quot;一星期之后&quot;&gt;一星期之后&lt;/h2&gt;
+
+&lt;p&gt;大概过了一个星期，收到了腾讯云客服的电话，说网管局说我的人脸识别不通过。头发遮挡，建议我在白色的墙后面重新识别下。然后客服说等下会有一个管局的短信链接，进入后填写确认信息，之后会发你重新人脸识别的链接。由于腾讯云的域名申请还必须用他自家的小程序，打开了小程序后又摆拍了若干次成功后，心想着总算可以了吧，静候佳音。&lt;/p&gt;
+
+&lt;h2 id=&quot;第二个星期之后&quot;&gt;第二个星期之后&lt;/h2&gt;
+
+&lt;p&gt;又一星期过去了，同样的客户电话，当时接的时候我还在想是不是申请通过了。然后客服对我讲：”先生你好，请问你是否在腾讯云上申请了一个域名。“ 我说：”是的“，然后她说：”因为你申请域名的网站名字不符合被管局打回了。“ 我说有什么不符合的，她说因为网站的名字必须包含二个以上中文字符。我想好吧，我改还不行，什么规定都听你的。然后就又打开了发来的链接改了网站的名字。当时心情就有些不爽，想着申请域名这么麻烦。&lt;/p&gt;
+
+&lt;h2 id=&quot;第三个星期&quot;&gt;第三个星期&lt;/h2&gt;
+
+&lt;p&gt;又一个星期过去了，同样的电话，这次的问题是：”您的网站主要是做什么用的“ 我说就是记录下我个人的一些资料，或者自己的小程序部署在上面。然后客服说小程序不能部署在这个域名下，需要去单独申请小程序服务。我说好吧，那我就记录自己的资料。她问具体哪些资料，我说就像文档一样，自己的学习资料。然后客服说不能是文档性质的，文档性质管局不同意的。我说那就是博客一样的东西可以么？他说可以，又给了我一个链接，让我把网站详细的内容描述下，我就记录了个人博客。这么麻烦！填完这个有点放弃申请域名的想法了。干脆买个国外的服务器算了，可是国外服务器大家都懂的，容易出现不定时的不能访问。想着还是申请下吧。&lt;/p&gt;
+
+&lt;h2 id=&quot;第四个星期&quot;&gt;第四个星期&lt;/h2&gt;
+
+&lt;p&gt;不知道为什么管局处理一个问题要一个星期，反正快一个月时间了，突然又来了电话说我的申请被管局打回了。打回的原因是我没有提供域名证书。域名证书！！！ 当时我就惊讶了，我的域名证书他都要啊。然后我跟客服讲你们不会我域名证书的私钥都要吧？她说什么私钥她不太懂。我就问那你们要的什么？她说域名证书就是一张图片啊。我当时就惊讶了，一张图片么？我说证书怎么会是一张图片，然后客服见我一窍不通，就跟我讲你可以去我们腾讯云上面看下域名证书长的样子，在你域名申请下点击生成域名证书就看到了一张图片。然后我说好的，我去看下。就又收到一个链接，等待我上传域名证书。因为我的域名是在godaddy上买的，实在找不到此功能，然后搜索了下，国内的域名注册商果然都提供域名证书这个神秘的东西，下面可以瞻仰下这个东西长的样子。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/submit-domin-1.png&quot; alt=&quot;域名证书与&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;原来这个证书就是管局强制规定的，只有国内备案域名的时候需要，就是一个域名购买的记录，来自哪里。我终于懂了，然后发现网上有很多一键生成域名证书的方法。随便拉了一个跑了下，生成了自己的域名证书，居然还像模像样的有goaddy的盖章。我想着这下终于搞定了吧。&lt;/p&gt;
+
+&lt;h2 id=&quot;最后一次终于到来了&quot;&gt;最后一次终于到来了&lt;/h2&gt;
+
+&lt;p&gt;最后一次被拒终于到来了，接到电话我在想会不会因为我生成的域名证书太山寨了吧。结果发现终极必杀是，先生根据管局的意见，你的域名是在国外公司购买的不能在国内备案，你必须使用国内的域名商才行。我说那国外购买的就不能备案了么？他说你可以把国外域名商购买的域名转给国内域名商，我说怎么操作，她说具体你咨询你国外的域名服务商。好吧，至此我放弃申请备案了，我觉得我实在太难了，还是部署在国外服务器上吧。&lt;/p&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;其实我吐槽这么多，是想给管局一些建议，能不能把流程简化一些，可以把所有问题都合并起来告诉我么？为何要一次一次的告诉我。其实对于我来说这个域名无关紧要，无非就是国内访问快一些。可是如果是一些企业急需域名的话，遇到这么长的流程真的很影响企业的一些计划。本质上这些都是隐形成本，也希望管局能够优化这些流程。这些繁琐的流程明显在在这个更快、更高的商业时代显得有些格格不入。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近想申请个的域名，部署到自己国内服务器上，方便访问自己的一些资料。本来以为是个简单的过程，可是过程还是有点崎岖的。首先说下国外申请域名的过程，打开申请域名的网站，点击购买，绑定自己的服务器ip到域名上over。接下来看下国内我从申请域名到放弃的心路历程吧。</summary></entry></feed>

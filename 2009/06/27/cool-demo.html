@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>一个很cool的游戏demo </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2009/06/27/cool-demo.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="一个很cool的游戏demo">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2009/06/27/cool-demo.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">一个很cool的游戏demo</h1>
+  
+  <span class="post-meta">06月 27日, 2009</span><br>
+  
+  <span class="post-meta small">13 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>希望看这篇文章能够下载下这个<a href="/resource/gpBase_sample.zip">游戏demo</a>，运行一下，这确实是一个再也简单不过的游戏demo了，不过麻雀虽小五脏俱全。这个demo可以充分揭示游戏画面是如何生成的。最近自己花了一个月的时间终于看完了一个游戏动画制作的2d引擎，自己能够坚持看完真是谢天谢地啊！你要说这个2d引擎难，确实比较难。由于这个引擎完全是使用DirectDraw写出来的，主要是用来处理游戏画面的。里面确实涉及了很多东西，包括一些计算机图形学的重要算法，例如生成直线的bresenham算法，以及线段裁剪的Cohen-Sutherland算法和关于填充的边相关扫描线填充算法，并且还涉及到了很多数学方面的知识例如矩阵的变换和求变换角度时用到的泰勒公式。现在看到这里是不是有点晕了，确实自己看的时候确实挺晕，不过还好自己坚持下来了。不过我想在这里说的，其实我们完全没有必要关心这些细节的实现，譬如你想做游戏开发，只要会用这些已经现成的东西就行了。至于这些深层的道理还是让这些科学家知道吧！这也是做科学和做工程的区别，科学是要把难的东西变得简单起来，而工程就是要用这些简单的东西。所以我总是认为做科学的人可以预知未来，而做工程的人是创造现在的。如果只预知未来不创造现在那岂不是空想家，反之只能说是鼠目寸光了。所以科学和工程分不开了，两者缺一不可。呵呵是不是有点辩证唯物主义的思想。哎！自己在这里扯了这么长时间题外话题，还是言归正传吧。</p>
+
+<p>下面我就用我说的这个2d引擎来介绍一下这个游戏demo是如何做出来的，这里你可不要认为这个demo就是用这个引擎做出来的。而这个demo是我从网上找的一个自己认为很cool的游戏画面。其实介绍这个2d引擎的书上有很多demo的，但是它里面的demo大多是运行在640*480分辨率的屏幕上，并且是8位图像。所以为了不委屈大家的眼睛，免得大家看完这样的游戏demo完全会被如此丑陋的画面震撼住还是不用书上的例子吧。不过其实游戏画面的运行大同小异的，可能开发利用的引擎不同，但是基本的原理还是一样的，对了你要是对这个2d引擎感兴趣的话可以到我的csdn上面下载源代码，大概总共加起来有7000行代码，所以要看完还是很费劲的。</p>
+
+<p>首先在介绍枯燥的代码之前，先让看下游戏画面到底是怎么生成的。大家可以看到此游戏demo中主角连贯的出招动作、华丽的场景、震撼的战斗效果，这一切似乎很难让人想象程序是怎么实现的。也许您在上课无聊的时候尝试过在课本的角上画上几个人物动作的分解图，然后一遍又一遍地翻着它，觉得很好玩。其实您已经在无形之中接触了游戏动画的基本原理。其实游戏动画的步骤可以想象成这样：</p>
+
+<p>　　手中拿着两张纸，把一张放在后面。其实这个就是 DirectDraw 的两个成员。我们先把一个分解动作画在背后的那张纸上。那么，我们当前看到的就是一个“白屏”而已。然后，我们“快速地”将后面的那张纸拿到前面来。呵呵，你现在看到的是第一个分解动作了吧！那么，怎么“快速地”呢？不要紧张，这些问题都被 DirectDraw 完美的解决了，别急，今后会详细的讲解的。现在，当前的两张纸已经交换了，而且也看到了动作（一个静态的而已），那么后面的“白纸”怎么办呢？我们先拿“橡皮”将纸擦一遍，然后，将第二个分解图画上，接下来？呵呵，自己干吧，应该明白了吧。经过再次的交换，我们已经在屏幕上看到第二个动作了。我们继续把后面的纸擦干净，再画第三个动作，再交换，继续下去……由于我们的“快速地”动作相当快，所以感觉不到有任何问题。</p>
+
+<p>　或许有人会问：为什么不直接在第一张纸上进行“擦-&gt;画-&gt;擦-&gt;画”的动作呢？这个就是为了我们平常所说的“闪屏”问题而进行的解决方案。由于直接进行动作，速度相对较慢，有时用户会在屏幕上看到一闪一闪的现象。我们用“两张纸”的话，就完美的解决了这个问题。
+下面我就游戏的背景换面和动画画面分别介绍其中的原理，下面终于可以让你看下代码了：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="nf">Game_Init</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">parms</span><span class="p">,</span>  <span class="kt">int</span> <span class="n">num_parms</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="c1">// this function is where you do all the initialization </span>
+<span class="c1">// for your game</span>
+<span class="kt">int</span> <span class="n">index</span><span class="p">;</span>         <span class="c1">// looping var</span>
+<span class="kt">char</span> <span class="n">filename</span><span class="p">[</span><span class="mi">80</span><span class="p">];</span> <span class="c1">// used to build up files names</span>
+<span class="c1">// initialize directdraw</span>
+<span class="n">DDraw_Init</span><span class="p">(</span><span class="n">SCREEN_WIDTH</span><span class="p">,</span> <span class="n">SCREEN_HEIGHT</span><span class="p">,</span> <span class="n">SCREEN_BPP</span><span class="p">);</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">DirectInputCreateEx</span><span class="p">(</span><span class="n">main_instance</span><span class="p">,</span><span class="n">DIRECTINPUT_VERSION</span><span class="p">,</span><span class="n">IID_IDirectInput7</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="o">**</span><span class="p">)</span><span class="o">&amp;</span><span class="n">lpdi</span><span class="p">,</span><span class="nb">NULL</span><span class="p">)</span><span class="o">!=</span><span class="n">DI_OK</span><span class="p">)</span>
+   <span class="k">return</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="c1">// create a keyboard device  //////////////////////////////////</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">lpdi</span><span class="o">-&gt;</span><span class="n">CreateDeviceEx</span><span class="p">(</span><span class="n">GUID_SysKeyboard</span><span class="p">,</span> <span class="n">IID_IDirectInputDevice7</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="o">**</span><span class="p">)</span><span class="o">&amp;</span><span class="n">lpdikey</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">)</span><span class="o">!=</span><span class="n">DI_OK</span><span class="p">)</span>
+   <span class="k">return</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="cp">#endif
+</span><span class="c1">// first create the direct input object</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">DirectInput8Create</span><span class="p">(</span><span class="n">main_instance</span><span class="p">,</span><span class="n">DIRECTINPUT_VERSION</span><span class="p">,</span><span class="n">IID_IDirectInput8</span><span class="p">,</span> <span class="p">(</span><span class="kt">void</span> <span class="o">**</span><span class="p">)</span><span class="o">&amp;</span><span class="n">lpdi</span><span class="p">,</span><span class="nb">NULL</span><span class="p">)</span><span class="o">!=</span><span class="n">DI_OK</span><span class="p">)</span>
+   <span class="k">return</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="c1">// create a keyboard device  //////////////////////////////////</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">lpdi</span><span class="o">-&gt;</span><span class="n">CreateDevice</span><span class="p">(</span><span class="n">GUID_SysKeyboard</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">lpdikey</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">)</span><span class="o">!=</span><span class="n">DI_OK</span><span class="p">)</span>
+   <span class="k">return</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="c1">// set cooperation level</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">lpdikey</span><span class="o">-&gt;</span><span class="n">SetCooperativeLevel</span><span class="p">(</span><span class="n">main_window_handle</span><span class="p">,</span> 
+                 <span class="n">DISCL_NONEXCLUSIVE</span> <span class="o">|</span> <span class="n">DISCL_BACKGROUND</span><span class="p">)</span><span class="o">!=</span><span class="n">DI_OK</span><span class="p">)</span>
+    <span class="k">return</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="c1">// set data format</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">lpdikey</span><span class="o">-&gt;</span><span class="n">SetDataFormat</span><span class="p">(</span><span class="o">&amp;</span><span class="n">c_dfDIKeyboard</span><span class="p">)</span><span class="o">!=</span><span class="n">DI_OK</span><span class="p">)</span>
+   <span class="k">return</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="c1">// acquire the keyboard</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">lpdikey</span><span class="o">-&gt;</span><span class="n">Acquire</span><span class="p">()</span><span class="o">!=</span><span class="n">DI_OK</span><span class="p">)</span>
+   <span class="k">return</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="c1">///////////////////////////////////////////////////////////</span>
+<span class="c1">// load the background</span>
+<span class="n">Load_Bitmap_File</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bitmap8bit</span><span class="p">,</span> <span class="s">"REACTOR.BMP"</span><span class="p">);</span>
+<span class="c1">// set the palette to background image palette</span>
+<span class="n">Set_Palette</span><span class="p">(</span><span class="n">bitmap8bit</span><span class="p">.</span><span class="n">palette</span><span class="p">);</span>
+<span class="c1">// create and load the reactor bitmap image</span>
+<span class="n">Create_Bitmap</span><span class="p">(</span><span class="o">&amp;</span><span class="n">reactor</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span> <span class="mi">640</span><span class="p">,</span> <span class="mi">480</span><span class="p">);</span>
+<span class="n">Load_Image_Bitmap</span><span class="p">(</span><span class="o">&amp;</span><span class="n">reactor</span><span class="p">,</span><span class="o">&amp;</span><span class="n">bitmap8bit</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">BITMAP_EXTRACT_MODE_ABS</span><span class="p">);</span>
+<span class="n">Unload_Bitmap_File</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bitmap8bit</span><span class="p">);</span>
+<span class="c1">// now let's load in all the frames for the skelaton!!!</span>
+<span class="c1">// create skelaton bob</span>
+<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">Create_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">56</span><span class="p">,</span><span class="mi">72</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span>
+           <span class="n">BOB_ATTR_VISIBLE</span> <span class="o">|</span> <span class="n">BOB_ATTR_MULTI_ANIM</span><span class="p">,</span><span class="n">DDSCAPS_SYSTEMMEMORY</span><span class="p">))</span>
+   <span class="k">return</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="c1">// load the frames in 8 directions, 4 frames each</span>
+<span class="c1">// each set of frames has a walk and a fire, frame sets</span>
+<span class="c1">// are loaded in counter clockwise order looking down</span>
+<span class="c1">// from a birds eys view or the x-z plane</span>
+<span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">direction</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">direction</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">;</span> <span class="n">direction</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span> 
+    <span class="c1">// build up file name</span>
+    <span class="n">sprintf</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span><span class="s">"SKELSP%d.BMP"</span><span class="p">,</span><span class="n">direction</span><span class="p">);</span>
+    <span class="c1">// load in new bitmap file</span>
+    <span class="n">Load_Bitmap_File</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bitmap8bit</span><span class="p">,</span><span class="n">filename</span><span class="p">);</span>
+
+    <span class="n">Load_Frame_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="o">&amp;</span><span class="n">bitmap8bit</span><span class="p">,</span><span class="mi">0</span><span class="o">+</span><span class="n">direction</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">BITMAP_EXTRACT_MODE_CELL</span><span class="p">);</span>  
+    <span class="n">Load_Frame_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="o">&amp;</span><span class="n">bitmap8bit</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">direction</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">BITMAP_EXTRACT_MODE_CELL</span><span class="p">);</span>  
+    <span class="n">Load_Frame_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="o">&amp;</span><span class="n">bitmap8bit</span><span class="p">,</span><span class="mi">2</span><span class="o">+</span><span class="n">direction</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">BITMAP_EXTRACT_MODE_CELL</span><span class="p">);</span>  
+    <span class="n">Load_Frame_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="o">&amp;</span><span class="n">bitmap8bit</span><span class="p">,</span><span class="mi">3</span><span class="o">+</span><span class="n">direction</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">BITMAP_EXTRACT_MODE_CELL</span><span class="p">);</span>  
+    <span class="c1">// unload the bitmap file</span>
+    <span class="n">Unload_Bitmap_File</span><span class="p">(</span><span class="o">&amp;</span><span class="n">bitmap8bit</span><span class="p">);</span>
+    <span class="c1">// set the animation sequences for skelaton</span>
+    <span class="n">Load_Animation_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="n">direction</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="n">skelaton_anims</span><span class="p">[</span><span class="n">direction</span><span class="p">]);</span>
+    <span class="p">}</span> <span class="c1">// end for direction</span>
+<span class="c1">// set up stating state of skelaton</span>
+<span class="n">Set_Animation_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="n">Set_Anim_Speed_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span> <span class="mi">4</span><span class="p">);</span>
+<span class="n">Set_Vel_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+<span class="n">Set_Pos_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">128</span><span class="p">);</span>
+<span class="c1">// set clipping rectangle to screen extents so mouse cursor</span>
+<span class="c1">// doens't mess up at edges</span>
+<span class="n">RECT</span> <span class="n">screen_rect</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">screen_width</span><span class="p">,</span><span class="n">screen_height</span><span class="p">};</span>
+<span class="n">lpddclipper</span> <span class="o">=</span> <span class="n">DDraw_Attach_Clipper</span><span class="p">(</span><span class="n">lpddsback</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="o">&amp;</span><span class="n">screen_rect</span><span class="p">);</span>
+<span class="c1">// hide the mouse</span>
+<span class="n">ShowCursor</span><span class="p">(</span><span class="n">FALSE</span><span class="p">);</span>
+<span class="c1">// return success</span>
+<span class="k">return</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>这些代码都有注释，不过我还是来解释下具体背景图片是怎么加载的，首先DDraw_Init(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_BPP);这句代码是初始化DirectDraw的COM对象，简单的说就是没有这个你就没法在屏幕上画图，至于深层的道理还是问那些科学家们吧，做工程的干嘛要知道那么多那？下面这些DirectInput统统不用看，我们主要还是关心背景图片的生成吧，控制的管理先靠边站吧。所以你就直接看下面的代码，Load_Bitmap_File(&amp;bitmap8bit, “REACTOR.BMP”);bitmap8bit属于一种数据结构，这种数据结构是DirectDraw专门用来处理位图的。其中包括了一些位图的所用信息。这里你要知道位图由三部分组成：位图文件头，位图信息段，位图数据。下面就看用来设置调色板Set_Palette(bitmap8bit.palette);，一般8位位图才用到的，这里不多说了。主要是</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Create_Bitmap</span><span class="p">(</span><span class="o">&amp;</span><span class="n">reactor</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span> <span class="mi">640</span><span class="p">,</span> <span class="mi">480</span><span class="p">);</span>
+<span class="n">Load_Image_Bitmap</span><span class="p">(</span><span class="o">&amp;</span><span class="n">reactor</span><span class="p">,</span><span class="o">&amp;</span><span class="n">bitmap8bit</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">BITMAP_EXTRACT_MODE_ABS</span><span class="p">);</span>
+
+</code></pre></div></div>
+
+<p>这两句代码，开始自己还疑惑为什么我已经用bitmap8bit把位图文件存起来，为什么还用用reactor这个结构存起来那，原来是bitmap8bit这种DirectDraw自带的结构太复杂，我们绘图只关心位图数据其他没必要考虑了，所以就放到了reactor里面。看下gamemain（）中的代码，也许你会更加理解其中的原理的。</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">int</span> <span class="nf">Game_Main</span><span class="p">(</span><span class="kt">void</span> <span class="o">*</span><span class="n">parms</span><span class="p">,</span> <span class="kt">int</span> <span class="n">num_parms</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="c1">// this is the workhorse of your game it will be called</span>
+<span class="c1">// continuously in real-time this is like main() in C</span>
+<span class="c1">// all the calls for you game go here!</span>
+
+<span class="kt">int</span>          <span class="n">index</span><span class="p">;</span>             <span class="c1">// looping var</span>
+<span class="kt">int</span>          <span class="n">dx</span><span class="p">,</span><span class="n">dy</span><span class="p">;</span>             <span class="c1">// general deltas used in collision detection</span>
+
+<span class="k">static</span> <span class="kt">int</span>   <span class="n">player_moving</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="c1">// tracks player motion</span>
+<span class="k">static</span> <span class="n">PALETTEENTRY</span> <span class="n">glow</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">PC_NOCOLLAPSE</span><span class="p">};</span>  <span class="c1">// used to animation red border</span>
+<span class="k">static</span> <span class="kt">int</span> <span class="n">glow_count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">glow_dx</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+<span class="c1">// check of user is trying to exit</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">KEY_DOWN</span><span class="p">(</span><span class="n">VK_ESCAPE</span><span class="p">)</span> <span class="o">||</span> <span class="n">KEY_DOWN</span><span class="p">(</span><span class="n">VK_SPACE</span><span class="p">))</span>
+    <span class="n">PostMessage</span><span class="p">(</span><span class="n">main_window_handle</span><span class="p">,</span> <span class="n">WM_DESTROY</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+<span class="c1">// start the timing clock</span>
+<span class="n">Start_Clock</span><span class="p">();</span>
+<span class="c1">// clear the drawing surface</span>
+<span class="n">DDraw_Fill_Surface</span><span class="p">(</span><span class="n">lpddsback</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="c1">// lock the back buffer</span>
+<span class="n">DDraw_Lock_Back_Surface</span><span class="p">();</span>
+<span class="c1">// draw the background reactor image</span>
+<span class="n">Draw_Bitmap</span><span class="p">(</span><span class="o">&amp;</span><span class="n">reactor</span><span class="p">,</span> <span class="n">back_buffer</span><span class="p">,</span> <span class="n">back_lpitch</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="c1">// unlock the back buffer</span>
+<span class="n">DDraw_Unlock_Back_Surface</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里我主要拷贝了背景图片的处理代码，动画图片等会我们再分析。DDraw_Fill_Surface(lpddsback, 0);这句就是前面我说的第二张纸，把它先擦掉腾出空间来。然后进行加锁操作，保证了数据不会意外丢失，之后Draw_Bitmap(&amp;reactor, back_buffer, back_lpitch, 0);看到了吧reactor的用途了吧，这里back_buffer是个指针直接指向了刚才我所说的第二张纸，这样我们就把背景图片copy到上面了。然后调用DDraw_Flip();把第二张纸放到第一张上面，这不就ok了么？哈哈是不是很简单，其实任何事情不要想得那么复杂，我说过的工程就是用这些简单的东西。</p>
+
+<p>上面介绍了背景图片怎么加载，下面我要说的是动画如何实现，这个真的没有上面的那么容易了，不过也是大同小异的，动画的基本原理上面已经说过。下面就介绍下gameinit里面刚才我们没看到的代码。</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// create skelaton bob</span>
+<span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">Create_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">56</span><span class="p">,</span><span class="mi">72</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span>
+           <span class="n">BOB_ATTR_VISIBLE</span> <span class="o">|</span> <span class="n">BOB_ATTR_MULTI_ANIM</span><span class="p">,</span><span class="n">DDSCAPS_SYSTEMMEMORY</span><span class="p">))</span>
+   <span class="k">return</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>这句是干嘛呐？就是用来创建一个数据结构用来存储动画的信息的，一般国外的书上都把这些动画叫做精灵（BOB），至于为什么要这样叫我猜可能动画就是一个不断来回运动的东西，东跑跑，西撞撞。看的是不是像个精灵啊，既然大家都这么说我们也这样叫吧。存储这个精灵的数据结构那是相当的复杂，如下：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="k">struct</span> <span class="n">BOB_TYP</span>
+        <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">state</span><span class="p">;</span>          <span class="c1">// the state of the object (general)</span>
+        <span class="kt">int</span> <span class="n">anim_state</span><span class="p">;</span>     <span class="c1">// an animation state variable, up to you</span>
+        <span class="kt">int</span> <span class="n">attr</span><span class="p">;</span>           <span class="c1">// attributes pertaining to the object (general)</span>
+        <span class="kt">float</span> <span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">;</span>            <span class="c1">// position bitmap will be displayed at</span>
+        <span class="kt">float</span> <span class="n">xv</span><span class="p">,</span><span class="n">yv</span><span class="p">;</span>          <span class="c1">// velocity of object</span>
+        <span class="kt">int</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">;</span>  <span class="c1">// the width and height of the bob</span>
+        <span class="kt">int</span> <span class="n">width_fill</span><span class="p">;</span>     <span class="c1">// internal, used to force 8*x wide surfaces</span>
+        <span class="kt">int</span> <span class="n">bpp</span><span class="p">;</span>            <span class="c1">// bits per pixel</span>
+        <span class="kt">int</span> <span class="n">counter_1</span><span class="p">;</span>      <span class="c1">// general counters</span>
+        <span class="kt">int</span> <span class="n">counter_2</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">max_count_1</span><span class="p">;</span>    <span class="c1">// general threshold values;</span>
+        <span class="kt">int</span> <span class="n">max_count_2</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">varsI</span><span class="p">[</span><span class="mi">16</span><span class="p">];</span>      <span class="c1">// stack of 16 integers</span>
+        <span class="kt">float</span> <span class="n">varsF</span><span class="p">[</span><span class="mi">16</span><span class="p">];</span>    <span class="c1">// stack of 16 floats</span>
+        <span class="kt">int</span> <span class="n">curr_frame</span><span class="p">;</span>     <span class="c1">// current animation frame</span>
+        <span class="kt">int</span> <span class="n">num_frames</span><span class="p">;</span>     <span class="c1">// total number of animation frames</span>
+        <span class="kt">int</span> <span class="n">curr_animation</span><span class="p">;</span> <span class="c1">// index of current animation</span>
+        <span class="kt">int</span> <span class="n">anim_counter</span><span class="p">;</span>   <span class="c1">// used to time animation transitions</span>
+        <span class="kt">int</span> <span class="n">anim_index</span><span class="p">;</span>     <span class="c1">// animation element index</span>
+        <span class="kt">int</span> <span class="n">anim_count_max</span><span class="p">;</span> <span class="c1">// number of cycles before animation</span>
+        <span class="kt">int</span> <span class="o">*</span><span class="n">animations</span><span class="p">[</span><span class="n">MAX_BOB_ANIMATIONS</span><span class="p">];</span> <span class="c1">// animation sequences</span>
+        <span class="n">LPDIRECTDRAWSURFACE7</span> <span class="n">images</span><span class="p">[</span><span class="n">MAX_BOB_FRAMES</span><span class="p">];</span> <span class="c1">// the bitmap images DD surfaces</span>
+
+        <span class="p">}</span> <span class="n">BOB</span><span class="p">,</span> <span class="o">*</span><span class="n">BOB_PTR</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>果真复杂吧，不过现在我们不关心这个结构里面的东西到底有什么用，我们往下看等会自然就知道了。</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Load_Frame_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="o">&amp;</span><span class="n">bitmap8bit</span><span class="p">,</span><span class="mi">0</span><span class="o">+</span><span class="n">direction</span><span class="o">*</span><span class="mi">4</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="n">BITMAP_EXTRACT_MODE_CELL</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>看下面的图片：</p>
+
+<p><img src="/images/game.jpg" alt="游戏图片" /></p>
+
+<p>这句代码就是把精灵要运动的图片一个个加载到刚才设置的数据结构里面。这里的参数0+direction*4，就是精灵bob数据结构里面LPDIRECTDRAWSURFACE7 images[MAX_BOB_FRAMES]要放置的位置。0，0代表的是这个大图片里面的第一个小图片，以此类推可以把所用的小图片截取出来，放到images[MAX_BOB_FRAMES]里面。下面看</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// set the animation sequences for skelaton</span>
+<span class="n">Load_Animation_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="n">direction</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="n">skelaton_anims</span><span class="p">[</span><span class="n">direction</span><span class="p">]);</span>
+<span class="kt">int</span> <span class="o">*</span><span class="n">animations</span><span class="p">[</span><span class="n">MAX_BOB_ANIMATIONS</span><span class="p">];</span> <span class="c1">// animation sequences，这又是干什么那？何谓动作序列，就是我要做一个连贯的动作要用到多少子动作哪，这个数据结构就是用来存储一个连贯动作的所有子动作的。</span>
+<span class="n">Set_Animation_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="n">Set_Anim_Speed_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span> <span class="mi">4</span><span class="p">);</span>
+<span class="n">Set_Vel_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">);</span>
+<span class="n">Set_Pos_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">128</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>这些又是用来干什么那？顾名思义，从函数的定义估计大家也猜出来是干什么的吧，speed设置bob移动的速度，vel就是bob播放的速率，而pos是bob初始化的位置。在bob数据结构里面大家都能找到对应的值的，终于bob的初始化工作做完了，下面就看下在gamemain（）里面是如何动起来的吧。</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">player_moving</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="c1">// test direction of motion, this is a good example of testing the keyboard</span>
+<span class="c1">// although the code could be optimized this is more educational</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">keyboard_state</span><span class="p">[</span><span class="n">DIK_RIGHT</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">keyboard_state</span><span class="p">[</span><span class="n">DIK_UP</span><span class="p">])</span>
+   <span class="p">{</span>
+   <span class="c1">// move skelaton</span>
+   <span class="n">skelaton</span><span class="p">.</span><span class="n">x</span><span class="o">+=</span><span class="mi">2</span><span class="p">;</span>
+   <span class="n">skelaton</span><span class="p">.</span><span class="n">y</span><span class="o">-=</span><span class="mi">2</span><span class="p">;</span>
+   <span class="n">dx</span><span class="o">=</span><span class="mi">2</span><span class="p">;</span> <span class="n">dy</span><span class="o">=-</span><span class="mi">2</span><span class="p">;</span>
+   <span class="c1">// set motion flag</span>
+   <span class="n">player_moving</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+   <span class="c1">// check animation needs to change</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">skelaton</span><span class="p">.</span><span class="n">curr_animation</span> <span class="o">!=</span> <span class="n">SKELATON_NEAST</span><span class="p">)</span>
+      <span class="n">Set_Animation_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="n">SKELATON_NEAST</span><span class="p">);</span>
+   <span class="p">}</span> <span class="c1">// end if</span>
+<span class="k">else</span>
+<span class="nf">if</span> <span class="p">(</span><span class="n">keyboard_state</span><span class="p">[</span><span class="n">DIK_LEFT</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">keyboard_state</span><span class="p">[</span><span class="n">DIK_UP</span><span class="p">])</span> 
+   <span class="p">{</span>
+   <span class="c1">// move skelaton</span>
+   <span class="n">skelaton</span><span class="p">.</span><span class="n">x</span><span class="o">-=</span><span class="mi">2</span><span class="p">;</span>
+   <span class="n">skelaton</span><span class="p">.</span><span class="n">y</span><span class="o">-=</span><span class="mi">2</span><span class="p">;</span>
+   <span class="n">dx</span><span class="o">=-</span><span class="mi">2</span><span class="p">;</span> <span class="n">dy</span><span class="o">=-</span><span class="mi">2</span><span class="p">;</span>
+   <span class="c1">// set motion flag</span>
+   <span class="n">player_moving</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+   <span class="c1">// check animation needs to change</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">skelaton</span><span class="p">.</span><span class="n">curr_animation</span> <span class="o">!=</span> <span class="n">SKELATON_NWEST</span><span class="p">)</span>
+      <span class="n">Set_Animation_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="n">SKELATON_NWEST</span><span class="p">);</span>
+   <span class="p">}</span> <span class="c1">// end if</span>
+<span class="k">else</span>
+<span class="nf">if</span> <span class="p">(</span><span class="n">keyboard_state</span><span class="p">[</span><span class="n">DIK_LEFT</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">keyboard_state</span><span class="p">[</span><span class="n">DIK_DOWN</span><span class="p">])</span>
+   <span class="p">{</span>
+   <span class="c1">// move skelaton</span>
+   <span class="n">skelaton</span><span class="p">.</span><span class="n">x</span><span class="o">-=</span><span class="mi">2</span><span class="p">;</span>
+   <span class="n">skelaton</span><span class="p">.</span><span class="n">y</span><span class="o">+=</span><span class="mi">2</span><span class="p">;</span>
+   <span class="n">dx</span><span class="o">=-</span><span class="mi">2</span><span class="p">;</span> <span class="n">dy</span><span class="o">=</span><span class="mi">2</span><span class="p">;</span>
+   <span class="c1">// set motion flag</span>
+   <span class="n">player_moving</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+   <span class="c1">// check animation needs to change</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">skelaton</span><span class="p">.</span><span class="n">curr_animation</span> <span class="o">!=</span> <span class="n">SKELATON_SWEST</span><span class="p">)</span>
+      <span class="n">Set_Animation_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="n">SKELATON_SWEST</span><span class="p">);</span>
+   <span class="p">}</span> <span class="c1">// end if</span>
+<span class="k">else</span>
+<span class="nf">if</span> <span class="p">(</span><span class="n">keyboard_state</span><span class="p">[</span><span class="n">DIK_RIGHT</span><span class="p">]</span> <span class="o">&amp;&amp;</span> <span class="n">keyboard_state</span><span class="p">[</span><span class="n">DIK_DOWN</span><span class="p">])</span>
+   <span class="p">{</span>
+   <span class="c1">// move skelaton</span>
+   <span class="n">skelaton</span><span class="p">.</span><span class="n">x</span><span class="o">+=</span><span class="mi">2</span><span class="p">;</span>
+   <span class="n">skelaton</span><span class="p">.</span><span class="n">y</span><span class="o">+=</span><span class="mi">2</span><span class="p">;</span>
+   <span class="n">dx</span><span class="o">=</span><span class="mi">2</span><span class="p">;</span> <span class="n">dy</span><span class="o">=</span><span class="mi">2</span><span class="p">;</span>
+   <span class="c1">// set motion flag</span>
+   <span class="n">player_moving</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+   <span class="c1">// check animation needs to change</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">skelaton</span><span class="p">.</span><span class="n">curr_animation</span> <span class="o">!=</span> <span class="n">SKELATON_SEAST</span><span class="p">)</span>
+      <span class="n">Set_Animation_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="n">SKELATON_SEAST</span><span class="p">);</span>
+   <span class="p">}</span> <span class="c1">// end if</span>
+<span class="k">else</span>
+<span class="nf">if</span> <span class="p">(</span><span class="n">keyboard_state</span><span class="p">[</span><span class="n">DIK_RIGHT</span><span class="p">])</span>
+   <span class="p">{</span>
+   <span class="c1">// move skelaton</span>
+   <span class="n">skelaton</span><span class="p">.</span><span class="n">x</span><span class="o">+=</span><span class="mi">2</span><span class="p">;</span>
+   <span class="n">dx</span><span class="o">=</span><span class="mi">2</span><span class="p">;</span> <span class="n">dy</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+   <span class="c1">// set motion flag</span>
+   <span class="n">player_moving</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+   <span class="c1">// check animation needs to change</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">skelaton</span><span class="p">.</span><span class="n">curr_animation</span> <span class="o">!=</span> <span class="n">SKELATON_EAST</span><span class="p">)</span>
+      <span class="n">Set_Animation_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="n">SKELATON_EAST</span><span class="p">);</span>
+   <span class="p">}</span> <span class="c1">// end if</span>
+<span class="k">else</span>
+<span class="nf">if</span> <span class="p">(</span><span class="n">keyboard_state</span><span class="p">[</span><span class="n">DIK_LEFT</span><span class="p">])</span>  
+   <span class="p">{</span>
+   <span class="c1">// move skelaton</span>
+   <span class="n">skelaton</span><span class="p">.</span><span class="n">x</span><span class="o">-=</span><span class="mi">2</span><span class="p">;</span>
+   <span class="n">dx</span><span class="o">=-</span><span class="mi">2</span><span class="p">;</span> <span class="n">dy</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+   <span class="c1">// set motion flag</span>
+   <span class="n">player_moving</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+   <span class="c1">// check animation needs to change</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">skelaton</span><span class="p">.</span><span class="n">curr_animation</span> <span class="o">!=</span> <span class="n">SKELATON_WEST</span><span class="p">)</span>
+      <span class="n">Set_Animation_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="n">SKELATON_WEST</span><span class="p">);</span>
+   <span class="p">}</span> <span class="c1">// end if</span>
+<span class="k">else</span>
+<span class="nf">if</span> <span class="p">(</span><span class="n">keyboard_state</span><span class="p">[</span><span class="n">DIK_UP</span><span class="p">])</span>
+   <span class="p">{</span>
+   <span class="c1">// move skelaton</span>
+   <span class="n">skelaton</span><span class="p">.</span><span class="n">y</span><span class="o">-=</span><span class="mi">2</span><span class="p">;</span>
+   <span class="n">dx</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">dy</span><span class="o">=-</span><span class="mi">2</span><span class="p">;</span>
+   <span class="c1">// set motion flag</span>
+   <span class="n">player_moving</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+   <span class="c1">// check animation needs to change</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">skelaton</span><span class="p">.</span><span class="n">curr_animation</span> <span class="o">!=</span> <span class="n">SKELATON_NORTH</span><span class="p">)</span>
+      <span class="n">Set_Animation_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="n">SKELATON_NORTH</span><span class="p">);</span>
+   <span class="p">}</span> <span class="c1">// end if</span>
+<span class="k">else</span>
+<span class="nf">if</span> <span class="p">(</span><span class="n">keyboard_state</span><span class="p">[</span><span class="n">DIK_DOWN</span><span class="p">])</span>  
+   <span class="p">{</span>
+   <span class="c1">// move skelaton</span>
+   <span class="n">skelaton</span><span class="p">.</span><span class="n">y</span><span class="o">+=</span><span class="mi">2</span><span class="p">;</span>
+   <span class="n">dx</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">dy</span><span class="o">=+</span><span class="mi">2</span><span class="p">;</span>
+   <span class="c1">// set motion flag</span>
+   <span class="n">player_moving</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>
+   <span class="c1">// check animation needs to change</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">skelaton</span><span class="p">.</span><span class="n">curr_animation</span> <span class="o">!=</span> <span class="n">SKELATON_SOUTH</span><span class="p">)</span>
+      <span class="n">Set_Animation_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="n">SKELATON_SOUTH</span><span class="p">);</span>
+   <span class="p">}</span> <span class="c1">// end if</span>
+<span class="c1">// only animate if player is moving</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">player_moving</span><span class="p">)</span>
+   <span class="p">{</span>
+   <span class="c1">// animate skelaton</span>
+   <span class="n">Animate_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">);</span>
+   <span class="c1">// check if skelaton is off screen</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">skelaton</span><span class="p">.</span><span class="n">x</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">skelaton</span><span class="p">.</span><span class="n">x</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">screen_width</span> <span class="o">-</span> <span class="n">skelaton</span><span class="p">.</span><span class="n">width</span><span class="p">))</span>
+      <span class="n">skelaton</span><span class="p">.</span><span class="n">x</span><span class="o">-=</span><span class="n">dx</span><span class="p">;</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">skelaton</span><span class="p">.</span><span class="n">y</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">skelaton</span><span class="p">.</span><span class="n">y</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">screen_height</span> <span class="o">-</span> <span class="n">skelaton</span><span class="p">.</span><span class="n">height</span><span class="p">))</span>
+      <span class="n">skelaton</span><span class="p">.</span><span class="n">y</span><span class="o">-=</span><span class="n">dy</span><span class="p">;</span>
+   <span class="p">}</span> <span class="c1">// end if</span>
+<span class="c1">// draw the skelaton</span>
+<span class="n">Draw_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span> <span class="n">lpddsback</span><span class="p">);</span>
+<span class="c1">// animate color</span>
+<span class="n">glow</span><span class="p">.</span><span class="n">peGreen</span><span class="o">+=</span><span class="n">glow_dx</span><span class="p">;</span>
+<span class="c1">// test boundary</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">glow</span><span class="p">.</span><span class="n">peGreen</span> <span class="o">==</span> <span class="mi">0</span> <span class="o">||</span> <span class="n">glow</span><span class="p">.</span><span class="n">peGreen</span> <span class="o">==</span> <span class="mi">255</span><span class="p">)</span>
+   <span class="n">glow_dx</span> <span class="o">=</span> <span class="o">-</span><span class="n">glow_dx</span><span class="p">;</span>
+<span class="n">DDraw_Flip</span><span class="p">();</span>
+<span class="c1">// sync to 30 fps</span>
+<span class="n">Wait_Clock</span><span class="p">(</span><span class="mi">30</span><span class="p">);</span>
+<span class="err">上面的</span><span class="n">ifelse</span><span class="err">语句都是处理输入响应的代码，这里用的是键盘响应，游戏</span><span class="n">demo</span><span class="err">里面是鼠标响应，不过都大同小异，知道如何用键盘，鼠标当然也就会用了。例如这句代码</span><span class="k">if</span> <span class="p">(</span><span class="n">keyboard_state</span><span class="p">[</span><span class="n">DIK_LEFT</span><span class="p">])</span>  
+   <span class="p">{</span>
+   <span class="c1">// move skelaton</span>
+   <span class="n">skelaton</span><span class="p">.</span><span class="n">x</span><span class="o">-=</span><span class="mi">2</span><span class="p">;</span>
+   <span class="n">dx</span><span class="o">=-</span><span class="mi">2</span><span class="p">;</span> <span class="n">dy</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span>
+   <span class="c1">// set motion flag</span>
+   <span class="n">player_moving</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>   <span class="c1">// check animation needs to change</span>
+   <span class="k">if</span> <span class="p">(</span><span class="n">skelaton</span><span class="p">.</span><span class="n">curr_animation</span> <span class="o">!=</span> <span class="n">SKELATON_WEST</span><span class="p">)</span>
+      <span class="n">Set_Animation_BOB</span><span class="p">(</span><span class="o">&amp;</span><span class="n">skelaton</span><span class="p">,</span><span class="n">SKELATON_WEST</span><span class="p">);</span>
+   <span class="p">}</span> <span class="c1">// end if</span>
+</code></pre></div></div>
+
+<p>我按下键盘的左键，那么bob的x位置就-2，player_moving=1说明开始移动了，Set_Animation_BOB(&amp;skelaton,SKELATON_WEST)就是用来设置将要显示的那一帧图像的位置在那，把它找出来。然后Animate_BOB(&amp;skelaton)改变bob的状态，之后就Draw_BOB(&amp;skelaton, lpddsback)把这帧图像画到第二张纸上面，之后flip就ok了，终于我们看完了精灵是如何动起来了。你是否感觉到有点累了，反正我是感觉到完全累了，也许是自己太懒吧！不愿意写下去了，不过这些你已经看到了游戏画面处理的雏形了。之后我们要做的就是游戏的核心编程了，这才是最重要的，人工智能，基本的物理模型，以及文字对话的处理都要涉及很多的东西，所以今后要学的东西还很多啊，自己也期待中。希望看到这篇文章的高手能给点指点，而和我一样的菜鸟级的选手能共同进步。自己终于顶不住了要收工了。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

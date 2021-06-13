@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>六.Foundation框架中常用类的介绍续 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2011/02/06/cocoa-study-6.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="六.Foundation框架中常用类的介绍续">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2011/02/06/cocoa-study-6.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">六.Foundation框架中常用类的介绍续</h1>
+  
+  <span class="post-meta">02月 06日, 2011</span><br>
+  
+  <span class="post-meta small">4 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>在家疯狂的玩了10天，迎来了一个崭新的农历兔年。终于熬过了自己的本命年了，过去的不顺心都忘却吧，享受自己新的一年的生活吧！虽说在家待了差不多2周，还是没有尽兴，也可能是因为大年初三就要来上班的缘故吧！在家里总觉得和朋友有说不完的话，总想着能再和家人待上一天。这也造成了初三上班的时候，到下午才到，结果被主管批了一顿，虽说是自己不对，但是总觉得这里的主管没有什么人情味。哎，不说了，大过年的影响心情。在这里祝csdn中的所有网友们，新年快乐！以下省略若干字，请各位网友自行补充。以满足各位不管是心理，还是生理的需要。闲话不多了，言归正传！</p>
+
+<p>    去年发表的新帖子，现在才有序实属惭愧。文件操作不管是语言和框架都是一个重点部分。下面我们就来看下foundation中文件操作的一些常用的类的用法。</p>
+
+<p>    首先来看下一个操作文件以及目录的重要类NSFileManager。下面还是看一段代码，来一一说明此类的用法</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">   </span> <span class="n">NSFileManager</span> <span class="o">*</span><span class="n">fm</span><span class="p">;</span>
+<span class="err">   </span> <span class="n">NSDirectoryEnumerator</span> <span class="o">*</span><span class="n">dirEnum</span><span class="p">;</span>
+<span class="err">   </span> <span class="n">NSArray</span> <span class="o">*</span><span class="n">dirArray</span><span class="p">;</span>
+<span class="err">   </span> <span class="err"> </span><span class="c1">// 需要创建一个file manager的实例</span>
+<span class="err">   </span> <span class="n">fm</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSFileManager</span> <span class="nf">defaultManager</span><span class="p">];</span>
+<span class="err">   </span> 
+<span class="err">   </span> <span class="c1">// 获取当前工作目录的路径</span>
+<span class="err">   </span> <span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="n">fm</span> <span class="nf">currentDirectoryPath</span><span class="p">];</span>
+<span class="err">   </span> 
+<span class="err">   </span> <span class="c1">// 遍历这个目录</span>
+<span class="err">   </span> <span class="n">dirEnum</span> <span class="o">=</span> <span class="p">[</span><span class="n">fm</span> <span class="nf">enumeratorAtPath</span><span class="p">:</span> <span class="n">path</span><span class="p">];</span>
+
+<span class="err">   </span> <span class="n">NSLog</span><span class="p">(</span><span class="s">@"Contents of %@:"</span><span class="p">,</span> <span class="n">path</span><span class="p">);</span>
+
+<span class="err">   </span> <span class="k">while</span> <span class="p">((</span><span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="n">dirEnum</span> <span class="nf">nextObject</span><span class="p">])</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span>
+
+<span class="err">   </span> <span class="p">{</span>
+<span class="err">   </span> <span class="err">   </span> <span class="err">   </span> 
+<span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="n">NSLog</span><span class="p">(</span><span class="s">@"%@"</span><span class="p">,</span> <span class="n">path</span><span class="p">);</span>
+
+<span class="err">   </span> <span class="p">}</span>
+
+<span class="err">   </span> <span class="c1">// 另一种遍历目录的方法</span>
+<span class="err">   </span> 
+<span class="err">   </span> <span class="n">dirArray</span> <span class="o">=</span> <span class="p">[</span><span class="n">fm</span> <span class="nf">contentsOfDirectoryAtPath</span><span class="p">:</span> <span class="p">[</span><span class="n">fm</span> <span class="nf">currentDirectoryPath</span><span class="p">]</span> <span class="nf">error</span><span class="p">:</span> <span class="nb">nil</span><span class="p">];</span>
+
+<span class="err">   </span> <span class="n">NSLog</span><span class="p">(</span><span class="s">@"Contents using contentsOfDirectoryAtPath:"</span><span class="p">);</span>
+
+<span class="err">   </span> <span class="k">for</span> <span class="p">(</span><span class="n">path</span> <span class="k">in</span> <span class="n">dirArray</span><span class="p">)</span>
+
+<span class="err">   </span> <span class="err">   </span> <span class="n">NSLog</span><span class="p">(</span><span class="s">@"%@"</span><span class="p">,</span> <span class="n">path</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>相信仔细看了这些代码之后，会对NSFileManager这个类如何遍历目录，有了一定的认识吧。其实这些代码都非常简单，只要查看apple developer文档都能找到的。虽说理解起来简单，但是有时候一动手写代码还是会遇到很多问题的。例如下面</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">   </span> <span class="err">   </span> <span class="n">NSArray</span> <span class="o">*</span><span class="n">aryProvsioning</span> <span class="o">=</span> <span class="p">[</span><span class="n">FileManager</span> <span class="nf">contentsOfDirectoryAtPath</span><span class="p">:</span><span class="s">@"/vault/provisioning"</span> <span class="nf">error</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+<span class="err">   </span> <span class="err">   </span> <span class="k">for</span><span class="p">(</span><span class="n">NSString</span><span class="o">*</span> <span class="n">provisioningFile</span> <span class="k">in</span> <span class="n">aryProvsioning</span><span class="p">)</span>
+<span class="err">   </span> <span class="err">   </span> <span class="p">{</span>
+<span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="n">NSLog</span><span class="p">(</span><span class="s">@"delete file:%@"</span><span class="p">,</span><span class="n">provisioningFile</span><span class="p">);</span>
+<span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="p">[</span><span class="n">FileManager</span> <span class="nf">removeItemAtPath</span><span class="p">:[</span><span class="n">NSString</span> <span class="nf">stringWithFormat</span><span class="p">:</span><span class="s">@"/vault/provisioning/%@"</span><span class="p">,</span><span class="n">provisioningFile</span><span class="p">]</span>
+<span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="nf">error</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+<span class="err">   </span> <span class="err">   </span> <span class="p">}</span>
+</code></pre></div></div>
+
+<p>这段代码的功能是删除/vault/provisioning下的所有文件，有兴趣的可以亲自实验以下，确实可以删除该文件夹下面的所有文件。但是有种情况不行，就是该文件夹下又存在文件夹的情况下，该方法removeitemAtPath就不能删除，也就是该方法只能删除文件不能删除目录，所以在用的时候要格外小心，一定要认真阅读开发文档。所以上面如果想要删除该文件夹下面的所有文件及目录，就要写成函数来递归调用。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> <span class="nf">deleteAllAtPath</span><span class="p">(</span><span class="n">NSString</span> <span class="o">*</span><span class="n">path</span><span class="p">)</span>
+
+<span class="p">{</span>
+
+<span class="err">   </span> <span class="err">   </span> <span class="n">NSArray</span> <span class="o">*</span><span class="n">aryProvsioning</span> <span class="o">=</span> <span class="p">[</span><span class="n">FileManager</span> <span class="nf">contentsOfDirectoryAtPath</span><span class="p">:</span><span class="n">path</span> <span class="nf">error</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+
+<span class="err">       </span> <span class="k">if</span> <span class="p">(</span><span class="n">aryProvsioning</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span>
+
+<span class="err">           </span> <span class="k">return</span><span class="p">;</span>
+<span class="err">   </span> <span class="err">   </span> <span class="k">for</span><span class="p">(</span><span class="n">NSString</span><span class="o">*</span> <span class="n">provisioningFile</span> <span class="k">in</span> <span class="n">aryProvsioning</span><span class="p">)</span>
+<span class="err">   </span> <span class="err">   </span> <span class="p">{</span>
+<span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="n">deleteAllAtPath</span><span class="p">(</span><span class="n">provisioningFile</span><span class="p">);</span>
+
+<span class="err">           </span> <span class="n">NSLog</span><span class="p">(</span><span class="s">@"delete file:%@"</span><span class="p">,</span><span class="n">provisioningFile</span><span class="p">);</span>
+<span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="p">[</span><span class="n">FileManager</span> <span class="nf">removeItemAtPath</span><span class="p">:[</span><span class="n">NSString</span> <span class="nf">stringWithFormat</span><span class="p">:</span><span class="s">@"/vault/provisioning/%@"</span><span class="p">,</span><span class="n">provisioningFile</span><span class="p">]</span>
+<span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="err">   </span> <span class="nf">error</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+<span class="err">   </span> <span class="err">   </span> <span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>下面再来看一个读写文件的类NSFileHandle，其实它的实现就是调用c语言种文件流的操作。通过取得文件流的指针，然后定位指针的位置从而读取出文件中的内容，同样在文件中写入东西也是同样的道理，下面来看一小短代码。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="err">   </span> <span class="n">NSFileHandle</span> <span class="o">*</span><span class="n">TXTFileHandle</span><span class="p">;</span>
+
+<span class="err">   </span> <span class="n">NSString</span><span class="err">   </span> <span class="o">*</span><span class="n">szTXTFileTemp</span> <span class="o">=</span> <span class="s">@"111.txt"</span><span class="p">;</span>
+<span class="err">   </span> <span class="n">TXTFileHandle</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSFileHandle</span> <span class="nf">fileHandleForWritingAtPath</span><span class="p">:</span><span class="n">szTXTFileTemp</span><span class="p">];</span>
+
+<span class="err">   </span> <span class="c1">//防止该文件不存在，如果不存在，新建该文件并写入空数据。</span>
+<span class="err">   </span> <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">TXTFileHandle</span><span class="p">)</span>
+<span class="err">   </span> <span class="p">{</span>
+<span class="err">   </span> <span class="err">   </span> <span class="p">[</span><span class="s">@""</span> <span class="nf">writeToFile</span><span class="p">:</span><span class="n">szTXTFileTemp</span> <span class="nf">atomically</span><span class="p">:</span><span class="nb">NO</span> <span class="n">encoding</span><span class="o">:</span><span class="mi">1</span> <span class="n">error</span><span class="o">:</span><span class="nb">nil</span><span class="p">];</span>
+<span class="err">   </span> <span class="err">   </span> <span class="n">TXTFileHandle</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSFileHandle</span> <span class="nf">fileHandleForWritingAtPath</span><span class="p">:</span><span class="n">szTXTFileTemp</span><span class="p">];</span>
+<span class="err">   </span> <span class="p">}</span>
+
+<span class="err">   </span> <span class="p">[</span><span class="n">TXTFileHandle</span> <span class="nf">seekToEndOfFile</span><span class="p">];</span>
+
+<span class="err">   </span> <span class="kt">char</span> <span class="o">*</span> <span class="n">conTemp</span> <span class="o">=</span> <span class="s">"mengtnt"</span><span class="p">;</span>
+
+<span class="err">   </span> <span class="p">[</span><span class="n">TXTFileHandle</span><span class="err"> </span> <span class="nf">writeData</span><span class="p">:[</span><span class="n">NSData</span> <span class="nf">dataWithBytes</span><span class="p">:</span><span class="n">conTemp</span> <span class="nf">length</span><span class="p">:</span><span class="mi">8</span><span class="p">];</span>
+
+<span class="err">   </span> <span class="p">[</span><span class="n">TXTFileHandle</span> <span class="nf">closeFile</span><span class="p">];</span>
+
+<span class="err">   </span> <span class="c1">//下面是读取</span>
+
+<span class="err">   </span> <span class="n">TXTFileHandle</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSFileHandle</span> <span class="nf">fileHandleForReadingAtPath</span><span class="p">:</span><span class="n">szTXTFileTemp</span><span class="p">];</span>
+
+<span class="err">   </span> <span class="n">NSData</span> <span class="o">*</span><span class="n">fileData</span> <span class="o">=</span> <span class="p">[</span><span class="n">TXTFileHandle</span> <span class="nf">readDataToEndOfFile</span><span class="p">];</span>
+
+<span class="err">   </span> <span class="n">NSlog</span><span class="p">(</span><span class="s">@"%@"</span><span class="p">,[[</span><span class="n">NSString</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithData</span><span class="p">:</span><span class="n">fileData</span><span class="err"> </span> <span class="nf">encoding</span><span class="p">:</span><span class="n">NSUTF8StringEncoding</span><span class="p">]);</span>
+
+<span class="err">   </span> <span class="p">[</span><span class="n">TXTFileHandle</span> <span class="nf">closeFile</span><span class="p">];</span>
+</code></pre></div></div>
+
+<p>  以上就是cocoa编程中文件操作的常见用法，下面再看两个类，虽说里面的方法都很简单，但是不注意一些细节还是会出问题的。</p>
+
+<p>    NSThread类，开启一个线程的方法在简单不过了，[NSThread detachNewThreadSelector:@selector(StartThreadTest:) toTarget:self withObject:nil];其中selector就是你要调用的线程方法。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">StartThreadTest</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">idThread</span>
+<span class="p">{</span>
+<span class="err">   </span> <span class="n">NSAutoreleasePool</span> <span class="o">*</span><span class="n">pool</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSAutoreleasePool</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+<span class="err">   </span> <span class="c1">//一些UI事件以及其他事件处理</span>
+<span class="err">   </span> <span class="p">[</span><span class="n">pool</span> <span class="nf">release</span><span class="p">];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>不知道大家注意了没有，为什么线程中要加release pool那。特别是线程中有处理UI事件的时候一定要加上pool，否则你会发现应用程序运行异常的慢，甚至有的时候会crash掉。可能是线程的资源在使用时，很难判断何时使用完毕，所以编译器也就不方便自动释放这些资源，这样就要手动加上pool，使线程运行到此处的时候释放掉某些资源。究其深层的原因，自己也是一知半解。这里仅仅是自己的一些想法，还望那位高手能指点下分析的是否正确。</p>
+
+<p>    最后跟大家提以下NSTimer的用法，NSTimer说白了就是一个定时器，就是用来每隔一段时间运行某段代码</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">NSTimer</span> <span class="nf">scheduledTimerWithTimeInterval</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span>
+<span class="nl">target:</span><span class="n">self</span>
+<span class="nl">selector:</span><span class="k">@selector</span><span class="p">(</span><span class="nf">DetectSN</span><span class="p">:)</span>
+<span class="n">userInfo</span><span class="o">:</span><span class="nb">nil</span>
+<span class="n">repeats</span><span class="o">:</span><span class="nb">YES</span><span class="p">];</span>
+</code></pre></div></div>
+
+<p>当你相停止timer的时候就调用invalide方法。需要注意的一点是当NSTimer被设置无效的时候，要想使用这个timer对象，必须重新开辟一个NSTimer的对象。</p>
+
+<p>那么关于NSFoundation一些类的用法就先介绍到这里吧，这些都是自己平时整理一些资料，这些类都是比较容易用到，同时也容易出错的类。希望能给大家一些帮助，同时在调试中也提高了自己的能力。以后我就来简单的分享下自己cocoa编程中ApplicationKit框架的一些简单用法，不过我一直在UI设计方面存在先天不足，也希望在介绍ApplicationKit框架，各位老鸟看到我设计的一些UI的时候，能给点建设性的意见，以让自己摆脱这方面的苦恼。</p>
+
+<p><a href="https://blog.csdn.net/mengtnt/article/details/6173582">原文链接</a></p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

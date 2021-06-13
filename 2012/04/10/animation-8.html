@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>第八章 OpenGL层 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2012/04/10/animation-8.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="第八章 OpenGL层">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2012/04/10/animation-8.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">第八章 OpenGL层</h1>
+  
+  <span class="post-meta">04月 10日, 2012</span><br>
+  
+  <span class="post-meta small">14 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>使用核心动画的OpenGL层，CAOpenGLLayer使你在播放电影时可以做更多的控制，这些控制包括在视频帧中使用核心图像滤镜或者组合混合视频流到同一个上下文中。</p>
+
+<p>这一章展示给你，如何用CAOpenGLLayer来渲染一个视频通道，就像第七章QuickTime层的功能一样。下面，我们就来看，利用CAOpenGLLayer，在网格层上来组合多种视频通道，就像你可以在视频墙上看到的一样。这里演示了，当你使用CAOpenGLLayer层时，你可以控制那些功能和效果。</p>
+
+<h3 id="在caopengllayer上渲染视频">在CAOpenGLLayer上渲染视频</h3>
+
+<p>就像第七章讨论的，简单的视频播放可以用QTMovieView和QTMovieLayer来控制。然而，假如你在渲染之前想改变目前的帧，你最好使用OpenGl。第一步，我们来看在CAOpenGlLayer上，如何简单的展示没有改变的帧。这里模拟了第七章在QTMovieLayer上已经实现的功能。</p>
+
+<p>为了利用CAOpenGLLayer，你需要子类化它，它不可以直接使用的。相比于你在核心动画中需要做的东西，用CAOpenGLLayer层创建OpenGL的内容要显的简单的多。在一个NSOpenGLView中，你需要设置每件事，但是在CAOpenGLLayer中，下面的都可以免费得到。</p>
+
+<p>预先配置的OpenGL上下文。</p>
+
+<p>视频端口自动设定到CAOpenGLLayer帧上</p>
+
+<p>预先配置的像素格式对象</p>
+
+<p>设置这些代码如此简单，以至于你需要关心仅仅2个功能。第一个功能核对下一帧是否要被渲染，第二个函数就会根据第一个函数是否返回YES或者NO，来决定要不要渲染到内容上。如果你很好的理解了这两个功能函数，你也就很好的理解了CAOpenGLLayer如何工作了，重要的时如何来使用它。这俩函数如表8-1所示。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="n">BOOL</span><span class="p">)</span><span class="nf">canDrawInCGLContext</span><span class="p">:(</span><span class="n">CGLContextObj</span><span class="p">)</span><span class="nv">glContextpixelFormat</span><span class="o">:</span><span class="p">(</span><span class="n">CGLPixelFormatObj</span><span class="p">)</span><span class="n">pixelFormat</span>
+<span class="n">forLayerTime</span><span class="o">:</span><span class="p">(</span><span class="n">CFTimeInterval</span><span class="p">)</span><span class="n">timeIntervaldisplayTime</span><span class="o">:</span><span class="p">(</span><span class="k">const</span> <span class="n">CVTimeStamp</span> <span class="o">*</span><span class="p">)</span><span class="n">timestamp</span><span class="p">;</span>
+
+<span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">drawInCGLContext</span><span class="p">:(</span><span class="n">CGLContextObj</span><span class="p">)</span><span class="nv">glContextpixelFormat</span><span class="o">:</span><span class="p">(</span><span class="n">CGLPixelFormatObj</span><span class="p">)</span><span class="n">pixelFormat</span>
+<span class="n">forLayerTime</span><span class="o">:</span><span class="p">(</span><span class="n">CFTimeInterval</span><span class="p">)</span><span class="n">intervaldisplayTime</span><span class="o">:</span><span class="p">(</span><span class="k">const</span> <span class="n">CVTimeStamp</span> <span class="o">*</span><span class="p">)</span><span class="n">timestamp</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>表8-1 CAOpenGLLayer的代理渲染函数</p>
+
+<p>只有当你设定了层的同步属性asynchronous为YES的时候，函数-canDrawInCGLContext才会被调用。你可以在你的继承CAOpenGLLayer的层的初始化方法init中，调用此方法：</p>
+
+<p>[selfsetAsynchronous:YES];</p>
+
+<p>如果你计划手动的更新内容或者根据定时器进行安排，那么你就不需要设定这些。在这种情况下，无论什么时候想要刷新内容，只需要简单的调用-setNeedsDisplay:YES这个函数就行了。</p>
+
+<p>对于我们的情况，然而，我们想要-canDrawInCGLContext被调用，因为当电影播放时，我们需要不停的核对已经准备好的帧。为了获取这些帧，需要设定asynchronous属性为YES。</p>
+
+<p>只有当-canDrawInCGLContext返回YES的时候，函数-drawInCGLContext会被调用。在它被调用之后，就可以渲染你的OpenGL内容到需要的上下文中。</p>
+
+<h3 id="层的时序">层的时序</h3>
+
+<p>注意到-canDrawInCGLContext和-drawInCGLContext，这两个关系时间的字段。</p>
+
+<p>forLayerTime,属于CGTimeInterval</p>
+
+<p>displayTime,属于CVTimeStamp</p>
+
+<p>我们不关心forLayerTime，因为我们在CAOpenGLLayer层上，不需要要使用它。然而，displayTime对于我们这个练习至关重要。</p>
+
+<p>根据显示的刷新率，正确的播放视频，并且同步音频可能有些微妙的关系。然而，苹果公司有了一个稳定的播放视频方式，这里他们用到了显示链接(display link)。这里有苹果公司在核心视频程序向导中定义的显示链接：</p>
+
+<p>为了简单的同步视频和显示的刷新率，核心视频提供了一个特别的定时器叫做显示链接。显示链接在一个独立的高优先级的线程中运行，这个线程不会被应用程序的交互处理影响到。</p>
+
+<p>过去，同步视频帧和显示的刷新率是一个问题，尤其是如果你也有音频时。很简单的你就可以想到，例如通过定时器输出一个帧时，但是这不可能考虑到用户交互，CPU装载，窗口组合等等这些问题的时间延时。核心视频中的展示链接，基于展示的类型和延时，做了一个非常智能的评估，从而可以获得什么时候一个帧需要输出。</p>
+
+<p>实质上，也就是说你必须要创建一个回调函数，它会被定期的调用，在这个回调函数中，你可以核对一个新的帧在此刻（也就是回调函数中的inOutputTime这个CVTimeStamp这个时刻点）是否可用。显示链接的回调如清单8-2.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">CVReturnMyDisplayLinkCallback</span> <span class="p">(</span> <span class="n">CVDisplayLinkRef</span> <span class="n">displayLink</span><span class="p">,</span>
+<span class="k">const</span> <span class="n">CVTimeStamp</span> <span class="o">*</span><span class="n">inNow</span><span class="p">,</span>
+<span class="k">const</span> <span class="n">CVTimeStamp</span><span class="o">*</span><span class="n">inOutputTime</span><span class="p">,</span> <span class="n">CVOptionFlags</span> <span class="n">flagsIn</span><span class="p">,</span> <span class="n">CVOptionFlags</span> <span class="o">*</span><span class="n">flagsOut</span><span class="p">,</span>
+<span class="kt">void</span> <span class="o">*</span><span class="n">displayLinkContext</span><span class="p">);</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>               清单8-2
+</code></pre></div></div>
+
+<p>然而，在CAOpenGLLayer中安装和使用显示链接的回调函数是完全没有必要的，因为这些功能是通过-canDrawInCGLContext和-drawInCGLContext这两个函数实现的。你就可以核对在函数参数中displayTime这个时刻是否一个新的帧是被提供。</p>
+
+<p>因此，通过-canDrawInCGLContext这个函数，来渲染一个视频帧到CAOpenGLLayer上的步骤：</p>
+
+<ol>
+  <li>
+    <p>核对视频是否正在播放；如果没有返回no。</p>
+  </li>
+  <li>
+    <p>如果视频是在播放，核对是否视频的上下文已经被设定。如果没有，通过调用-setupVisualContext这个方法设定它。</p>
+  </li>
+  <li>
+    <p>检查是否一个新的帧是准备好了。</p>
+  </li>
+  <li>
+    <p>如果可以，复制目前的图像到图像缓存中。</p>
+  </li>
+  <li>
+    <p>如果上述每个都是成功的，返回YES</p>
+  </li>
+  <li>
+    <p>如果-canDrawInCGLContext返回了YES，-drawInCGLContext会被调用。在这里面就用绘制OpenGL的线条到视频目前的纹理图像上。</p>
+  </li>
+</ol>
+
+<p>-canDrawInCGLContext在清单8-3中的实现。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">-</span><span class="p">(</span><span class="n">BOOL</span><span class="p">)</span><span class="nf">canDrawInCGLContext</span><span class="p">:(</span><span class="n">CGLContextObj</span><span class="p">)</span><span class="nv">glContextpixelFormat</span><span class="o">:</span><span class="p">(</span><span class="n">CGLPixelFormatObj</span><span class="p">)</span><span class="n">pixelFormat</span>
+<span class="n">forLayerTime</span><span class="o">:</span><span class="p">(</span><span class="n">CFTimeInterval</span><span class="p">)</span><span class="n">timeIntervaldisplayTime</span><span class="o">:</span><span class="p">(</span><span class="k">const</span> <span class="n">CVTimeStamp</span> <span class="o">*</span><span class="p">)</span><span class="n">timeStamp</span>
+<span class="p">{</span>
+  <span class="k">if</span><span class="p">(</span> <span class="o">!</span><span class="n">qtVisualContext</span> <span class="p">)</span> <span class="p">{</span>
+     <span class="c1">// If the visual context forthe QTMovie has not been set up</span>
+     <span class="c1">// we initialize it now</span>
+     <span class="p">[</span><span class="nf">selfsetupVisualContext</span><span class="p">:</span><span class="n">glContext</span> <span class="nf">withPixelFormat</span><span class="p">:</span><span class="n">pixelFormat</span><span class="p">];</span>
+  <span class="p">}</span>
+  <span class="c1">// Check to see if a newframe (image) is ready to be drawn at // the current time by passing NULL asthe second param if(QTVisualContextIsNewImageAvailable(qtVisualContext,NULL))</span>
+  <span class="p">{</span>
+    <span class="c1">// Release the previous frame</span>
+    <span class="n">CVOpenGLTextureRelease</span><span class="p">(</span><span class="n">currentFrame</span><span class="p">);</span>
+    <span class="c1">// Copy the current frameinto the image buffer</span>
+    <span class="n">QTVisualContextCopyImageForTime</span><span class="p">(</span><span class="n">qtVisualContext</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span><span class="nb">NULL</span><span class="p">,</span> <span class="err">¤</span><span class="n">tFrame</span><span class="p">);</span>
+    <span class="c1">// Returns the texturecoordinates for the</span>
+    <span class="c1">// part of the image thatshould be displayed CVOpenGLTextureGetCleanTexCoords(currentFrame,lowerLeft, lowerRight,upperRight, upperLeft);</span>
+    <span class="k">return</span> <span class="nb">YES</span><span class="p">;</span> 
+  <span class="p">}</span>
+  <span class="k">return</span> <span class="nb">NO</span><span class="p">;</span>
+ <span class="p">}</span>
+
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    清单 8-3 –canDrawInCGLContext代理的实现
+</code></pre></div></div>
+
+<p>在你要在一个OpenGL的上下文中画任何东西，你必须先给QuickTime视频安装可视的上下文。-setupVisualContext的代码如清单8-4.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">setupVisualContext</span><span class="p">:(</span><span class="n">CGLContextObj</span><span class="p">)</span><span class="nv">glContextwithPixelFormat</span><span class="o">:</span><span class="p">(</span><span class="n">CGLPixelFormatObj</span><span class="p">)</span><span class="n">pixelFormat</span><span class="p">;</span>
+<span class="p">{</span>
+                <span class="n">OSStatus</span> <span class="n">error</span><span class="p">;</span>
+                <span class="n">NSDictionary</span> <span class="o">*</span><span class="n">attributes</span> <span class="o">=</span><span class="nb">nil</span><span class="p">;</span>
+                <span class="n">attributes</span> <span class="o">=</span> <span class="p">[</span><span class="nf">NSDictionarydictionaryWithObjectsAndKeys</span><span class="p">:</span>
+                <span class="p">[</span><span class="nf">NSDictionarydictionaryWithObjectsAndKeys</span><span class="p">:</span>
+                <span class="p">[</span><span class="nf">NSNumbernumberWithFloat</span><span class="p">:[</span><span class="n">self</span> <span class="nf">frame</span><span class="p">].</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="p">],</span><span class="n">kQTVisualContextTargetDimensions_WidthKey</span><span class="p">,</span>
+                <span class="p">[</span><span class="nf">NSNumbernumberWithFloat</span><span class="p">:[</span><span class="n">self</span> <span class="nf">frame</span><span class="p">].</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">],</span><span class="n">kQTVisualContextTargetDimensions_HeightKey</span><span class="p">,</span> <span class="nb">nil</span><span class="p">],</span>
+                <span class="n">kQTVisualContextTargetDimensionsKey</span><span class="p">,[</span><span class="n">NSDictionary</span> <span class="nf">dictionaryWithObjectsAndKeys</span><span class="p">:</span>
+                <span class="p">[</span><span class="n">NSNumber</span> <span class="nf">numberWithFloat</span><span class="p">:[</span><span class="nf">selfframe</span><span class="p">].</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="p">],</span> <span class="n">kCVPixelBufferWidthKey</span><span class="p">,</span>
+                <span class="p">[</span><span class="nf">NSNumbernumberWithFloat</span><span class="p">:[</span><span class="n">self</span> <span class="nf">frame</span><span class="p">].</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">],</span> <span class="n">kCVPixelBufferHeightKey</span><span class="p">,</span> <span class="nb">nil</span><span class="p">],</span>
+                <span class="n">kQTVisualContextPixelBufferAttributesKey</span><span class="p">,</span><span class="nb">nil</span><span class="p">];</span>
+                <span class="c1">// Create the QuickTimevisual context</span>
+                <span class="n">error</span> <span class="o">=</span> <span class="n">QTOpenGLTextureContextCreate</span><span class="p">(</span><span class="nb">NULL</span><span class="p">,</span><span class="n">glContext</span><span class="p">,</span>
+                <span class="n">pixelFormat</span><span class="p">,(</span><span class="n">CFDictionaryRef</span><span class="p">)</span><span class="n">attributes</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">qtVisualContext</span><span class="p">);</span>
+                <span class="c1">// Associate it with themovie</span>
+                <span class="n">SetMovieVisualContext</span><span class="p">([</span><span class="nf">moviequickTimeMovie</span><span class="p">],</span><span class="n">qtVisualContext</span><span class="p">);</span> 
+        <span class="p">}</span>
+</code></pre></div></div>
+
+<center>清单8-4 QuickTime的可视上下文的实现</center>
+
+<p>在-setupVisualContext中，视频是联系CAOpenGLLayer中的OpenGL的上下文。这样，当-drawInCGLContext是被调用时，每件事都被设定好了，就可以调用OpenGL的API了，就像清单8-5所示。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        <span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">drawInCGLContext</span><span class="p">:(</span><span class="n">CGLContextObj</span><span class="p">)</span><span class="nv">glContextpixelFormat</span><span class="o">:</span><span class="p">(</span><span class="n">CGLPixelFormatObj</span><span class="p">)</span><span class="n">pixelFormat</span>
+        <span class="n">forLayerTime</span><span class="o">:</span><span class="p">(</span><span class="n">CFTimeInterval</span><span class="p">)</span><span class="n">intervaldisplayTime</span><span class="o">:</span><span class="p">(</span><span class="k">const</span> <span class="n">CVTimeStamp</span> <span class="o">*</span><span class="p">)</span><span class="n">timeStamp</span>
+        <span class="p">{</span>
+        <span class="n">NSRect</span> <span class="n">bounds</span> <span class="o">=</span><span class="n">NSRectFromCGRect</span><span class="p">([</span><span class="n">self</span> <span class="nf">bounds</span><span class="p">]);</span>
+        <span class="n">GLfloat</span> <span class="n">minX</span><span class="p">,</span> <span class="n">minY</span><span class="p">,</span> <span class="n">maxX</span><span class="p">,</span><span class="n">maxY</span><span class="p">;</span>
+        <span class="n">minX</span> <span class="o">=</span> <span class="n">NSMinX</span><span class="p">(</span><span class="n">bounds</span><span class="p">);</span> <span class="n">minY</span> <span class="o">=</span><span class="n">NSMinY</span><span class="p">(</span><span class="n">bounds</span><span class="p">);</span> <span class="n">maxX</span> <span class="o">=</span> <span class="n">NSMaxX</span><span class="p">(</span><span class="n">bounds</span><span class="p">);</span> <span class="n">maxY</span> <span class="o">=</span> <span class="n">NSMaxY</span><span class="p">(</span><span class="n">bounds</span><span class="p">);</span>
+        <span class="n">glMatrixMode</span><span class="p">(</span><span class="n">GL_MODELVIEW</span><span class="p">);</span><span class="n">glLoadIdentity</span><span class="p">();</span> <span class="n">glMatrixMode</span><span class="p">(</span><span class="n">GL_PROJECTION</span><span class="p">);</span> <span class="n">glLoadIdentity</span><span class="p">();</span>
+        <span class="n">glOrtho</span><span class="p">(</span> <span class="n">minX</span><span class="p">,</span> <span class="n">maxX</span><span class="p">,</span> <span class="n">minY</span><span class="p">,</span><span class="n">maxY</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span> <span class="n">glClearColor</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+        <span class="n">glClear</span><span class="p">(</span><span class="n">GL_COLOR_BUFFER_BIT</span><span class="p">);</span>
+        <span class="n">CGRect</span> <span class="n">imageRect</span> <span class="o">=</span> <span class="p">[</span><span class="nf">selfframe</span><span class="p">];</span>
+        <span class="c1">// Enable target for thecurrent frame glEnable(CVOpenGLTextureGetTarget(currentFrame));</span>
+        <span class="c1">// Bind to the current frame</span>
+        <span class="c1">// This tells OpenGL whichtexture we want</span>
+        <span class="c1">// to draw so when we makethe glTexCord and</span>
+        <span class="c1">// glVertex calls, thecurrent frame gets drawn</span>
+        <span class="c1">// to the contextglBindTexture(CVOpenGLTextureGetTarget(currentFrame),</span>
+        <span class="n">CVOpenGLTextureGetName</span><span class="p">(</span><span class="n">currentFrame</span><span class="p">));</span><span class="n">glMatrixMode</span><span class="p">(</span><span class="n">GL_TEXTURE</span><span class="p">);</span>
+        <span class="n">glLoadIdentity</span><span class="p">();</span><span class="n">glColor4f</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span> <span class="n">glBegin</span><span class="p">(</span><span class="n">GL_QUADS</span><span class="p">);</span>
+        <span class="c1">// Draw the quads</span>
+        <span class="n">glTexCoord2f</span><span class="p">(</span><span class="n">upperLeft</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">upperLeft</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span> <span class="n">glVertex2f</span> <span class="p">(</span><span class="n">imageRect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span><span class="p">,</span>
+        <span class="n">imageRect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span><span class="n">imageRect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">);</span> <span class="n">glTexCoord2f</span><span class="p">(</span><span class="n">upperRight</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">upperRight</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+        <span class="n">glVertex2f</span><span class="p">(</span><span class="n">imageRect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">imageRect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="p">,</span> <span class="n">imageRect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span><span class="n">imageRect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">);</span>
+        <span class="n">glTexCoord2f</span><span class="p">(</span><span class="n">lowerRight</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">lowerRight</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+        <span class="n">glVertex2f</span><span class="p">(</span><span class="n">imageRect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">imageRect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="p">,</span>
+        <span class="n">imageRect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span><span class="p">);</span><span class="n">glTexCoord2f</span><span class="p">(</span><span class="n">lowerLeft</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lowerLeft</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+        <span class="n">glVertex2f</span><span class="p">(</span><span class="n">imageRect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">imageRect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+        <span class="n">glEnd</span><span class="p">();</span>
+        <span class="c1">// This CAOpenGLLayer isresponsible to flush // the OpenGL context so we call super</span>
+        <span class="p">[</span><span class="nf">superdrawInCGLContext</span><span class="p">:</span><span class="n">glContext</span>
+        <span class="nl">pixelFormat:pixelFormatforLayerTime:</span><span class="n">interval</span>
+        <span class="nl">displayTime:</span><span class="n">timeStamp</span><span class="p">];</span> <span class="c1">//Task the context</span>
+        <span class="n">QTVisualContextTask</span><span class="p">(</span><span class="n">qtVisualContext</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<center>清单 8-5 drawInCGLContext的实现</center>
+
+<p>要理解上面的代码，你可能需要理解OpenGL，这就超过了本书讲述的范围。然而，看清单8-5中这两行代码。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">glEnable</span><span class="p">(</span><span class="n">CVOpenGLTextureGetTarget</span><span class="p">(</span><span class="n">currentFrame</span><span class="p">));</span><span class="n">glBindTexture</span><span class="p">(</span><span class="n">CVOpenGLTextureGetTarget</span><span class="p">(</span><span class="n">currentFrame</span><span class="p">),</span>
+
+<span class="n">CVOpenGLTextureGetName</span><span class="p">(</span><span class="n">currentFrame</span><span class="p">));</span>
+</code></pre></div></div>
+
+<p>这两行告诉了OpenGL能够绑定绘图的纹理到目前的帧上(CVImageBufferRef)，它是通过调用-canDrawInContext获得的。总之，这是告诉OpenGL要绘制什么东西。</p>
+
+<p>渲染多个视频渠道
+这一章最后的目标是来演示如何在一个CAOpenGLLayer层中，渲染多个QuickTime视频流。刚才提到了，使用OpenGL代替QTMovieLayer的原因归结于性能。当你使用多个QTMovieLayers导入和播放多个QTMovies时，性能会迅速的下降。为了提高性能，我们替代去获得播放视频的每个帧，而是组合他们一起到同一个OpenGL上下文中。</p>
+
+<p>为了完成这个目标，我们的做法不同于先前段落中使用OpenGL来渲染一个单一的QuickTime视频。我们为每个QuickTime视频都创建了一个图像缓冲区，实时的来核对是否下一帧准备在-canDrawInCGLContext中被调用。我们也要通过在每一个动画初始化时为其设置一个可绘矩形的方法，来在网格中显示动画。</p>
+
+<p>我们可以复制粘贴上面段落中我们写的代码，但是这样的话代码会变得笨重和冗余。因此，我们使用面向对象的方法，这里来创建一个继承自OpenGL层的对象(叫做OpenGLVidGridLayer)，一个VideoChannel对象代表一个视频流，然后一个VideoChannelController对象提供了一个播放和渲染的接口。下面是每个对象要做的事情：</p>
+
+<p>OpenGLVidGridLayer</p>
+
+<p>这个对象用来初始化层以便同步运行，同时设置框架大小，设置背景颜色为黑色，设置传进来的视频路径的数组，初始化VideoChannel和VideoChannelController对象，调用-canDrawInCGContext和-drawInCGLContext方法，并且作为一个代理，来开始播放我们分配给的VideoChannel对象的视频。</p>
+
+<p>VideoChannel</p>
+
+<p>这个代表着每个方格中的视频。它存储了一些区域，这些区域将会在父区域中被使用来组合视频，并且要核对它分配的视频是否准备绘制下一个帧，这里还要使用初始化指定的高和宽来初始化可视区域，使用OpenGL的调用来绘制分配的视频，并且为视频的播放提供一个代理方法。</p>
+
+<p>VideoChannelController</p>
+
+<p>这个对象包含了VideoChannel对象的数组，这些对象都有一个初始化的视频和区域，然后用来在方格中渲染。它提供了一个代理函数，来指导所有的VideoChannel来播放和停止视频，并且还提供了一个代理函数来看是否所有的VideoChannel都是准备被绘制到下一个帧上，还提供了一个代理函数来告知所有的VideoChannel来设置它们的可视上下文，调用在VideoChannel中的OpenGL绘图的初始化代码，并且还提供了一个代理函数告知所有的VideoChannel来渲染它们的视频到各自的区域。</p>
+
+<p>面向对象的方法是一把双刃剑。尽管它可以使我们用更清晰的方式组织东西，但是必须要用对象的思想考虑每件事，因此学习这个描述方法，以便于你知道工程中的那些代码代表什么在运行。VideoChannelController对象提供了每个VideoChannels对象的控制，所以看这个对象如何工作，是你理解代码的一个最佳的选择。OpenGLVideGridLayer提供了一些初始化的代码，并且提供了一个功能，决定我们是否要在当前的时间进行绘制。</p>
+
+<p>表8-1描述了应用程序的例子，OpenGL VidGrid。窗口中所有展示的区域都是继承自CAOpenGLLayer这个类的一个子类，叫做OpenGLVidGridLayer。屏幕上展示的每个独立的分割的视频都是由VideoChannel这个类的代码来呈现的。</p>
+
+<p><img src="/images/animation-8-1.png" alt="图 8-1 可视的对象" /></p>
+
+<p>实现继承子CAOpenGLLayer的子类OpenGLVidGridLayer</p>
+
+<p>继承自CAOpenGLLayer的类，OpenGLVidGridLayer提供了绘制所有视频通道到同一个OpenGL上下文中的入口。初始化代码接收了一个QTMovie对象的列表，同时为这些QTMovie对象计算展示的区域。它为每个QTMovies对象创建了一个VideoChannel对象，并且增加他们到一个数组中。VideoChannelController对象会被初始化，然后这个VideoChannels数组对象就分配给它。实现的代码如清单8-6.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">initVideoChannels</span><span class="p">;</span> <span class="p">{</span>
+<span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="k">if</span><span class="p">(</span> <span class="n">videoChannels</span> <span class="o">!=</span> <span class="nb">nil</span> <span class="p">)</span>
+<span class="p">[</span><span class="n">videoChannels</span> <span class="nf">release</span><span class="p">],</span><span class="n">videoChannels</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span> 
+<span class="n">videoChannels</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSMutableArray</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+<span class="c1">// Create a grid kColCountacross</span>
+<span class="kt">float</span> <span class="n">vidWidth</span> <span class="o">=</span> <span class="p">[</span><span class="nf">selfframe</span><span class="p">].</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">/</span> <span class="n">kColCount</span><span class="p">;</span> <span class="n">vidWidth</span> <span class="o">=</span> <span class="n">vidWidth</span> <span class="o">-</span> <span class="n">kMargin</span><span class="p">;</span>
+<span class="kt">float</span> <span class="n">vidHeight</span> <span class="o">=</span> <span class="p">[</span><span class="nf">selfframe</span><span class="p">].</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">;</span> <span class="k">if</span><span class="p">(</span> <span class="p">[</span><span class="n">videoPaths</span> <span class="nf">count</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">kColCount</span> <span class="p">)</span>
+<span class="n">vidHeight</span> <span class="o">=</span> <span class="p">[</span><span class="nf">selfframe</span><span class="p">].</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">/</span> <span class="p">(((</span><span class="kt">float</span><span class="p">)[</span><span class="n">videoPaths</span> <span class="nf">count</span><span class="p">])</span><span class="o">/</span><span class="n">kColCount</span><span class="p">);</span>
+<span class="n">vidHeight</span> <span class="o">=</span> <span class="n">vidHeight</span> <span class="o">-</span><span class="n">kMargin</span><span class="p">;</span> <span class="kt">int</span> <span class="n">row</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span><span class="p">[</span><span class="n">videoPaths</span> <span class="nf">count</span><span class="p">];</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">NSString</span> <span class="o">*</span><span class="n">path</span> <span class="o">=</span> <span class="p">[</span><span class="n">videoPaths</span> <span class="nf">objectAtIndex</span><span class="p">:</span><span class="n">i</span><span class="p">];</span> 
+  <span class="n">QTMovie</span> <span class="o">*</span><span class="n">m</span> <span class="o">=</span> <span class="p">[</span><span class="n">QTMovie</span> <span class="nf">movieWithFile</span><span class="p">:</span><span class="n">path</span> <span class="nf">error</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+
+  <span class="c1">// Mute each video</span>
+  <span class="p">[</span><span class="n">m</span> <span class="nf">setMuted</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+
+  <span class="c1">// Force the movie to loop</span>
+  <span class="p">[</span><span class="n">m</span> <span class="nf">setAttribute</span><span class="p">:[</span><span class="n">NSNumber</span> <span class="nf">numberWithBool</span><span class="p">:</span><span class="nb">YES</span><span class="p">]</span> <span class="nf">forKey</span><span class="p">:</span><span class="n">QTMovieLoopsAttribute</span><span class="p">];</span>
+  <span class="kt">float</span> <span class="n">x</span> <span class="o">=</span> <span class="n">col</span><span class="o">*</span><span class="n">vidWidth</span><span class="p">;</span> 
+  <span class="n">floaty</span> <span class="o">=</span> <span class="n">row</span><span class="o">*</span><span class="n">vidHeight</span><span class="p">;</span>
+  <span class="k">if</span><span class="p">(</span> <span class="n">i</span><span class="o">!=</span> <span class="mi">0</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="o">%</span><span class="p">(</span><span class="kt">int</span><span class="p">)</span><span class="n">kColCount</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">)</span> <span class="p">{</span>
+    <span class="n">row</span><span class="o">++</span><span class="p">;</span> 
+  <span class="p">}</span>
+  <span class="n">CGRect</span> <span class="n">currentRect</span> <span class="o">=</span><span class="n">CGRectMake</span><span class="p">(</span><span class="n">x</span><span class="o">+</span><span class="n">kMargin</span><span class="p">,</span> <span class="n">y</span><span class="o">+</span><span class="n">kMargin</span><span class="p">,</span>
+  <span class="n">vidWidth</span><span class="o">-</span><span class="n">kMargin</span><span class="p">,</span><span class="n">vidHeight</span><span class="o">-</span><span class="n">kMargin</span><span class="p">);</span>
+
+  <span class="c1">// Instantiate a videochannel for each QTMovie // object we’ve created</span>
+  <span class="n">VideoChannel</span> <span class="o">*</span><span class="n">channel</span> <span class="o">=</span>
+  <span class="p">[[[</span><span class="n">VideoChannel</span> <span class="nf">alloc</span><span class="p">]</span><span class="nf">initWithMovie</span><span class="p">:</span><span class="n">m</span> <span class="nf">usingDisplayRect</span><span class="p">:</span><span class="nf">currentRect</span><span class="p">]</span> <span class="n">autorelease</span><span class="p">];</span>
+  <span class="p">[</span><span class="n">videoChannels</span> <span class="nf">addObject</span><span class="p">:</span><span class="n">channel</span><span class="p">];</span>
+  <span class="n">col</span><span class="o">++</span><span class="p">;</span>
+  <span class="k">if</span><span class="p">(</span> <span class="n">col</span> <span class="o">&gt;</span> <span class="n">kColCount</span><span class="o">-</span><span class="mi">1</span> <span class="p">)</span> <span class="n">col</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">if</span><span class="p">(</span> <span class="n">videoController</span> <span class="o">!=</span> <span class="nb">nil</span> <span class="p">){</span>
+  <span class="p">[</span><span class="n">videoController</span> <span class="nf">release</span><span class="p">];</span> 
+<span class="p">}</span>
+<span class="n">videoController</span> <span class="o">=</span><span class="p">[[</span><span class="n">VideoChannelController</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+<span class="p">[</span><span class="n">videoController</span> <span class="nf">setVideoChannels</span><span class="p">:</span><span class="n">videoChannels</span><span class="p">];</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<center>清单 8 – 6</center>
+
+<p>前面的章节我们看到了如何去渲染一个视频到OpenGL的上下文中。我们利用这些代码，放置它到封装了这个功能的类里面。VideoChannelController对象掌控了VideoChannel对象。它传递OpenGL的上下文给每一个VideoChannel对象，那将告知他们去绘制内容到OpenGL上下文中。</p>
+
+<p>在这个工程的AppDelegate中，我们初始化了CAOpenGLLayer层的子类OpenGLVidGridLayer，并且传递了一个视频的路径地址数组给这个层，如清单8-7.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">awakeFromNib</span><span class="p">;</span> <span class="p">{</span>
+<span class="n">NSString</span> <span class="o">*</span><span class="n">path1</span> <span class="o">=</span><span class="err">@”</span><span class="o">/</span><span class="n">System</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Compositions</span><span class="o">/</span><span class="n">Eiffel</span> <span class="n">Tower</span><span class="p">.</span><span class="n">mov</span><span class="err">”</span><span class="p">;</span>
+<span class="n">NSString</span> <span class="o">*</span><span class="n">path2</span> <span class="o">=</span><span class="err">@”</span><span class="o">/</span><span class="n">System</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Compositions</span><span class="o">/</span><span class="n">Fish</span><span class="p">.</span><span class="n">mov</span><span class="err">”</span><span class="p">;</span>
+<span class="n">NSString</span> <span class="o">*</span><span class="n">path3</span> <span class="o">=</span> <span class="p">[[</span><span class="nf">NSBundlemainBundle</span><span class="p">]</span> <span class="nf">pathForResource</span><span class="p">:</span><span class="err">@”</span><span class="n">stirfry</span><span class="err">”</span>
+<span class="nl">ofType:</span><span class="err">@”</span><span class="n">mp4</span><span class="err">”</span><span class="p">];</span> <span class="n">NSString</span><span class="o">*</span><span class="n">path4</span> <span class="o">=</span> <span class="err">@”</span><span class="o">/</span><span class="n">System</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Compositions</span><span class="o">/</span><span class="n">Rollercoaster</span><span class="p">.</span><span class="n">mov</span><span class="err">”</span><span class="p">;</span>
+<span class="n">NSString</span> <span class="o">*</span><span class="n">path5</span> <span class="o">=</span><span class="err">@”</span><span class="o">/</span><span class="n">System</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Compositions</span><span class="o">/</span><span class="n">Sunset</span><span class="p">.</span><span class="n">mov</span><span class="err">”</span><span class="p">;</span>
+<span class="n">NSString</span> <span class="o">*</span><span class="n">path6</span> <span class="o">=</span><span class="err">@”</span><span class="o">/</span><span class="n">System</span><span class="o">/</span><span class="n">Library</span><span class="o">/</span><span class="n">Compositions</span><span class="o">/</span><span class="n">Yosemite</span><span class="p">.</span><span class="n">mov</span><span class="err">”</span><span class="p">;</span>
+<span class="n">NSArray</span> <span class="o">*</span><span class="n">paths</span> <span class="o">=</span> <span class="p">[</span><span class="nf">NSArrayarrayWithObjects</span><span class="p">:</span><span class="n">path1</span><span class="p">,</span> <span class="n">path2</span><span class="p">,</span>
+<span class="n">path3</span><span class="p">,</span> <span class="n">path4</span><span class="p">,</span> <span class="n">path5</span><span class="p">,</span> <span class="n">path6</span><span class="p">,</span><span class="nb">nil</span><span class="p">];</span>
+<span class="n">gridLayer</span> <span class="o">=</span><span class="p">[[</span><span class="n">OpenGLVidGridLayer</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithVideoPaths</span><span class="p">:</span><span class="n">paths</span>
+<span class="nl">usingContentFrame:</span>
+<span class="n">NSRectToCGRect</span><span class="p">([[</span><span class="nf">windowcontentView</span><span class="p">]</span> <span class="nf">bounds</span><span class="p">])];</span>
+<span class="p">[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span><span class="nf">setWantsLayer</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+<span class="p">[[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">addSublayer</span><span class="p">:</span><span class="n">gridLayer</span><span class="p">];</span> <span class="p">[</span><span class="n">gridLayer</span> <span class="nf">playMovies</span><span class="p">];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<center>清单 8-7</center>
+
+<p>当OpenGLVidGridLayer被创建后，我们传递一个视频地址的数组给它和每个视频要渲染的区域。</p>
+
+<p>当窗口的内容视图使用了[[windowcontentView] setWantLayer:YES],增加了OpenGLVidGridLayer作为子层到根层上时，然后调用它的-playMovies方法，这个方法也就是调用了[videoControllertogglePlaybackAll]。这个函数就会迭代在VideoChannelControlller中所有的VideoChannel对象和指导他们播放每个视频在他们设计好的容器中。</p>
+
+<p>清单8-8展示了如何在OpenGLVideGridLayer中重载-canDrawInCGLContext和-drawInCGLContext的方法。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="n">BOOL</span><span class="p">)</span><span class="nf">canDrawInCGLContext</span><span class="p">:(</span><span class="n">CGLContextObj</span><span class="p">)</span><span class="nv">glContextpixelFormat</span><span class="o">:</span><span class="p">(</span><span class="n">CGLPixelFormatObj</span><span class="p">)</span><span class="n">pixelFormat</span>
+<span class="n">forLayerTime</span><span class="o">:</span><span class="p">(</span><span class="n">CFTimeInterval</span><span class="p">)</span><span class="n">timeIntervaldisplayTime</span><span class="o">:</span><span class="p">(</span><span class="k">const</span> <span class="n">CVTimeStamp</span> <span class="o">*</span><span class="p">)</span><span class="n">timeStamp</span>
+<span class="p">{</span>
+<span class="k">if</span><span class="p">(</span> <span class="o">!</span><span class="p">[</span><span class="nf">videoControllerisPlaying</span><span class="p">]</span> <span class="p">)</span>
+<span class="k">return</span> <span class="nb">NO</span><span class="p">;</span>
+<span class="p">[</span><span class="nf">videoControllersetVisualContext</span><span class="p">:</span><span class="n">glContext</span>
+<span class="nl">withPixelFormat:</span><span class="n">pixelFormat</span><span class="p">];</span>
+<span class="n">BOOL</span> <span class="n">ready</span> <span class="o">=</span> <span class="p">[</span><span class="nf">videoControllerchannelsReadyToDraw</span><span class="p">:(</span><span class="n">CVTimeStamp</span><span class="o">*</span><span class="p">)</span><span class="n">timeStamp</span><span class="p">];</span>
+<span class="k">return</span> <span class="n">ready</span><span class="p">;</span> 
+<span class="p">}</span>
+
+<span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">drawInCGLContext</span><span class="p">:(</span><span class="n">CGLContextObj</span><span class="p">)</span><span class="nv">glContextpixelFormat</span><span class="o">:</span><span class="p">(</span><span class="n">CGLPixelFormatObj</span><span class="p">)</span><span class="n">pixelFormat</span>
+<span class="n">forLayerTime</span><span class="o">:</span><span class="p">(</span><span class="n">CFTimeInterval</span><span class="p">)</span><span class="n">intervaldisplayTime</span><span class="o">:</span><span class="p">(</span><span class="k">const</span> <span class="n">CVTimeStamp</span> <span class="o">*</span><span class="p">)</span><span class="n">timeStamp</span>
+<span class="p">{</span>
+<span class="n">NSRect</span> <span class="n">bounds</span> <span class="o">=</span><span class="n">NSRectFromCGRect</span><span class="p">([</span><span class="n">self</span> <span class="nf">bounds</span><span class="p">]);</span> 
+<span class="p">[</span><span class="n">videoController</span> <span class="nf">drawAllInRect</span><span class="p">:</span><span class="n">bounds</span><span class="p">];</span>
+<span class="c1">// This forces OpenGL toflush the context</span>
+<span class="p">[</span><span class="nf">superdrawInCGLContext</span><span class="p">:</span><span class="n">glContext</span> <span class="nf">pixelFormat</span><span class="p">:</span><span class="n">pixelFormat</span>
+<span class="nl">forLayerTime:intervaldisplayTime:</span><span class="n">timeStamp</span><span class="p">];</span>
+<span class="p">[</span><span class="n">videoController</span> <span class="nf">taskAll</span><span class="p">];</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        清单8-8 绘图函数的实现
+</code></pre></div></div>
+
+<p>这个函数看起来非常的简单，因为我们卸载了主要的工作，给了VideoChannelController这个对象。VideoChannelController会指导所有的VideoChannel对象来做这些工作，然后调用-canDrawInCGLContext来核对视频是否正在运行。如果没有，我们不需要渲染，这样NO是被返回。在这种情况下，-drawInCGLContext就不会被调用。当视频正在运行时，然后通过在VideoChannelController调用-channelIsReadyToDraw，来核对目前每个VideoChannel的要被绘制的图形缓冲是否准备好，然后渲染QuickTime视频的可视区域就会被安装。你可以看到清单8-9如何实现的。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="n">BOOL</span><span class="p">)</span><span class="nf">channelsReadyToDraw</span><span class="p">:(</span><span class="n">CVTimeStamp</span><span class="o">*</span><span class="p">)</span><span class="nv">timeStamp</span><span class="p">;</span> <span class="p">{</span>
+<span class="n">BOOL</span> <span class="n">stillOk</span> <span class="o">=</span> <span class="nb">NO</span><span class="p">;</span>
+<span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="p">[</span><span class="nf">videoChannelscount</span><span class="p">];</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">VideoChannel</span> <span class="o">*</span><span class="n">currentChannel</span><span class="o">=</span>
+<span class="p">[</span><span class="nf">videoChannelsobjectAtIndex</span><span class="p">:</span><span class="n">i</span><span class="p">];</span>
+<span class="k">if</span><span class="p">(</span> <span class="p">[</span><span class="n">currentChannel</span> <span class="nf">readyToDrawNextFrame</span><span class="p">:</span><span class="n">timeStamp</span><span class="p">])</span> <span class="p">{</span>
+<span class="n">stillOk</span> <span class="o">=</span> <span class="nb">YES</span><span class="p">;</span> <span class="p">}</span>
+<span class="k">if</span><span class="p">(</span> <span class="o">!</span><span class="n">stillOk</span> <span class="p">)</span> <span class="k">return</span> <span class="nb">NO</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">return</span> <span class="n">stillOk</span><span class="p">;</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>     清单 8-9 实现ChannelsReadyToDraw的功能
+</code></pre></div></div>
+
+<p>代码通过迭代所有的VideoChannel对象，然后核对每个对象看是否准备绘制。如果它们中任一一个失败，就在-canDrawInCGLContext中返回NO。清单8-10展示了VideoChannel中-readyToDrawNextFrame的实现。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="n">BOOL</span><span class="p">)</span><span class="nf">readyToDrawNextFrame</span><span class="p">:(</span><span class="n">CVTimeStamp</span><span class="o">*</span><span class="p">)</span><span class="nv">timeStamp</span> <span class="p">{</span>
+<span class="k">if</span><span class="p">(</span><span class="n">QTVisualContextIsNewImageAvailable</span><span class="p">(</span><span class="n">qtVisualContext</span><span class="p">,</span><span class="nb">NULL</span><span class="p">))</span> <span class="p">{</span>
+<span class="n">CVOpenGLTextureRelease</span><span class="p">(</span><span class="n">currentFrameImageBuffer</span><span class="p">);</span>
+<span class="n">QTVisualContextCopyImageForTime</span><span class="p">(</span><span class="n">qtVisualContext</span><span class="p">,</span>
+<span class="nb">NULL</span><span class="p">,</span>
+<span class="nb">NULL</span><span class="p">,</span><span class="err">¤</span><span class="n">tFrameImageBuffer</span><span class="p">);</span>
+<span class="n">CVOpenGLTextureGetCleanTexCoords</span><span class="p">(</span><span class="n">currentFrameImageBuffer</span><span class="p">,</span>
+<span class="n">lowerLeft</span><span class="p">,</span> <span class="n">lowerRight</span><span class="p">,</span><span class="n">upperRight</span><span class="p">,</span> <span class="n">upperLeft</span><span class="p">);</span>
+<span class="k">return</span> <span class="nb">YES</span><span class="p">;</span> 
+<span class="p">}</span>
+<span class="k">return</span> <span class="nb">NO</span><span class="p">;</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>         清单 8-10 实现readyToDrawNextFrame函数
+</code></pre></div></div>
+
+<p>如果你仔细观察，你会发现这个代码和清单8-3渲染一个视频通道的代码非常的相似。这个函数是来核对，对于可视的上下文中在指定的时间timeStamp中，是否有新的图像可用。如果有可用的，先前图像的缓冲就会被释放，当前的图像就会拷贝到图像缓冲中，纹理坐标被重设，然后就会返回YES。否则就返回NO。</p>
+
+<p>这个调用栈最后会返回到OpenGLVidGridLayer中的-canDrawInCGLContext函数中。如果所有的通道都是被绘制了，那么就会返回YES，然后调用-drawInCGLContext。</p>
+
+<p>当-drawInCGLContext是被调用时，我们就会传递窗口的主区域给视频的控制器，然后控制器调用[videoController drawAllInRect:bounds]这个方法，其中bounds就是区域，如清单8-11.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">drawAllInRect</span><span class="p">:(</span><span class="n">NSRect</span><span class="p">)</span><span class="nv">rect</span><span class="p">;</span> <span class="p">{</span>
+<span class="n">GLfloat</span> <span class="n">minX</span><span class="p">,</span> <span class="n">minY</span><span class="p">,</span> <span class="n">maxX</span><span class="p">,</span><span class="n">maxY</span><span class="p">;</span>
+<span class="n">minX</span> <span class="o">=</span> <span class="n">NSMinX</span><span class="p">(</span><span class="n">rect</span><span class="p">);</span> <span class="n">minY</span> <span class="o">=</span><span class="n">NSMinY</span><span class="p">(</span><span class="n">rect</span><span class="p">);</span> <span class="n">maxX</span> <span class="o">=</span> <span class="n">NSMaxX</span><span class="p">(</span><span class="n">rect</span><span class="p">);</span> <span class="n">maxY</span> <span class="o">=</span> <span class="n">NSMaxY</span><span class="p">(</span><span class="n">rect</span><span class="p">);</span>
+<span class="n">glMatrixMode</span><span class="p">(</span><span class="n">GL_MODELVIEW</span><span class="p">);</span><span class="n">glLoadIdentity</span><span class="p">();</span> <span class="n">glMatrixMode</span><span class="p">(</span><span class="n">GL_PROJECTION</span><span class="p">);</span> <span class="n">glLoadIdentity</span><span class="p">();</span>
+<span class="n">glOrtho</span><span class="p">(</span><span class="n">minX</span><span class="p">,</span> <span class="n">maxX</span><span class="p">,</span> <span class="n">minY</span><span class="p">,</span><span class="n">maxY</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+<span class="n">glClearColor</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span> <span class="n">glClear</span><span class="p">(</span><span class="n">GL_COLOR_BUFFER_BIT</span><span class="p">);</span>
+<span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="n">i</span><span class="o">&lt;</span><span class="p">[</span><span class="nf">videoChannelscount</span><span class="p">];</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+<span class="n">VideoChannel</span> <span class="o">*</span><span class="n">currentChannel</span><span class="o">=</span> <span class="p">[</span><span class="n">videoChannels</span> <span class="nf">objectAtIndex</span><span class="p">:</span><span class="n">i</span><span class="p">];</span>
+<span class="p">[</span><span class="n">currentChannel</span> <span class="nf">drawChannel</span><span class="p">];</span>
+<span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>         清单8-11 实现drawAllInRect
+</code></pre></div></div>
+
+<p>如果你对比清单8-11和清单8-5，你会清楚的看到非常的相似。OpenGL调用来绘制了线条的属性。当这些设定调用是被运行时，我们迭代了所有的VideoChannel对象，并且告诉它们每一个来绘制它们目前的帧，替代了我们在8-5中所做的绘制代码。记住要绘制的每个VidwoChannel的区域都已经在初始化的时候设定好了。</p>
+
+<p>当我们迭代所有的VideoChannel对象时，我们调用-drawChannel，如清单8-12</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">drawChannel</span><span class="p">;</span> <span class="p">{</span>
+<span class="p">[</span><span class="n">self</span> <span class="nf">drawImage</span><span class="p">];</span> <span class="p">}</span>
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">drawImage</span><span class="p">;</span> <span class="p">{</span>
+<span class="p">[</span><span class="nf">selfdrawImage</span><span class="p">:</span><span class="n">mainDisplayRect</span>
+<span class="nl">withOpacity:</span><span class="n">opacity</span><span class="p">];</span>
+<span class="nl">withOpacity:</span><span class="p">(</span><span class="n">GLfloat</span><span class="p">)</span><span class="n">op</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">drawImage</span><span class="p">:(</span><span class="n">CGRect</span><span class="p">)</span><span class="nv">imageRect</span> <span class="p">{</span>
+<span class="n">glEnable</span><span class="p">(</span><span class="n">CVOpenGLTextureGetTarget</span><span class="p">(</span>
+<span class="n">currentFrameImageBuffer</span><span class="p">));</span>
+<span class="n">glBindTexture</span><span class="p">(</span><span class="n">CVOpenGLTextureGetTarget</span><span class="p">(</span>
+<span class="n">currentFrameImageBuffer</span><span class="p">),</span><span class="n">CVOpenGLTextureGetName</span><span class="p">(</span>
+<span class="n">currentFrameImageBuffer</span><span class="p">));</span>
+<span class="n">glMatrixMode</span><span class="p">(</span><span class="n">GL_TEXTURE</span><span class="p">);</span><span class="n">glLoadIdentity</span><span class="p">();</span> <span class="n">glColor4f</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="n">op</span><span class="p">);</span> <span class="n">glBegin</span><span class="p">(</span><span class="n">GL_QUADS</span><span class="p">);</span>
+<span class="n">glTexCoord2f</span><span class="p">(</span><span class="n">upperLeft</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">upperLeft</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span> <span class="n">glVertex2f</span> <span class="p">(</span><span class="n">imageRect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span><span class="p">,</span>
+<span class="n">imageRect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span><span class="n">imageRect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">);</span>
+<span class="n">glTexCoord2f</span><span class="p">(</span><span class="n">upperRight</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="n">upperRight</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="n">glVertex2f</span><span class="p">(</span><span class="n">imageRect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">imageRect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="p">,</span>
+<span class="n">imageRect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span><span class="n">imageRect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">);</span>
+<span class="n">glTexCoord2f</span><span class="p">(</span><span class="n">lowerRight</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lowerRight</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="n">glVertex2f</span><span class="p">(</span><span class="n">imageRect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">imageRect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="p">,</span>
+<span class="n">imageRect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span><span class="p">);</span><span class="n">glTexCoord2f</span><span class="p">(</span><span class="n">lowerLeft</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lowerLeft</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="n">glVertex2f</span><span class="p">(</span><span class="n">imageRect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">imageRect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span><span class="p">);</span>
+<span class="n">glEnd</span><span class="p">();</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        清单 8-12 实现VideoChannel的drawChannel
+</code></pre></div></div>
+
+<p>其中-drawChannel方法调用另一个方法的默认实现-drawImage，这个函数也调用同样名字的函数但是多了两个参数：</p>
+
+<p>displayRect，这个是在主窗口中mainDisplayRect传递的</p>
+
+<p>opacity，这个一般传递一个1.0，不透明。</p>
+
+<p>这些看起来都是没有必要的重复层级调用，但是它可以让你方便的改变调用，这样给与一个不同的透明度，假如你想要渲染视频带着一些透明度而不是全部不透明。</p>
+
+<p>我们已经展示了渲染多个视频通道的核心代码，这里你需要运行这个实例工程，OpenGLVidGrid来看下如何工作。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>核心动画为苹果的技术提供了一个如此强大的抽象功能。你不比成为OpenGL领域的专家，就可以利用OpenGL的强大功能来帮助开发者。就像本章看到的，渲染一个OpenGL上下文是很多Cocoa程序员都可以做到的。同时也帮助你介绍了一些OpenGL的概念，便于以后你进行更深入的学习。不管你在编程方面多么努力，CAOpenGLLayer都会在你的应用程序中，给你需要利用的OpenGL功能的一些东西。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>UIView的剖析 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2011/08/24/pome-3.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="UIView的剖析">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2011/08/24/pome-3.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">UIView的剖析</h1>
+  
+  <span class="post-meta">08月 24日, 2011</span><br>
+  
+  <span class="post-meta small">4 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>前面说过UIViewController，但是UIView也是在MVC中非常重要的一层 。正是因为UIView是Iphone下所有界面的基础，所以官方专门写了一个文档“View Programming Guide for iOS”。通过这个可以很好的了解UIView的功能。</p>
+
+<p>先来看看官方API的解释：</p>
+<blockquote>
+  <p>The UIView class defines a rectangular area on the screen and the interfaces for managing the content in that area.
+At runtime, a view object handles the rendering of any content in its area and also handles any interactions with that content.（UIView在屏幕上定义了一个矩形区域和管理区域内容的接口。在运行时，一个视图对象控制该区域的渲染，同时也控制内容的交互。）。所以说UIView具有三个基本的功能，画图和动画，管理内容的布局，控制事件。正是因为UIView具有这些功能，它才能担当起MVC中视图层的作用。</p>
+</blockquote>
+
+<p>UIView咋看起来很复杂，官方API中各种函数接口，要学过运用庖丁解牛的思想，逐个分析，因为再复杂的东西都是有简单的东西构成的。回到刚才提到的UIView的三个基本功能就可以容易的分离出UIView不同的功能是怎么组合起来的。首先看视图最基本的功能显示和动画，其实UIView的所有的绘图和动画的接口，都是可以用CALayer和CAAnimation实现的，也就是说苹果公司是不是把CoreAnimation的功能封装到了UIView中，这个文档中没有提到过，也没法断言。但是每一个UIView都会包含一个CALayer，并且CALayer里面可以加入各种动画。再次我们来看UIView管理布局的思想其实和CALayer也是非常的接近的。最后控制事件的功能，是因为UIView继承了UIResponder。经过上面的分析很容易就可以分解出UIView的本质。UIView就相当于一块白墙，这块白墙只是负责把加入到里面的东西显示出来而已。</p>
+
+<p><img src="/images/pome-3-1.gif" alt="图1" /></p>
+
+<p>1.UIView中的CALayer</p>
+
+<p>UIView的一些几何特性frame，bounds，center都可以在CALayer中找到替代的属性，所以如果明白了CALayer的特点，自然UIView的图层中如何显示的都会一目了然。</p>
+
+<p>CALayer就是图层，图层的功能自然就有渲染图片， 播放动画的功能。每当创建一个UIView的时候，系统会自动的创建一个CALayer，但是这个CALayer对象你不能改变，只能修改某些属性。所以通过修改CALayer，不仅可以修饰UIView的外观，还可以给UIView添加各种动画。CALayer属于CoreAnimation框架中的类，通过Core Animation Programming Guide就可以了解很多CALayer中的特点，假如掌握了这些特点，自然也就理解了UIView是如何显示和渲染的。</p>
+
+<p>先来看下Core Animation框架中关于layer的解释：</p>
+<blockquote>
+  <p>While there are obvious similarities between Core Animation layers and Cocoa views the biggest conceptual divergence is that layers do not render directly to the screen.
+Where NSView and UIView are clearly view objects in the model-view-controller design pattern,
+Core Animation layers are actually model objects.
+They encapsulate geometry, timing and visual properties,
+and they provide the content that is displayed,
+but the actual display is not the layer’s responsibility.
+Each visible layer tree is backed by two corresponding trees: a presentation tree and a rend tree
+(非常相似的cocoa视图和core Animation层最大的区别是core Animation不能直接渲染到屏幕上。UIView和NSView明显是MVC中的视图模型，animation layer更像是模型对象。他们封装了几何，时间和一些可视的属性，并且提供了可以显示的内容，但是实际的显示并不是layer的职责。每一个层树的后台都有两个响应树：一个曾现树和一个渲染树）。所以很显然Layer封装了模型数据，每当更改layer中的某些模型数据中数据的属性时，曾现树都会做一个动画代替，之后由渲染树负责渲染图片)</p>
+</blockquote>
+
+<p>既然Animation Layer封装了对象模型中的几何性质，那么如何取得这些几何特性。一个方式是根据Layer中定义的属性，比如bounds，authorPoint，frame等等这些属性，其次，Core Animation扩展了键值对协议，这样就允许开发者通过get和set方法，方便的得到layer中的各种几何属性。下表是Transform的key paths。例如转换动画的各种几何特性，大都可以通过此方法设定：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">myLayer</span> <span class="nf">setValue</span><span class="p">:[</span><span class="n">NSNumber</span> <span class="nf">numberWithInt</span><span class="p">:</span><span class="mi">0</span><span class="p">]</span> <span class="nf">forKeyPath</span><span class="p">:</span><span class="s">@"transform.rotation.x"</span><span class="p">];</span>
+</code></pre></div></div>
+
+<p><img src="/images/pome-3-2.gif" alt="图2" /></p>
+
+<p>虽然CALayer跟UIView十分相似，也可以通过分析CALayer的特点理解UIView的特性，但是毕竟苹果公司不是用CALayer来代替UIView的，否则苹果公司也不回设计一个UIView类了。就像官方文档解释的一样，CAlayer层树是cocoa视图继承树的同等物，它具备UIView的很多共同点，但是Core Animation没有提供一个 方法展示在窗口。他们必须宿主到UIView中，并且UIView给他们提供响应的方法。所以UIReponder就是UIView的又一个大的特性。</p>
+
+<p>2.UIView继承的UIResponder</p>
+
+<p>UIResponder是所有事件响应的基石，官方也提供了一个重要的文档给开发者参考”Event Handling Guide for iOS”。</p>
+
+<p>事件（UIEvent）是发给应用程序，告知用户的行动的。在IOS中事件有三种事件：多点触摸事件，行动事件，远程控制事件。三种事件定义如下：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">typedef</span> <span class="k">enum</span> <span class="p">{</span>
+    <span class="n">UIEventTypeTouches</span><span class="p">,</span>
+    <span class="n">UIEventTypeMotion</span><span class="p">,</span>
+    <span class="n">UIEventTypeRemoteControl</span><span class="p">,</span>
+<span class="p">}</span> <span class="n">UIEventType</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>再来看下UIReponder中的事件传递过程，如下图所示：</p>
+
+<p><img src="/images/pome-3-3.gif" alt="图3" /></p>
+
+<p>首先是被点击的该视图响应时间处理函数，如果没有响应函数就逐级的向上面传递，直到有响应处理函数，或者该消息被抛弃。至于苹果公司是如何让事件消息这样流动的，在下面的分析中，可以了解一些，至于深层的原理还的进一步挖掘。</p>
+
+<p>这里重点看三个事件 中的多点触摸事件，也就是UITouch事件，下图是UIEvent中封装的UITouch内容</p>
+
+<p><img src="/images/pome-3-4.gif" alt="图4" /></p>
+
+<p>关于UIView的触摸响应事件中，这里有一个常常容易迷惑的方法hitTest：WithEvent。先来看官方的解释：</p>
+<blockquote>
+  <p>This method traverses the view hierarchy by sending the pointInside:withEvent: message to each subview to determine which subview should receive a touch event.
+If pointInside:withEvent: returns YES,then the subview’s hierarchy is traversed;
+otherwise, its branch of the view hierarchy is ignored.
+You rarely need to call this method yourself,
+but you might override it to hide touch events from subviews.（通过发送PointInside:withEvent:消息给每一个子视图,这个方法遍历视图层树，来决定那个视图应该响应此事件。如果PointInside:withEvent:返回YES，然后子视图的继承树就会被遍历；否则，视图的继承树就会被忽略。你很少需要调用这个方法，仅仅需要重载这个方法去隐藏子视图的事件）。从官方的API上的解释，可以看出 hitTest方法中，要先调用PointInside:withEvent:，看是否要遍历子视图。如果我们不想让某个视图响应事件，只需要重载PointInside:withEvent:方法，让此方法返回NO就行了。不过从这里，还是不能了解到hitTest:WithEvent的方法的用途。</p>
+</blockquote>
+
+<p>下面再从”Event Handling Guide for iOS”找答案，Your custom responder can use hit-testing to find the subview or sublayer of itself that is ”under” a touch, and then handle the event appropriately。从中可以看出hitTest主要用途是用来寻找那个视图是被触摸了。看到这里对hitTest的调用过程还是一知半解。我们可以实际建立一个工程进行调试。建立一个MyView里面重载hitTest和pointInside方法：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">-</span> <span class="p">(</span><span class="n">UIView</span><span class="o">*</span><span class="p">)</span><span class="nf">hitTest</span><span class="p">:(</span><span class="n">CGPoint</span><span class="p">)</span><span class="nv">point</span> <span class="nf">withEvent</span><span class="p">:(</span><span class="n">UIEvent</span> <span class="o">*</span><span class="p">)</span><span class="nv">event</span><span class="p">{</span>
+
+<span class="p">[</span><span class="n">super</span> <span class="nf">hitTest</span><span class="p">:</span><span class="n">point</span> <span class="nf">withEvent</span><span class="p">:</span><span class="n">event</span><span class="p">];</span>
+
+<span class="k">return</span> <span class="n">self</span><span class="p">;</span>
+
+<span class="p">}</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="n">BOOL</span><span class="p">)</span><span class="nf">pointInside</span><span class="p">:(</span><span class="n">CGPoint</span><span class="p">)</span><span class="nv">point</span> <span class="nf">withEvent</span><span class="p">:(</span><span class="n">UIEvent</span> <span class="o">*</span><span class="p">)</span><span class="nv">event</span><span class="p">{</span>
+
+    <span class="n">NSLog</span><span class="p">(</span><span class="s">@"view pointInside"</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="nb">YES</span><span class="p">;</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>然后在MyView中增加一个子视图MySecondView也重载这两个方法  </p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">UIView</span><span class="o">*</span><span class="p">)</span><span class="nf">hitTest</span><span class="p">:(</span><span class="n">CGPoint</span><span class="p">)</span><span class="nv">point</span> <span class="nf">withEvent</span><span class="p">:(</span><span class="n">UIEvent</span> <span class="o">*</span><span class="p">)</span><span class="nv">event</span><span class="p">{</span>
+
+<span class="p">[</span><span class="n">super</span> <span class="nf">hitTest</span><span class="p">:</span><span class="n">point</span> <span class="nf">withEvent</span><span class="p">:</span><span class="n">event</span><span class="p">];</span>
+
+<span class="k">return</span> <span class="n">self</span><span class="p">;</span>
+
+<span class="p">}</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="n">BOOL</span><span class="p">)</span><span class="nf">pointInside</span><span class="p">:(</span><span class="n">CGPoint</span><span class="p">)</span><span class="nv">point</span> <span class="nf">withEvent</span><span class="p">:(</span><span class="n">UIEvent</span> <span class="o">*</span><span class="p">)</span><span class="nv">event</span><span class="p">{</span>
+
+    <span class="n">NSLog</span><span class="p">(</span><span class="s">@"second view pointInside"</span><span class="p">);</span>
+
+    <span class="k">return</span> <span class="nb">YES</span><span class="p">;</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里注意[super hitTest:point withEvent:event];必须要包括，否则hitTest无法调用父类的方法，这样就没法使用PointInside:withEvent:进行判断，那么就没法进行子视图的遍历。当去掉这个语句的时候，触摸事件就不可能进到子视图中了，除非你在方法中直接返回子视图的对象。这样你在调试的过程中就会发现，每次你点击一个view都会先进入到这个view的父视图中的hitTest方法，然后调用super的hitTest方法之后就会查找pointInside是否返回YES如果是，则就把消息传递个子视图处理，子视图用同样的方法递归查找自己的子视图。所以从这里调试分析看，hitTest方法这种递归调用的方式就一目了然了。</p>
+
+<p>这个只是说了调试中吻合官方文档中解释的部分，但是还有一个问题，就是每个view中hitTest总要调用三个，这个查找了API和很多资料都没有找到解决的方法，然后google了以下在overflowstack中发现了有人这样解释：</p>
+<blockquote>
+  <p>There are indeed 3 calls to hitTest. It is not clear why,but we can surmise by the timestamps on the event
+that the first two calls are to do with completing the previous gesture -those timestamps are always very close to whenever the previous touch happened, 
+and will be some distance from the current time.(确实有3次调用hitTest，不清楚为什么，但是前两次调用时里面的UIEvent中的timestamps属性和上一次已经完成的手势有关。这些时间timestamps是如此的接近无论先前的触摸什么时候发生，并且和系统当前的时间有一定的间隔）。</p>
+</blockquote>
+
+<p>看到这里我想到了，”Event Handling Guide for iOS”中曾经解释，如何区分单击和双击的区别，用的方法很简单，代码如下：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">touchesBegan</span><span class="p">:(</span><span class="n">NSSet</span> <span class="o">*</span><span class="p">)</span><span class="nv">touches</span> <span class="nf">withEvent</span><span class="p">:(</span><span class="n">UIEvent</span> <span class="o">*</span><span class="p">)</span><span class="nv">event</span> <span class="p">{</span>
+    <span class="n">UITouch</span> <span class="o">*</span><span class="n">aTouch</span> <span class="o">=</span> <span class="p">[</span><span class="n">touches</span> <span class="nf">anyObject</span><span class="p">];</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">aTouch</span><span class="p">.</span><span class="n">tapCount</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">[</span><span class="n">NSObject</span> <span class="nf">cancelPreviousPerformRequestsWithTarget</span><span class="p">:</span><span class="n">self</span><span class="p">];</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">touchesMoved</span><span class="p">:(</span><span class="n">NSSet</span> <span class="o">*</span><span class="p">)</span><span class="nv">touches</span> <span class="nf">withEvent</span><span class="p">:(</span><span class="n">UIEvent</span> <span class="o">*</span><span class="p">)</span><span class="nv">event</span> <span class="p">{</span>
+<span class="p">}</span>
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">touchesEnded</span><span class="p">:(</span><span class="n">NSSet</span> <span class="o">*</span><span class="p">)</span><span class="nv">touches</span> <span class="nf">withEvent</span><span class="p">:(</span><span class="n">UIEvent</span> <span class="o">*</span><span class="p">)</span><span class="nv">event</span> <span class="p">{</span>
+
+    <span class="n">UITouch</span> <span class="o">*</span><span class="n">theTouch</span> <span class="o">=</span> <span class="p">[</span><span class="n">touches</span> <span class="nf">anyObject</span><span class="p">];</span>
+ 
+    <span class="k">if</span> <span class="p">(</span><span class="n">theTouch</span><span class="p">.</span><span class="n">tapCount</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+ 
+        <span class="n">NSDictionary</span> <span class="o">*</span><span class="n">touchLoc</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSDictionary</span> <span class="nf">dictionaryWithObject</span><span class="p">:</span>
+ 
+            <span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithCGPoint</span><span class="p">:[</span><span class="n">theTouch</span> <span class="nf">locationInView</span><span class="p">:</span><span class="n">self</span><span class="p">]]</span> <span class="nf">forKey</span><span class="p">:</span><span class="s">@"location"</span><span class="p">];</span>
+ 
+        <span class="p">[</span><span class="n">self</span> <span class="nf">performSelector</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nf">handleSingleTap</span><span class="p">:)</span> <span class="n">withObject</span><span class="o">:</span><span class="n">touchLoc</span> <span class="n">afterDelay</span><span class="o">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">3</span><span class="p">];</span>
+ 
+    <span class="p">}</span> <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="n">theTouch</span><span class="p">.</span><span class="n">tapCount</span> <span class="o">==</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+ 
+        <span class="c1">// Double-tap: increase image size by 10%"</span>
+ 
+        <span class="n">CGRect</span> <span class="n">myFrame</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">frame</span><span class="p">;</span>
+ 
+        <span class="n">myFrame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">+=</span> <span class="n">self</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">*</span> <span class="mi">0</span><span class="p">.</span><span class="mi">1</span><span class="p">;</span>
+ 
+        <span class="n">myFrame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">+=</span> <span class="n">self</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">*</span> <span class="mi">0</span><span class="p">.</span><span class="mi">1</span><span class="p">;</span>
+ 
+        <span class="n">myFrame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span> <span class="o">-=</span> <span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span> <span class="o">*</span> <span class="mi">0</span><span class="p">.</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">;</span>
+ 
+        <span class="n">myFrame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span> <span class="o">-=</span> <span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span> <span class="o">*</span> <span class="mi">0</span><span class="p">.</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">;</span>
+ 
+        <span class="p">[</span><span class="n">UIView</span> <span class="nf">beginAnimations</span><span class="p">:</span><span class="nb">nil</span> <span class="nf">context</span><span class="p">:</span><span class="nb">NULL</span><span class="p">];</span>
+ 
+        <span class="p">[</span><span class="n">self</span> <span class="nf">setFrame</span><span class="p">:</span><span class="n">myFrame</span><span class="p">];</span>
+ 
+        <span class="p">[</span><span class="n">UIView</span> <span class="nf">commitAnimations</span><span class="p">];</span>
+ 
+    <span class="p">}</span>
+ 
+<span class="p">}</span>
+ 
+ 
+ 
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">handleSingleTap</span><span class="p">:(</span><span class="n">NSDictionary</span> <span class="o">*</span><span class="p">)</span><span class="nv">touches</span> <span class="p">{</span>
+ 
+    <span class="c1">// Single-tap: decrease image size by 10%"</span>
+ 
+    <span class="n">CGRect</span> <span class="n">myFrame</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">frame</span><span class="p">;</span>
+ 
+    <span class="n">myFrame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">-=</span> <span class="n">self</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">*</span> <span class="mi">0</span><span class="p">.</span><span class="mi">1</span><span class="p">;</span>
+ 
+    <span class="n">myFrame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">-=</span> <span class="n">self</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">*</span> <span class="mi">0</span><span class="p">.</span><span class="mi">1</span><span class="p">;</span>
+ 
+    <span class="n">myFrame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span> <span class="o">+=</span> <span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span> <span class="o">*</span> <span class="mi">0</span><span class="p">.</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">;</span>
+ 
+    <span class="n">myFrame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span> <span class="o">+=</span> <span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span> <span class="o">*</span> <span class="mi">0</span><span class="p">.</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">;</span>
+ 
+    <span class="p">[</span><span class="n">UIView</span> <span class="nf">beginAnimations</span><span class="p">:</span><span class="nb">nil</span> <span class="nf">context</span><span class="p">:</span><span class="nb">NULL</span><span class="p">];</span>
+ 
+    <span class="p">[</span><span class="n">self</span> <span class="nf">setFrame</span><span class="p">:</span><span class="n">myFrame</span><span class="p">];</span>
+ 
+    <span class="p">[</span><span class="n">UIView</span> <span class="nf">commitAnimations</span><span class="p">];</span>
+ 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>所以区别这两个手势的思想，就是判断tapcount如果发现touchEnd的时候tapcount是2就取消第一次执行的动作。但是这一点是否想过，苹果公司是如何判断tapcount的，比如说我在屏幕上按了下去，过了一分钟后松开，那么在touchEnd方法中捕捉到的touch事件和我点击一下屏幕就起来一样么？答案是不一样的，可以写程序亲自试验以下，按下去一分钟再松开，这里没必要一分钟了，就几秒也足够了，你会发现再touchEnd中tapCount为0，而点击一下松开的tapCount为1。还有一种情况就是双击，如果我双击间隔的时间超过大概4，5秒钟，再次侦测touchEnd中的tapCount就会发现是1，而正常的双击tapCount为2。这里和hitTest执行三次，并且前两次记录的时间是上一次触摸手势的时间，后一次才是本次触摸手势的时间，有没有关系，官方没有任何解释，这里也只能臆测。是不是用来区分上面所说的情况，也就是说根据这个事件timestamp来改变UITouch中tapCount的次数，还希望那位高手给予解释。所以上面提到的UIEvent，这个事件为何能向苹果官方解释的那样流动，这里也就可见一斑了。</p>
+
+<p>最后推荐俩本iphone开发的书籍，非常适合初学者使用。一本是iphone开发秘籍，另外一本是Core.AnimationSimplified。我的空间里有这两本书的资源，不过都是英文原本的，有兴趣的可以看下<a href="http://download.csdn.net/source/3347531">iphone开发秘籍</a> <a href="http://download.csdn.net/user/mengtnt">Core.AnimationSimplified</a></p>
+
+<p><a href="https://blog.csdn.net/mengtnt/article/details/6716289">原文链接</a></p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

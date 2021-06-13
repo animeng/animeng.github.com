@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>第六章 层的滤镜 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2012/02/23/animation-6.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="第六章 层的滤镜">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2012/02/23/animation-6.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">第六章 层的滤镜</h1>
+  
+  <span class="post-meta">02月 23日, 2012</span><br>
+  
+  <span class="post-meta small">18 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>就像很多的苹果技术一样，核心动画同样提供了一个链接到其他核心功能的桥梁。这个桥梁可以允许开发者直接和核心图像(Core Image)进行交互—苹果的图像处理和控制框架。这就意味这作为核心动画的程序员，你可以拥有了处理核心图像的滤镜能力。</p>
+
+<p>具体的说，这意味着例如，你可以在一个层的内容上应用高斯模糊。你可以在滤镜上设置模糊率并且应用它，或者你可以用模糊率做动画使之模糊，然后你指定一段时间之后再恢复到清晰。或者说，你想要让图像具有一个玻璃曲解的效果。你可以创建一个核心图像的滤镜，指定的名字为CIGlassDistorion，并且根据核心图片的文档给它提供滤镜需要的参数。</p>
+
+<p>这一章，我们深入的探讨怎么有效的应用滤镜到核心动画的层上，怎么使用键值对编码来控制输入参数，并且怎么使用滤镜变换。</p>
+
+<p>在著此文时，核心图像滤镜是不支持iphone的，因此这一章的内容仅仅适用于OS X。你可以在iphone上做一些图像处理，然而，这些功能作为核心动画一部分目前不可用，并且讲解这些功能也超越了本书的范围。</p>
+
+<h2 id="在核心动画层上应用滤镜">在核心动画层上应用滤镜</h2>
+
+<p>苹果的核心图像程序开发向导和关联的核心图像滤镜参考都提供了在层和视图上使用滤镜的详细API讲解。你需要进入到这个参考中，看滤镜中的那些条目对你来说是有用的。</p>
+
+<p>为一个层增加核心图像滤镜，只要简单的创建一个CIFilter对象，并且增加它到层的滤镜数组参数上，如清单6-1所示。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">CIFilter</span> <span class="o">*</span><span class="n">blurFilter</span> <span class="o">=</span>
+<span class="p">[</span><span class="nf">CIFilterfilterWithName</span><span class="p">:</span><span class="err">@”</span><span class="n">CIGaussianBlur</span><span class="err">”</span><span class="p">];</span>
+<span class="p">[</span><span class="n">blurFilter</span> <span class="nf">setDefaults</span><span class="p">];</span>
+<span class="p">[</span><span class="nf">blurFiltersetValue</span><span class="p">:[</span><span class="n">NSNumber</span> <span class="nf">numberWithFloat</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]</span> <span class="nf">forKey</span><span class="p">:</span><span class="err">@”</span><span class="n">inputRadius</span><span class="err">”</span><span class="p">];</span>
+<span class="p">[</span><span class="n">layer</span> <span class="nf">setFilters</span><span class="p">:[</span><span class="nf">NSArrayarrayWithObject</span><span class="p">:</span><span class="n">blurFilter</span><span class="p">]];</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>      清单6-1 给层增加高斯模糊滤镜
+</code></pre></div></div>
+
+<p>当你运行清单6-1的代码时，滤镜会被应用到层上只要它加入到了层树中，不管视图中包含什么。在这个例子中，层的视图应用了一个5像素的弧度的高斯模糊。你可以看到代码输出的结果如图6-1.如果你想看完整的代码例子，从合作网站(informit.com/coreframeworks)打开叫做GaussianBlurLayer的项目工程。</p>
+
+<p>许多可用的滤镜都不要太多的东西，除了通过调用-setDefauts这个方法指定默认的参数。简单的改变下滤镜的名字，之后可以看到我们的用途。</p>
+
+<p>用这种方法在层上应用滤镜不一定非常有用。就像许多技术条目，控制滤镜的细节需要更多的调用。因为这是一本关于核心动画的书，我们可能需要的方法是应用滤镜到动画的上下文。你需要在你的应用程序上做的是使滤镜应用在层的动画上，而非简单应用在一个静态的层上，然后离开。下面我们继续讲解。</p>
+
+<p><img src="/images/animation-6-1.gif" alt="图6-1 应用到图像的高斯模糊" /></p>
+
+<h3 id="滤镜动画">滤镜动画</h3>
+
+<p>为了响应用户的输入，你可能需要给层应用一个滤镜。例如，你想要创建一个基于层的核心动画的按钮，当按下去时有一个5像素的高斯弧度。为了做这些，创建一个有背后的层的继承于NSView的视图，其中包含了做动画的层。当你在初始化时增加滤镜到你的视图的层中，设置它的inputRadius这个字段为0.0，以达到第一次显示时可视效果没有影响。然后，响应点击，你可以改变inputRadius这个属性，使之做动画，让按钮变糊，最后再清楚掉。在合作网站上，例子程序点击变糊演示了这个效果。打开工程立刻可以看到这个效果。</p>
+
+<p>在图6-2你看到的每个图片都是在一个视图上；每个视图都包含了一个核心动画的层。你看到的图像是视图层的内容。在每个层的背后都是一个叫做BlurView的视图，做了如下的动作：</p>
+
+<p>有一个继承于CALayer的层叫做BlurLayer，在层上动画可以执行。</p>
+
+<p>接收一个鼠标按下的事件，可以触发动画。</p>
+
+<p>每一个层都有一个filters字段，用来设置一个核心图像滤镜对象的数组。考虑这个数组作为数组可能有点模棱两可。你可以建立一个你需要使用的滤镜的链表，然后当你接收用户输入时例如鼠标点击，你可以通过键值对编码激活它们。同时，我们获得键值对编码。点击变糊的演示程序中引起图标变糊，并且当用户再次点击时会变清晰。</p>
+
+<p><img src="/images/animation-6-2.gif" alt="图6-2 应用到图像的高斯模糊的滤镜" /></p>
+
+<p>键值对编码可以操作滤镜的值，在做这个之前我们需要为每个我们需要的滤镜命名。滤镜的名字是重要的，因为它将在关键字路径上被使用给滤镜指定参数，例如inputRadius。进一步的讨论可以看下，“在键值对编码中的关键字路径”。我们也需要改变初始化的输入半径值为0.0f。这是输入模糊的输入半径的开始值。我们开始使用0，因此模糊效果不可见。</p>
+
+<p>清单6-2反映出了代码的改变。改变是我们初始化了inputRadius的值为0.0，然后我们为滤镜增加了一个名字，以便于之后调用。完成的视图初始化如清单6-3的代码。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">CIFilter</span> <span class="o">*</span><span class="n">blurFilter</span> <span class="o">=</span>
+<span class="p">[</span><span class="nf">CIFilterfilterWithName</span><span class="p">:</span><span class="err">@”</span><span class="n">CIGaussianBlur</span><span class="err">”</span><span class="p">];</span>
+<span class="p">[</span><span class="n">blurFilter</span> <span class="nf">setDefaults</span><span class="p">];</span>
+<span class="p">[</span><span class="nf">blurFiltersetValue</span><span class="p">:[</span><span class="n">NSNumber</span> <span class="nf">numberWithFloat</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]</span> <span class="nf">forKey</span><span class="p">:</span><span class="err">@”</span><span class="n">inputRadius</span><span class="err">”</span><span class="p">];</span>
+<span class="p">[</span><span class="n">blurFilter</span> <span class="nf">setName</span><span class="p">:</span><span class="err">@”</span><span class="n">blur</span><span class="err">”</span><span class="p">];</span>
+<span class="p">[</span><span class="n">layer</span> <span class="nf">setFilters</span><span class="p">:[</span><span class="nf">NSArrayarrayWithObject</span><span class="p">:</span><span class="n">blurFilter</span><span class="p">]];</span>
+</code></pre></div></div>
+
+<p>清单6-2 增加滤镜的名字和设置输入半径</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">awakeFromNib</span> <span class="p">{</span>
+        <span class="p">[</span><span class="n">self</span> <span class="nf">setWantsLayer</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span> <span class="c1">//Initialize the layer</span>
+        <span class="n">blurLayer</span> <span class="o">=</span> <span class="p">[[[</span><span class="nf">BlurLayeralloc</span><span class="p">]</span><span class="nf">init</span><span class="p">]</span> <span class="nf">retain</span><span class="p">];</span> 
+        <span class="p">[</span><span class="n">blurLayer</span> <span class="nf">setMasksToBounds</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+
+        <span class="c1">// Set the layer to fill theentire frame</span>
+        <span class="p">[</span><span class="nf">blurLayersetFrame</span><span class="p">:</span><span class="n">CGRectMake</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">[</span><span class="n">self</span> <span class="nf">frame</span><span class="p">].</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="p">,[</span><span class="n">self</span> <span class="nf">frame</span><span class="p">].</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">)];</span>
+        <span class="p">[[</span><span class="n">self</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">addSublayer</span><span class="p">:</span><span class="n">blurLayer</span><span class="p">];</span>
+
+        <span class="c1">// Initialize the Gaussianblur filter</span>
+        <span class="n">CIFilter</span> <span class="o">*</span><span class="n">blurFilter</span> <span class="o">=</span>
+        <span class="p">[</span><span class="nf">CIFilterfilterWithName</span><span class="p">:</span><span class="err">@”</span><span class="n">CIGaussianBlur</span><span class="err">”</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">blurFilter</span> <span class="nf">setDefaults</span><span class="p">];</span>
+        <span class="p">[</span><span class="nf">blurFiltersetValue</span><span class="p">:[</span><span class="n">NSNumber</span> <span class="nf">numberWithFloat</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">]</span> <span class="nf">forKey</span><span class="p">:</span><span class="s">@"inputRadius"</span><span class="p">];</span>
+
+        <span class="c1">// Give the Gaussian blurfilter a name</span>
+        <span class="p">[</span><span class="n">blurFilter</span> <span class="nf">setName</span><span class="p">:</span><span class="err">@”</span><span class="n">blur</span><span class="err">”</span><span class="p">];</span>
+        <span class="p">[</span><span class="nf">blurLayersetFilters</span><span class="p">:[</span><span class="n">NSArray</span> <span class="nf">arrayWithObject</span><span class="p">:</span><span class="n">blurFilter</span><span class="p">]];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>          清单6-3 滤镜初始化代码
+</code></pre></div></div>
+
+<p>我们已经创建了一个继承自CALayer类名字叫BlurLayer的类，我们增加这个类到BlurView视图对象中。BlurLayer类管理层中的图像。每个实例视图的图像都是在-applicationDidFinishLaunching方法中设定，此方法可以在应用程序的代理类中发现，如清单6-4.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">applicationDidFinishLaunching</span><span class="p">:(</span><span class="n">NSNotification</span> <span class="o">*</span><span class="p">)</span><span class="nv">aNotification</span> <span class="p">{</span>
+
+        <span class="n">NSString</span> <span class="o">*</span><span class="n">iconPath1</span> <span class="o">=</span><span class="p">[[</span><span class="n">NSBundle</span> <span class="nf">mainBundle</span><span class="p">]</span> <span class="nf">pathForResource</span><span class="p">:</span><span class="s">@"desktop"</span> <span class="nf">ofType</span><span class="p">:</span><span class="s">@"png"</span><span class="p">];</span>
+        <span class="n">NSString</span> <span class="o">*</span><span class="n">iconPath2</span> <span class="o">=</span><span class="p">[[</span><span class="n">NSBundle</span> <span class="nf">mainBundle</span><span class="p">]</span> <span class="nf">pathForResource</span><span class="p">:</span><span class="s">@"fwdrive"</span> <span class="nf">ofType</span><span class="p">:</span><span class="s">@"png"</span><span class="p">];</span>
+        <span class="n">NSString</span> <span class="o">*</span><span class="n">iconPath3</span> <span class="o">=</span><span class="p">[[</span><span class="n">NSBundle</span> <span class="nf">mainBundle</span><span class="p">]</span> <span class="nf">pathForResource</span><span class="p">:</span><span class="s">@"pictures"</span> <span class="nf">ofType</span><span class="p">:</span><span class="s">@"png"</span><span class="p">];</span>
+        <span class="n">NSString</span> <span class="o">*</span><span class="n">iconPath4</span> <span class="o">=</span><span class="p">[[</span><span class="n">NSBundle</span> <span class="nf">mainBundle</span><span class="p">]</span> <span class="nf">pathForResource</span><span class="p">:</span><span class="s">@"computer"</span> <span class="nf">ofType</span><span class="p">:</span><span class="s">@"png"</span><span class="p">];</span>
+
+        <span class="n">NSImage</span> <span class="o">*</span><span class="n">image1</span> <span class="o">=</span> <span class="p">[[</span><span class="nf">NSImagealloc</span><span class="p">]</span> <span class="nf">initWithContentsOfFile</span><span class="p">:</span><span class="n">iconPath1</span><span class="p">];</span>
+        <span class="n">NSImage</span> <span class="o">*</span><span class="n">image2</span> <span class="o">=</span> <span class="p">[[</span><span class="nf">NSImagealloc</span><span class="p">]</span> <span class="nf">initWithContentsOfFile</span><span class="p">:</span><span class="n">iconPath2</span><span class="p">];</span>
+        <span class="n">NSImage</span> <span class="o">*</span><span class="n">image3</span> <span class="o">=</span> <span class="p">[[</span><span class="nf">NSImagealloc</span><span class="p">]</span> <span class="nf">initWithContentsOfFile</span><span class="p">:</span><span class="n">iconPath3</span><span class="p">];</span>
+        <span class="n">NSImage</span> <span class="o">*</span><span class="n">image4</span> <span class="o">=</span> <span class="p">[[</span><span class="nf">NSImagealloc</span><span class="p">]</span> <span class="nf">initWithContentsOfFile</span><span class="p">:</span><span class="n">iconPath4</span><span class="p">];</span>
+
+        <span class="p">[</span><span class="n">blurView1</span> <span class="nf">setLayerImage</span><span class="p">:</span><span class="n">image1</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">blurView2</span> <span class="nf">setLayerImage</span><span class="p">:</span><span class="n">image2</span><span class="p">];</span> 
+        <span class="p">[</span><span class="n">blurView3</span> <span class="nf">setLayerImage</span><span class="p">:</span><span class="n">image3</span><span class="p">];</span> 
+        <span class="p">[</span><span class="nf">blurView4setLayerImage</span><span class="p">:</span><span class="n">image4</span><span class="p">];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        清单6-4 BlurView对象的初始化
+</code></pre></div></div>
+
+<p>变量blurView1,blurView2,blurView3,和blurView4都是BlurView的一个实例，并且每一个都在interface Builder中链接到自定义的视图中。你可以看到自定义的视图如图6-3.</p>
+
+<p><img src="/images/animation-6-3.gif" alt="图6-3 在interface builder中的自定义视图" /></p>
+
+<p>接收用户的输入</p>
+
+<p>核心动画的层不能接收鼠标时间。然而，它后面的视图可以。在视图的初始化代码中(清单6-4)，当视图接收一个点击时，我们就应用层的滤镜。</p>
+
+<p>为了接收点击，告诉BlurView来接收鼠标点击，需要给视图增加清单6-5代码。</p>
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="n">BOOL</span><span class="p">)</span><span class="n">acceptsFirstResponder</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="nb">YES</span><span class="p">;</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>清单 6-5 使视图接收事件
+</code></pre></div></div>
+
+<p>第一响应者是，在事件响应链中有机会第一个响应鼠标点击或者某个键按下下去的事件。在清单6-5中，我们告知应用程序，我们的窗口成为第一个响应者，来响应发来的事件。在这个例子中，就是简单的鼠标点击。在我们用这种方法建立了我们的视图可以控制我们的事件后，我们就可以实现接收事件的代码了。在-mouseDown视图代理中，安装一个基础动画，用来改变模糊滤镜输入半径的值，如清单6-6.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">mouseDown</span><span class="p">:(</span><span class="n">NSEvent</span><span class="o">*</span><span class="p">)</span><span class="nv">theEvent</span> <span class="p">{</span>
+        <span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">anim</span> <span class="o">=</span> <span class="p">[</span><span class="nf">CABasicAnimationanimationWithKeyPath</span><span class="p">:</span>
+        <span class="s">@"filters.blur.inputRadius"</span><span class="p">];</span>
+        <span class="c1">// Set the filter’s startvalue</span>
+        <span class="p">[</span><span class="n">anim</span> <span class="nf">setFromValue</span><span class="p">:[</span><span class="nf">NSNumbernumberWithFloat</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]];</span> <span class="c1">// Set the filter’s ending value</span>
+        <span class="p">[</span><span class="n">anim</span> <span class="nf">setToValue</span><span class="p">:[</span><span class="nf">NSNumbernumberWithFloat</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]];</span> 
+        <span class="p">[</span><span class="n">anim</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="n">f</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">anim</span> <span class="nf">setAutoreverses</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+        <span class="p">[</span><span class="nf">animsetRemovedOnCompletion</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">blurLayer</span> <span class="nf">addAnimation</span><span class="p">:</span><span class="nf">animforKey</span><span class="p">:</span><span class="s">@"filters.blur.inputRadius"</span><span class="p">];</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>     清单6-6 增加模糊动画给鼠标按下的事件
+</code></pre></div></div>
+
+<p>就像清单6-6所示的，我们使用关键路径filters.blur.inputRadius来创建一个基础动画。你可能注意到了，我们在清单6-2中给滤镜增加的名字，这里就说明了它的重要性了。Filters这个字段是被进入，然后我们查询滤镜的名字(我们在清单6-2中增加的高斯模糊滤镜)，因而我们可以使用它的半径做动画。</p>
+
+<p>输入半径开始和结束的值，通过使用-setFromValue:和-setToValue:这些方法来实现，例如下面两行所示的。我们准备做动画使输入半径的值从0.0到5.0。下面，我们设置动画的执行时间。接近一秒的1/5，使用-setDuration:0.2f。</p>
+
+<p>-setAutoreverses:YES调用，告诉动画循环到它的原始值。如果我们设置了NO，当动画完成时，你会看到层瞬间返回到它的原始值，这样看起来有点突兀。这种情况下，给一个动画返回到原始的值，显得平滑和好看。</p>
+
+<p>最后，当动画完成它的第一圈时，动画从层中自动的被移除(-setRemovedOnCompletion:YES)。不过这里这是多余的调用。然而，我们包含它目的是让你理解这个使我们要做的行动。</p>
+
+<p>现在，当按钮被点击时，它就会使整个按钮层模糊5像素的半径，然后在1/5秒内，返回到它的清晰状态</p>
+
+<h3 id="使效果具有粘性">使效果具有粘性</h3>
+
+<p>可能有时候你想要动画具有粘性，就是不要让动画返回到原始的值，你想要新的值附加上。来看这个例子，来到合作的网站然后在xcode中导入blur sticky这个工程，点解build在运行。当你点击每个图标时，你会注意到图标就会停留在模糊状态，直到你下次再点击时才恢复，如图6-3.</p>
+
+<p>为了创建这种效果，就是点击时让图标保持模糊，然后再次点击时返回到正常状态，你需要跟踪按钮的状态。这里使用名字叫toggle的bool值来实现。鼠标点击的方法-mouseDown如清单6-7.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">mouseDown</span><span class="p">:(</span><span class="n">NSEvent</span><span class="o">*</span><span class="p">)</span><span class="nv">theEvent</span>  <span class="p">{</span>
+        <span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">anim</span> <span class="o">=</span><span class="p">[</span><span class="n">CABasicAnimation</span>
+        <span class="nl">animationWithKeyPath:</span><span class="s">@"filters.blur.inputRadius"</span><span class="p">];</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">toggle</span><span class="p">)</span> <span class="p">{</span>
+                <span class="p">[</span><span class="n">anim</span> <span class="nf">setFromValue</span><span class="p">:[</span><span class="nf">NSNumbernumberWithFloat</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]];</span>
+                <span class="p">[</span><span class="n">anim</span> <span class="nf">setToValue</span><span class="p">:[</span><span class="nf">NSNumbernumberWithFloat</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]];</span> 
+        <span class="p">}</span>
+        <span class="k">else</span> <span class="p">{</span>
+                <span class="p">[</span><span class="n">anim</span> <span class="nf">setFromValue</span><span class="p">:[</span><span class="nf">NSNumbernumberWithFloat</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]];</span> 
+                <span class="p">[</span><span class="n">anim</span> <span class="nf">setToValue</span><span class="p">:[</span><span class="n">NSNumber</span> <span class="nf">numberWithFloat</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]];</span>
+        <span class="p">}</span>
+        <span class="p">[</span><span class="n">anim</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">2</span><span class="n">f</span><span class="p">];</span>
+        <span class="p">[</span><span class="nf">animsetRemovedOnCompletion</span><span class="p">:</span><span class="nb">NO</span><span class="p">];</span>
+        <span class="p">[</span><span class="nf">animsetFillMode</span><span class="p">:</span><span class="n">kCAFillModeForwards</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">blurLayer</span> <span class="nf">addAnimation</span><span class="p">:</span><span class="n">anim</span> <span class="nf">forKey</span><span class="p">:</span><span class="err">@”</span><span class="n">filters</span><span class="p">.</span><span class="n">blur</span><span class="p">.</span><span class="n">inputRadius</span><span class="err">”</span><span class="p">];</span>
+        <span class="n">toggle</span> <span class="o">=</span> <span class="o">!</span><span class="n">toggle</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        清单6-7 实现拴的功能
+</code></pre></div></div>
+
+<p>因此什么改变了？首先我们要依赖于toggle这个变量的状态，这样我们才能决定开始的值是0.0还是5.0，在设置-setToValue:相反的值之前。如果toggle的值尚未设定，我们做模糊的动画，因而开始的值fromValue为0.0，结束的值，toValue设定为5.0。然而，如果toggle的值是设定了，我们就开始做变清晰的动画，因而开始的值为5.0，结束的为0.0。</p>
+
+<p>注意到了在清单6-7中没有包含-setAutoreverses这个调用，而在清单6-6中有。为了达到粘性的效果这个调用必须被移除或者设定为NO；否则，它就会返回它的开始值，并且覆盖-setFillMode:这个方法。</p>
+
+<p>下面，我们就需要改变-setRemovedOnCompletion这个方法为NO了。这告诉了层当它完成时，动画不要从层中移除。</p>
+
+<h3 id="最后我们增加一个调用">最后，我们增加一个调用</h3>
+
+<p>-setFillMode:kCAFillModeForwards，来告诉动画当完成时，停留在-setToValue中指定的字段的结果。</p>
+
+<p>这样每个图标第一次点击时，就会变模糊。然后再点击就会返回到它的原始状态，这种就是核心动画基于按钮的层的粘性效果。在图6-4中，你会看到有两个图标是模糊的，因为他们已经被点击了一次，保留他们的粘性状态了。</p>
+
+<p><img src="/images/animation-6-4.gif" alt="图6-4 粘性模糊" /></p>
+
+<p>使用数据绑定控制滤镜的值
+滤镜的参数通过使用KVC进入和改变。这就让你使用数据绑定来创建带着复杂滤镜的层，通过使用标准的Cocoa，例如滑动条，来控制这些滤镜。</p>
+
+<p>你可能回忆起来先前的段落中讲到，当我们在鼠标按下时实例化了CABasicAnimation对象，我们在层上使用关键路径filters.blur.inputRadius.filters代表了滤镜数组可用，blur是我们后面定义的，给滤镜的名字。inputRadius是我们想操控的滤镜字段的名字。当我们在InterfaceBuilder中，这些关键路径同样可用。不同的是，我们必须首先让CALayer可以链接到interface Builder，通过给AppDelegate类设定属性，如列表6-8.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">@interface</span> <span class="nc">AppDelegate</span> <span class="p">:</span><span class="nc">NSObject</span> <span class="p">{</span>
+  <span class="n">IBOutlet</span> <span class="n">NSView</span> <span class="o">*</span><span class="n">displayView</span><span class="p">;</span>
+  <span class="n">CALayer</span> <span class="o">*</span><span class="n">imageLayer</span><span class="p">;</span> 
+<span class="p">}</span>
+<span class="k">@property</span> <span class="p">(</span><span class="n">retain</span><span class="p">)</span><span class="n">CALayer</span> <span class="o">*</span><span class="n">imageLayer</span><span class="p">;</span>
+<span class="k">@end</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>   清单6-8 应用代理的声明
+</code></pre></div></div>
+
+<p>在AppDelegate中实现，我们需要@synthensize imageLayer对象。在Objective-c 2.0之前，你不得不为你的实例变量显示的创建setters和getters方法，并且你改变实例变量时，还要通过调用-willChangeValueForKey和-didChangeValueForKey通知对象，来服从KVC，这些都是绑定工作要求的。现在，用objective-c 2.0，当你通过@property和使用@synthensize关键字时，这些功能都自动创建了。同步imageLayer对象的实现代码如清单6-9.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">@implementation</span> <span class="nc">AppDelegate</span>
+<span class="k">@synthesize</span> <span class="n">imageLayer</span><span class="p">;</span>
+<span class="p">...</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 清单6-9
+</code></pre></div></div>
+
+<p>转换到InterfaceBuilder中，然后为应用到imageLayer对象中的每一个滤镜都增加一个滑动块。在图6-5中，你可以看到我们增加了那些滑动块，为高斯模糊、色调，饱和度，对比度，明亮。</p>
+
+<p>在我们把数据绑定到滑动条之前，滤镜需要增加到imageLayer中。为了做这些，在层上调用-setFilters，如清单6-10所示。</p>
+
+<p><img src="/images/animation-6-5.gif" alt="图 6-5 图像调整滤镜的滑动条" /></p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">NSArray</span><span class="o">*</span><span class="p">)</span><span class="n">filters</span> <span class="p">{</span>
+        <span class="n">CIFilter</span> <span class="o">*</span><span class="n">blurFilter</span> <span class="o">=</span>
+        <span class="p">[</span><span class="nf">CIFilterfilterWithName</span><span class="p">:</span><span class="s">@"CIGaussianBlur"</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">blurFilter</span> <span class="nf">setDefaults</span><span class="p">];</span>
+        <span class="p">[</span><span class="nf">blurFiltersetValue</span><span class="p">:[</span><span class="n">NSNumber</span> <span class="nf">numberWithFloat</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">]</span> <span class="nf">forKey</span><span class="p">:</span><span class="err">@”</span><span class="n">inputRadius</span><span class="err">”</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">blurFilter</span> <span class="nf">setName</span><span class="p">:</span><span class="s">@"blur"</span><span class="p">];</span>
+        <span class="n">CIFilter</span> <span class="o">*</span><span class="n">hueFilter</span> <span class="o">=</span>
+        <span class="p">[</span><span class="nf">CIFilterfilterWithName</span><span class="p">:</span><span class="s">@"CIHueAdjust"</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">hueFilter</span> <span class="nf">setDefaults</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">hueFilter</span> <span class="nf">setValue</span><span class="p">:[</span><span class="nf">NSNumbernumberWithFloat</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">]</span> <span class="nf">forKey</span><span class="p">:</span><span class="err">@”</span><span class="n">inputAngle</span><span class="err">”</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">hueFilter</span> <span class="nf">setName</span><span class="p">:</span><span class="s">@"hue"</span><span class="p">];</span>
+        <span class="n">CIFilter</span> <span class="o">*</span><span class="n">colorFilter</span> <span class="o">=</span>
+        <span class="p">[</span><span class="nf">CIFilterfilterWithName</span><span class="p">:</span><span class="s">@"CIColorControls"</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">colorFilter</span> <span class="nf">setDefaults</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">colorFilter</span> <span class="nf">setName</span><span class="p">:</span><span class="s">@"color"</span><span class="p">];</span>
+        <span class="k">return</span> <span class="p">[</span><span class="nf">NSArrayarrayWithObjects</span><span class="p">:</span> <span class="n">blurFilter</span><span class="p">,</span><span class="n">hueFilter</span><span class="p">,</span> <span class="n">colorFilter</span><span class="p">,</span> <span class="nb">nil</span><span class="p">];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>         清单6-10 滤镜的方法
+</code></pre></div></div>
+
+<p>这个代码创建了3个滤镜：模糊滤镜，色调滤镜和颜色滤镜。最后的颜色滤镜，能使我们改变三个不同的值：饱和度，对比度和明亮度。每个滤镜我们都通过-setDefaults方法给它们设定了默认的值。注意我们给每个滤镜指定的名字。这些名字在绑定和KVC时用来进入到滤镜的。</p>
+
+<p>通过增加这些滤镜到层中，我们使用关键路径能够进入每个滤镜的参数。每个滑动块的全部的关键路径展示如下表6-1.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>滤镜的名字</th>
+      <th style="text-align: right">滤镜的参数名字</th>
+      <th style="text-align: center">关键路径</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>模糊</td>
+      <td style="text-align: right">inputRadius</td>
+      <td style="text-align: center">imageLayer.filters.blur.inputRadius</td>
+    </tr>
+    <tr>
+      <td>色调</td>
+      <td style="text-align: right">inputAngle</td>
+      <td style="text-align: center">imageLayer.filters.hue.inputAngle</td>
+    </tr>
+    <tr>
+      <td>颜色</td>
+      <td style="text-align: right">inputSaturation</td>
+      <td style="text-align: center">imageLayer.filters.color.inputSaturation</td>
+    </tr>
+    <tr>
+      <td>颜色</td>
+      <td style="text-align: right">inputContrast</td>
+      <td style="text-align: center">imageLayer.filters.color.inputContrast</td>
+    </tr>
+    <tr>
+      <td>颜色</td>
+      <td style="text-align: right">inputBrightness</td>
+      <td style="text-align: center">imageLayer.filters.color.inputBrightnes</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                    表 6-1
+</code></pre></div></div>
+
+<p>如果你在interfaceBuilder中绑定滑动块的检测器，你就可以看到如何应用关键路径了。如图6-6所示的色调滤镜的关键路径。</p>
+
+<p><img src="/images/animation-6-6.gif" alt="图6-6 绑定色调滤镜的滑动块" /></p>
+
+<p>剩下的滑动块用同样的方法进行链接，并且指定关键路径如表6-1所示的。</p>
+
+<p>完成这个应用程序需要很少的代码，这要归功于数据绑定的力量。在appDelegate中的实现如下清单6-11.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">@interface</span> <span class="nc">AppDelegate</span> <span class="p">:</span><span class="nc">NSObject</span> <span class="p">{</span> <span class="n">IBOutlet</span> <span class="n">NSView</span> <span class="o">*</span><span class="n">displayView</span><span class="p">;</span> <span class="n">CALayer</span> <span class="o">*</span><span class="n">imageLayer</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="k">@property</span> <span class="p">(</span><span class="n">retain</span><span class="p">)</span><span class="n">CALayer</span><span class="o">*</span><span class="n">imageLayer</span><span class="p">;</span>
+<span class="k">-</span> <span class="p">(</span><span class="n">NSArray</span><span class="o">*</span><span class="p">)</span><span class="n">filters</span><span class="p">;</span>
+<span class="k">-</span><span class="p">(</span><span class="n">CGImageRef</span><span class="p">)</span><span class="nf">nsImageToCGImageRef</span><span class="p">:(</span><span class="n">NSImage</span><span class="o">*</span><span class="p">)</span><span class="nv">image</span><span class="p">;</span>
+<span class="k">@end</span>
+<span class="k">@implementation</span> <span class="nc">AppDelegate</span><span class="k">@synthesize</span> <span class="n">imageLayer</span><span class="p">;</span>
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">awakeFromNib</span> <span class="p">{</span>
+        <span class="p">[</span><span class="n">displayView</span> <span class="nf">setWantsLayer</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+        <span class="n">imageLayer</span> <span class="o">=</span> <span class="p">[[</span><span class="n">CALayer</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">retain</span><span class="p">];</span>
+        <span class="n">CGRect</span> <span class="n">frame</span> <span class="o">=</span><span class="n">CGRectMake</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span>
+        <span class="p">[</span><span class="nf">displayViewframe</span><span class="p">].</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="p">,</span> <span class="p">[</span><span class="n">displayView</span> <span class="nf">frame</span><span class="p">].</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">);</span>
+        <span class="p">[</span><span class="n">imageLayer</span> <span class="nf">setFrame</span><span class="p">:</span><span class="n">frame</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">imageLayer</span> <span class="nf">setCornerRadius</span><span class="p">:</span><span class="mi">15</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span> 
+        <span class="p">[</span><span class="n">imageLayer</span> <span class="nf">setBorderWidth</span><span class="p">:</span><span class="mi">3</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span> 
+        <span class="p">[</span><span class="nf">imageLayersetMasksToBounds</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+
+        <span class="n">NSString</span> <span class="o">*</span><span class="n">imagePath</span> <span class="o">=</span><span class="p">[[</span><span class="n">NSBundle</span> <span class="nf">mainBundle</span><span class="p">]</span> <span class="nf">pathForResource</span><span class="p">:</span><span class="s">@"balloon"</span>
+        <span class="nl">ofType:</span><span class="s">@"jpg"</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">imageLayer</span> <span class="nf">setContents</span><span class="p">:(</span><span class="n">id</span><span class="p">)[</span><span class="n">self</span> <span class="nf">nsImageToCGImageRef</span><span class="p">:</span>
+        <span class="p">[[</span><span class="n">NSImage</span> <span class="nf">alloc</span><span class="p">]</span><span class="nf">initWithContentsOfFile</span><span class="p">:</span><span class="n">imagePath</span><span class="p">]]];</span>
+        <span class="p">[</span><span class="n">imageLayer</span> <span class="nf">setFilters</span><span class="p">:[</span><span class="nf">selffilters</span><span class="p">]];</span>
+        <span class="p">[[</span><span class="n">displayView</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">addSublayer</span><span class="p">:</span><span class="n">imageLayer</span><span class="p">];</span> 
+<span class="p">}</span>
+<span class="k">-</span> <span class="p">(</span><span class="n">NSArray</span><span class="o">*</span><span class="p">)</span><span class="n">filters</span> <span class="p">{</span>
+        <span class="n">CIFilter</span> <span class="o">*</span><span class="n">blurFilter</span> <span class="o">=</span>
+        <span class="p">[</span><span class="nf">CIFilterfilterWithName</span><span class="p">:</span><span class="s">@"CIGaussianBlur"</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">blurFilter</span> <span class="nf">setDefaults</span><span class="p">];</span>
+        <span class="p">[</span><span class="nf">blurFiltersetValue</span><span class="p">:[</span><span class="n">NSNumber</span> <span class="nf">numberWithFloat</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">]</span> <span class="nf">forKey</span><span class="p">:</span><span class="s">@"inputRadius"</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">blurFilter</span> <span class="nf">setName</span><span class="p">:</span><span class="s">@"blur"</span><span class="p">];</span>
+
+        <span class="n">CIFilter</span> <span class="o">*</span><span class="n">hueFilter</span> <span class="o">=</span>
+        <span class="p">[</span><span class="nf">CIFilterfilterWithName</span><span class="p">:</span><span class="s">@"CIHueAdjust"</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">hueFilter</span> <span class="nf">setDefaults</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">hueFilter</span> <span class="nf">setValue</span><span class="p">:[</span><span class="nf">NSNumbernumberWithFloat</span><span class="p">:</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">]</span>
+        <span class="nl">forKey:</span><span class="s">@"inputAngle"</span><span class="p">];</span>
+
+        <span class="p">[</span><span class="n">hueFilter</span> <span class="nf">setName</span><span class="p">:</span><span class="s">@"hue"</span><span class="p">];</span>
+        <span class="n">CIFilter</span> <span class="o">*</span><span class="n">colorFilter</span> <span class="o">=</span> <span class="p">[</span><span class="n">CIFilter</span> <span class="nf">filterWithName</span><span class="p">:</span><span class="s">@"CIColorControls"</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">colorFilter</span> <span class="nf">setDefaults</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">colorFilter</span> <span class="nf">setName</span><span class="p">:</span><span class="s">@"color"</span><span class="p">];</span>
+        <span class="k">return</span> <span class="p">[</span><span class="nf">NSArrayarrayWithObjects</span><span class="p">:</span> <span class="n">blurFilter</span><span class="p">,</span>
+        <span class="n">hueFilter</span><span class="p">,</span> <span class="n">colorFilter</span><span class="p">,</span> <span class="nb">nil</span><span class="p">];</span>
+<span class="p">}</span>
+<span class="k">-</span><span class="p">(</span><span class="n">CGImageRef</span><span class="p">)</span><span class="nf">nsImageToCGImageRef</span><span class="p">:(</span><span class="n">NSImage</span><span class="o">*</span><span class="p">)</span><span class="nv">image</span><span class="p">;</span> <span class="p">{</span>
+        <span class="n">NSData</span> <span class="o">*</span> <span class="n">imageData</span> <span class="o">=</span> <span class="p">[</span><span class="nf">imageTIFFRepresentation</span><span class="p">];</span> 
+        <span class="n">CGImageRef</span> <span class="n">imageRef</span><span class="p">;</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">imageData</span><span class="p">)</span>
+        <span class="p">{</span>
+        <span class="n">CGImageSourceRef</span> <span class="n">imageSource</span><span class="o">=</span> <span class="n">CGImageSourceCreateWithData</span><span class="p">((</span><span class="n">CFDataRef</span><span class="p">)</span><span class="n">imageData</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span>
+        <span class="n">imageRef</span> <span class="o">=</span> <span class="n">CGImageSourceCreateImageAtIndex</span><span class="p">(</span><span class="n">imageSource</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">);</span> <span class="p">}</span>
+        <span class="k">return</span> <span class="n">imageRef</span><span class="p">;</span> <span class="p">}</span>
+        <span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">dealloc</span><span class="p">;</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span> <span class="n">imageLayer</span> <span class="p">)</span> <span class="p">[</span><span class="nf">imageLayerrelease</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">super</span> <span class="nf">dealloc</span><span class="p">];</span> 
+<span class="p">}</span>
+<span class="k">@end</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>      清单 6-11
+</code></pre></div></div>
+
+<h2 id="变换应用到滤镜上">变换应用到滤镜上</h2>
+
+<p>用核心动画开启动画的属性最简单的方法是，在你想要做动画的视图上使用动画者的代理对象。当你应用动画者代理对象的时候，它就会调用到默认的变换，这些可能你没有注意到。例如，如果你设定一个层的透明度，那么渐变的转换就会被默认的增加。(渐入是增加不透明，渐出是减少不透明)。为了看到默认的转换，你需要在动画代理者上调用-setOpacity，而不是在视图上调用，那么渐变的变换就会自动的做动画，而不需要你增加额外的代码。最能体现变换价值的地方是，你增加你自定义的变换，并且用滤镜也是很容易做到的。</p>
+
+<h3 id="默认的变换">默认的变换</h3>
+
+<p>核心动画提供了一系列默认的变换(如表6-2),当某些属性改变时，你可以指定这些变换来使用。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>字段</th>
+      <th>功能</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>渐变</td>
+      <td>常量kCATransitionFade表明层的内容应该渐入，当变换发生时。</td>
+    </tr>
+    <tr>
+      <td>滑入</td>
+      <td>常量kCATransitionMoveIn表明层的内容应该从一边滑入。方向是由变换的一个子属性决定的。当你使用kCATransitionMoveIn这个主类型时，如果什么都不指定，那么kCATransitionFromLeft这个子属性就会指定，内容就会从左边出来。</td>
+    </tr>
+    <tr>
+      <td>推</td>
+      <td>常量kCATransitionPush表明层的内容应该从某个方向推走层中任何存在的内容。方向是有变换的子类型决定的（下一个段中包含了”变换的子类型”）。如果你不指定，默认的主类型kCATransitionPush是被使用，而子类型kCATransitionFromLeft被指定，这样就会指定的内容就会从左边出来。</td>
+    </tr>
+    <tr>
+      <td>显示</td>
+      <td>常量kCATransitionReveal表明层的内容应该从某个方向暴露。方向是变换的子类型(下一段可以看到变换的子类型)。当你使用kCATransitionReveal这个主类型时，如果你不指定默认的子变换，那么指定的内容就会从左边出来。</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    表6-2 默认的变换类型和功能
+</code></pre></div></div>
+
+<p>默认的子类型变换如表6-3</p>
+
+<p>|字段 |功能 |
+|—-|—–|
+|从右边 |常量kCATransitionFromRight表明动画从右边进入|
+|从左边 |常量kCATransitionFromRight表明动画从左边进入|
+|从上面 |常量kCATransitionFromRight表明动画从上边进入|
+|从底端|常量kCATransitionFromRight表明动画从底边进入|
+        表6-3 默认的变换子类型和它的功能</p>
+
+<p>如果你想要使用默认的变换，简单的给层actions字段增加变换就行了，这个字段是个NSDictionary。当你增加CATransition对象给层的actions字段中时，通过使用关键路径指定你想要变换的层的属性。当你创建你想要变换的层时，你简单的附加上就行了。在下个段落中，我们会详解返回的行为，那是一个变换属性的特定的行为，但是这里是基础，这个代码就是在层中，使用给定的属性的默认变换。</p>
+
+<ol>
+  <li>
+    <p>选着你想要动画的属性，这里，我们使用不透明度</p>
+  </li>
+  <li>
+    <p>为actions这个属性创建一个新的字典。</p>
+  </li>
+  <li>
+    <p>给新的actions字典增加关键字opacity。</p>
+  </li>
+  <li>
+    <p>设定层的actions属性，使用新创建的字典。</p>
+  </li>
+</ol>
+
+<p>设定不透明度默认变换的代码如清单6-12</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">CATransition</span><span class="o">*</span><span class="n">transition</span><span class="o">=</span><span class="p">[</span><span class="n">CATransition</span> <span class="nf">animation</span><span class="p">];</span>
+<span class="p">[</span><span class="nf">transitionsetType</span><span class="p">:</span><span class="n">kCATransitionMoveIn</span><span class="p">];</span>
+<span class="p">[</span><span class="nf">transitionsetSubtype</span><span class="p">:</span><span class="n">kCATransitionFromTop</span><span class="p">];</span>
+<span class="p">[</span><span class="nf">transitionsetDuration</span><span class="p">:</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+<span class="c1">// Get the current list ofactions</span>
+<span class="n">NSMutableDictionary</span> <span class="o">*</span><span class="n">actions</span><span class="o">=</span> <span class="p">[</span><span class="n">NSMutableDictionary</span> <span class="nf">dictionaryWithDictionary</span><span class="p">:[</span><span class="n">transitionLayer</span> <span class="nf">actions</span><span class="p">]];</span>
+<span class="p">[</span><span class="n">actions</span> <span class="nf">setObject</span><span class="p">:</span><span class="nf">transitionforKey</span><span class="p">:</span><span class="err">@”</span><span class="n">opacity</span><span class="err">”</span><span class="p">];</span>
+<span class="p">[</span><span class="nf">transitionLayersetActions</span><span class="p">:</span><span class="n">actions</span><span class="p">];</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    清单 6-12 不透明度的默认的变换
+</code></pre></div></div>
+
+<p>首先，你需要实例化CATransition对象。使用表6-2和6-3指定的变换属性，这里设定属性kCATransitionMoveIn，这个会引起变换从某个方向移动。然后，在子类型字段中，指定变换从那个方向进入；例如，我们是从顶端移进的(kCATransitionFromTop)。下一步，指定变换的时间；在这里是一秒。</p>
+
+<p>这里，我们需要给层的行动列表中，增加变换。通过关键路径层就会使用这些变换，而不适用默认的变换。我们指定的字典的关键路径是opacity。无论什么时候层的opacity改变时，它就会使用特定的变换而不会使用默认的变换。</p>
+
+<p>为了做这个工作，我们首先实例化一个字典，从transitionLayer中使用原始的actions字段。我们做这些，仅仅因为其他的actions已经在集合中指定了。</p>
+
+<p>我们知道在字典中没有任何其他的东西。然而，我清楚的指出。你需要理解下面的事，如果你创建一个新的字典并且给层设定了行动，而没有首先获取先前已经有的，你可能会困惑为什么其他的变换不能正常的工作了。</p>
+
+<p>最后，设定层的行动字典到指定的创建的字典，该字典包含了CATransition对象。</p>
+
+<h3 id="使用自定义的变换">使用自定义的变换</h3>
+
+<p>指定你想要使用的变换的CIFilter是简单的。为了应用这个变换，使用CATransition对象的滤镜参数来指定你想要指定的关键字的行动。当使用时，滤镜参数会重载CATransition对象的类型和子类型参数。如果你使用这两个参数指定默认变换的话，他们将会被忽略，当滤镜参数是被设定时。</p>
+
+<h3 id="用代理或者封转">用代理或者封转</h3>
+
+<p>对于很多应用程序，在你自己的CALayer的继承类中你应该封转来实现自定义的变换。然而，你也可以使用CALayer的代理方法，这样会更方便。这个使用代理的唯一的理由-方便。如果考虑代码的整洁性，选择封装好于代理，但是有时代理是一个快速直接的方法。有这两个不同的技术，这样你可以通过函数调用来实现了，如表6-4所示</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>你要做的</th>
+      <th>做法</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>封装</td>
+      <td>重载CALayer类的方法 +(id<CAAction>)defaultActionForKey:(NSString *)aKey</CAAction></td>
+    </tr>
+    <tr>
+      <td>代理</td>
+      <td>设定代理指向控制器，然后实现下面的代理方法：- (id<CAAction>)actionForLayer:(CALayer*)layer forkey:(NSString *)key;</CAAction></td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>        表 6-4 使用封装和代理的方法
+</code></pre></div></div>
+
+<p>有时这是快速和方便的，使用代理来指定你想要使用的变换滤镜。如果你使用代理实现了自定义的变换，首先要在应用程序代理的代码中，设定层的代理。例如：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">layersetDelegate</span><span class="err">：</span><span class="nf">self</span><span class="p">]</span><span class="err">；</span>
+</code></pre></div></div>
+
+<p>然后实现代理的方法，就是设定一个行动为指定的关键字和层。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span>       <span class="p">(</span><span class="n">id</span><span class="o">&lt;</span><span class="n">CAAction</span><span class="o">&gt;</span><span class="p">)</span><span class="nf">actionForLayer</span><span class="p">:(</span><span class="n">CALayer</span><span class="o">*</span><span class="p">)</span><span class="nv">layer</span> <span class="nf">forKey</span><span class="p">:(</span><span class="n">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">key</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>这个代理方法，提供给你2个条目，让你来指定那种滤镜要应用到变换中：层和关键字字段。你可以这样使用这两个特点：</p>
+
+<p>你需要简单的核对看是否传给你了你工作的层对象，通过使用==操作符来比较内存地址。</p>
+
+<p>如果你给层分配了一个名字，你能匹配名字字符串。然后核对关键字是否为你使用关键路径。</p>
+
+<p>如果你更喜欢在自己的继承自CALyaer类中封装代码的话，你可以重载-defaultActionForKey，以便于返回一个特定关键字的行动。层就会知道因为我们已经封装了它；例如：</p>
+
+<pre><code class="language-obc">+(id&lt;CAAction&gt;)defaultActionForKey:(NSString*)aKey
+</code></pre>
+
+<h3 id="涟漪变换">涟漪变换</h3>
+
+<p>我们包含了2个例子来演示怎么来实现涟漪变换在这个段落中。一个使用代理展示了怎么实现它，另一个使用封装。你或许迫不及待打开工程来看解决的方法了。</p>
+
+<p>例如，我们使用层的核心图片的涟漪效果滤镜改变层的变换，CIRippleTransition。它要求的字段显示在表6-5中。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>字段的名字</th>
+      <th>功能</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>inputImage</td>
+      <td>使用CIImage的开始图像</td>
+    </tr>
+    <tr>
+      <td>inputTargetImage</td>
+      <td>使用CIImage作为结束的图像</td>
+    </tr>
+    <tr>
+      <td>inputShadingImage</td>
+      <td>使用CIImage设定涟漪效果的阴影</td>
+    </tr>
+    <tr>
+      <td>inputCenter</td>
+      <td>CIVector代表效果的中心点，也就是视觉效果的开始。默认的是150，150</td>
+    </tr>
+    <tr>
+      <td>inputExtent</td>
+      <td>CIVector代表输入图像的范围。默认的是0,0,300,300.</td>
+    </tr>
+    <tr>
+      <td>inputTime</td>
+      <td>一个NSNumber代表变换的输入时间。默认的是default:0.0,minimum:0.00,maximum:1.00,slider minimum:0.00和slider maximu:1.00</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <tbody>
+    <tr>
+      <td>inputWidth</td>
+      <td>一个NSNumber代表输入图像的宽度。默认的值:default:100.00,minimum:1.00,maximum:0.00,slider minimum:10.00,slider maximum:300.00</td>
+    </tr>
+  </tbody>
+</table>
+
+<table>
+  <tbody>
+    <tr>
+      <td>inputScale</td>
+      <td>一个NSNumber代表输入缩放.默认的值是:default:50.00,minimum:-50.00,maximum:0.00,slider minimum:-50,slider maximum:50.00.</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>涟漪变换看起来复杂。然而，当你创建它时，你仅仅需要在滤镜调用-setDefaults就可以了。在层上使用滤镜时你必须指定的字段是inputShadingImage。你也可能要指定inputCenter字段，以便于你可以指定变换原点的位置。</p>
+
+<p>例如，我们为关键字”bounds”使用涟漪变换滤镜。这意味着无论什么时候层的边框字段改变时，涟漪的效果将会被使用代替默认的变换。在图6-7中，你可以看到不同阶段的效果。</p>
+
+<p><img src="/images/animation-6-7.gif" alt="图6-7 在核心动画层中涟漪变换层" /></p>
+
+<p>使用封装来实现涟漪变换，只要简单的创建一个层的衍生类RippleLayer。这个层的代码实现如清单6-13.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">@interface</span> <span class="nc">RippleLayer</span> <span class="p">:</span><span class="nc">CALayer</span> <span class="p">{</span> <span class="p">}</span>
+<span class="k">@end</span>
+<span class="k">@implementation</span> <span class="nc">RippleLayer</span>
+<span class="k">+</span><span class="p">(</span><span class="n">id</span><span class="o">&lt;</span><span class="n">CAAction</span><span class="o">&gt;</span><span class="p">)</span><span class="nf">defaultActionForKey</span><span class="p">:(</span><span class="n">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">key</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span> <span class="p">[</span><span class="n">keyisEqualToString</span><span class="err">@”</span><span class="n">bounds</span><span class="err">”</span><span class="p">]</span> <span class="p">)</span>
+        <span class="p">{}</span>
+        <span class="c1">// Going to cheat a littlebit here. Since this is a class</span>
+        <span class="c1">// method, we can’t get thedimensions from self. Instead,</span>
+        <span class="c1">// we need to obtain thissize some other way in a real-world // application.</span>
+        <span class="kt">float</span> <span class="n">w</span> <span class="o">=</span> <span class="mi">480</span><span class="p">.</span><span class="mi">0</span><span class="p">;</span>
+        <span class="kt">float</span> <span class="n">h</span> <span class="o">=</span> <span class="mi">360</span><span class="p">.</span><span class="mi">0</span><span class="p">;</span>
+        <span class="n">NSURL</span> <span class="o">*</span><span class="n">url</span> <span class="o">=</span> <span class="p">[</span><span class="nf">NSURLfileURLWithPath</span><span class="p">:</span>
+        <span class="p">[[</span><span class="n">NSBundle</span> <span class="nf">mainBundle</span><span class="p">]</span> <span class="nf">pathForResource</span><span class="p">:</span><span class="err">@”</span><span class="n">Shading</span><span class="err">”</span><span class="nf">ofType</span><span class="p">:</span><span class="err">@”</span><span class="n">tiff</span><span class="err">”</span><span class="p">]];</span>
+        <span class="n">CIImage</span> <span class="o">*</span><span class="n">shadingImage</span> <span class="o">=</span> <span class="p">[[</span><span class="n">CIImage</span> <span class="nf">alloc</span><span class="p">]</span><span class="nf">initWithContentsOfURL</span><span class="p">:</span> <span class="n">url</span><span class="p">];</span>
+        <span class="n">CIFilter</span> <span class="o">*</span><span class="n">rippleFilter</span> <span class="o">=</span> <span class="p">[</span><span class="nf">CIFilterfilterWithName</span><span class="p">:</span><span class="err">@”</span><span class="n">CIRippleTransition</span><span class="err">”</span><span class="p">];</span> 
+        <span class="p">[</span><span class="n">rippleFilter</span> <span class="nf">setDefaults</span><span class="p">];</span>
+        <span class="p">[</span><span class="nf">rippleFiltersetValue</span><span class="p">:</span><span class="n">shadingImage</span>
+        <span class="nl">forKey:</span><span class="err">@”</span><span class="n">inputShadingImage</span><span class="err">”</span><span class="p">];</span>
+        <span class="p">[</span><span class="nf">rippleFiltersetValue</span><span class="p">:[</span><span class="n">CIVector</span> <span class="nf">vectorWithX</span><span class="p">:</span> <span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="o">*</span><span class="n">w</span> <span class="nf">Y</span><span class="p">:</span> <span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="o">*</span><span class="n">h</span><span class="p">]</span> <span class="n">forKey</span><span class="o">:</span><span class="err">@”</span><span class="n">inputCenter</span><span class="err">”</span><span class="p">];</span>
+        <span class="n">CATransition</span><span class="o">*</span><span class="n">theTransition</span><span class="o">=</span><span class="p">[</span><span class="n">CATransition</span> <span class="nf">animation</span><span class="p">];</span> 
+        <span class="p">[</span><span class="nf">theTransitionsetFilter</span><span class="p">:</span><span class="n">rippleFilter</span><span class="p">];</span> 
+        <span class="p">[</span><span class="n">theTransition</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+        <span class="k">return</span> <span class="n">theTransition</span><span class="p">;</span>
+        <span class="c1">// Cause the layer to use itsdefault transition</span>
+        <span class="k">return</span> <span class="nb">nil</span><span class="p">;</span> 
+<span class="p">}</span>
+<span class="k">@end</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 清单6-13 涟漪变换层
+</code></pre></div></div>
+
+<p>新的rippleLayer类在应用程序的代理类中使用，在appDelegate代码中实现如清单6-14.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#import “RippleLayer.h”
+</span><span class="k">@interface</span> <span class="nc">AppDelegate</span> <span class="p">:</span><span class="nc">NSObject</span> <span class="p">{</span> 
+<span class="n">IBOutlet</span> <span class="n">NSWindow</span> <span class="o">*</span><span class="n">window</span><span class="p">;</span> 
+<span class="n">RippleLayer</span> <span class="o">*</span><span class="n">transitionLayer</span><span class="p">;</span>
+<span class="n">BOOL</span> <span class="n">toggle</span><span class="p">;</span> <span class="p">}</span>
+<span class="k">-</span><span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">doTransition</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span><span class="p">;</span><span class="k">@end</span>
+<span class="k">@implementation</span> <span class="nc">AppDelegate</span><span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">awakeFromNib</span><span class="p">;</span>
+<span class="p">{</span>
+        <span class="p">[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span><span class="nf">setWantsLayer</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span> <span class="n">CGColorRef</span> <span class="n">green</span> <span class="o">=</span>
+        <span class="n">CGColorCreateGenericRGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">.</span><span class="mi">45</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="n">transitionLayer</span> <span class="o">=</span><span class="p">[[[</span><span class="n">RippleLayer</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">]</span> <span class="nf">retain</span><span class="p">];</span> 
+        <span class="p">[</span><span class="n">transitionLayer</span> <span class="nf">setFrame</span><span class="p">:</span> <span class="n">NSRectToCGRect</span><span class="p">([[</span><span class="nf">windowcontentView</span><span class="p">]</span> <span class="nf">frame</span><span class="p">])];</span>
+        <span class="p">[</span><span class="nf">transitionLayersetBackgroundColor</span><span class="p">:</span><span class="n">green</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">transitionLayer</span> <span class="nf">setDelegate</span><span class="p">:</span><span class="n">self</span><span class="p">];</span>
+        <span class="p">[</span><span class="nf">transitionLayersetBorderWidth</span><span class="p">:</span><span class="mi">3</span><span class="p">];</span>
+        <span class="c1">// Keep the layer behind thebutton</span>
+        <span class="p">[[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">insertSublayer</span><span class="p">:</span><span class="n">transitionLayer</span> <span class="nf">atIndex</span><span class="p">:</span><span class="mi">0</span><span class="p">];</span>
+        <span class="n">CFRelease</span><span class="p">(</span><span class="n">green</span><span class="p">);</span> <span class="p">}</span>
+        <span class="k">-</span><span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">doTransition</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span><span class="p">;{</span>
+        <span class="n">CGRect</span> <span class="n">contentRect</span> <span class="o">=</span>
+        <span class="n">NSRectToCGRect</span><span class="p">([[</span><span class="nf">windowcontentView</span><span class="p">]</span> <span class="nf">frame</span><span class="p">]);</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">toggle</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">[</span><span class="nf">transitionLayersetBounds</span><span class="p">:</span><span class="n">contentRect</span><span class="p">];</span> <span class="p">}</span>
+        <span class="k">else</span>
+        <span class="p">{</span>
+        <span class="n">CGRect</span> <span class="n">newFrame</span> <span class="o">=</span><span class="n">CGRectMake</span><span class="p">((</span><span class="n">contentRect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">100</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">contentRect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span><span class="o">-</span> <span class="mi">100</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="n">contentRect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">-</span> <span class="mi">200</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="n">contentRect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">-</span> <span class="mi">200</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+        <span class="p">[</span><span class="nf">transitionLayersetBounds</span><span class="p">:</span><span class="n">newFrame</span><span class="p">];</span> <span class="p">}</span>
+        <span class="n">toggle</span> <span class="o">=</span> <span class="o">!</span><span class="n">toggle</span><span class="p">;</span> 
+<span class="p">}</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">dealloc</span> <span class="p">{</span>
+        <span class="p">[</span><span class="n">transitionLayer</span> <span class="nf">release</span><span class="p">],</span><span class="n">transitionLayer</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+        <span class="p">[</span><span class="n">super</span> <span class="nf">dealloc</span><span class="p">];</span> 
+<span class="p">}</span>
+<span class="k">@end</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>           清单6-14 使用封装的代理实现
+</code></pre></div></div>
+
+<p>简单的，你可以实现涟漪滤镜的变换，当使用代理时，代码如清单6-15.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">@interface</span> <span class="nc">AppDelegate</span> <span class="p">:</span><span class="nc">NSObject</span> <span class="p">{</span>
+ <span class="n">IBOutlet</span> <span class="n">NSWindow</span> <span class="o">*</span><span class="n">window</span><span class="p">;</span>
+<span class="n">CALayer</span> <span class="o">*</span><span class="n">transitionLayer</span><span class="p">;</span>
+<span class="n">CIImage</span> <span class="o">*</span><span class="n">shadingImage</span><span class="p">;</span>
+<span class="n">CIVector</span> <span class="o">*</span><span class="n">extent</span><span class="p">;</span>
+<span class="n">BOOL</span>  <span class="n">toggle</span><span class="p">;}</span>
+<span class="k">-</span> <span class="p">(</span><span class="n">CIImage</span> <span class="o">*</span><span class="p">)</span><span class="n">shadingImage</span><span class="p">;</span>
+<span class="k">-</span><span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">doTransition</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span><span class="p">;</span><span class="k">@end</span>
+<span class="k">@implementation</span> <span class="nc">AppDelegate</span><span class="k">-</span><span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">awakeFromNib</span><span class="p">;</span>
+<span class="p">{</span>
+        <span class="p">[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span><span class="nf">setWantsLayer</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span> 
+        <span class="n">CGColorRef</span> <span class="n">green</span> <span class="o">=</span> <span class="n">CGColorCreateGenericRGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">.</span><span class="mi">45</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+        <span class="n">transitionLayer</span> <span class="o">=</span> <span class="p">[</span><span class="nf">CALayerlayer</span><span class="p">];</span> <span class="p">[</span><span class="n">transitionLayer</span> <span class="nf">setFrame</span><span class="p">:</span>
+        <span class="n">NSRectToCGRect</span><span class="p">([[</span><span class="nf">windowcontentView</span><span class="p">]</span> <span class="nf">frame</span><span class="p">])];</span> 
+        <span class="p">[</span><span class="n">transitionLayer</span> <span class="nf">setBackgroundColor</span><span class="p">:</span><span class="n">green</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">transitionLayer</span> <span class="nf">setDelegate</span><span class="p">:</span><span class="n">self</span><span class="p">];</span>
+        <span class="p">[</span><span class="n">transitionLayer</span> <span class="nf">setBorderWidth</span><span class="p">:</span><span class="mi">3</span><span class="p">];</span>
+        <span class="c1">// Keep the layer behind ourbutton.</span>
+        <span class="p">[[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">layer</span><span class="p">]</span><span class="nf">insertSublayer</span><span class="p">:</span><span class="n">transitionLayer</span> <span class="nf">atIndex</span><span class="p">:</span><span class="mi">0</span><span class="p">];</span>
+        <span class="n">CFRelease</span><span class="p">(</span><span class="n">green</span><span class="p">);</span> <span class="p">}</span>
+        <span class="k">-</span><span class="p">(</span><span class="n">id</span><span class="o">&lt;</span><span class="n">CAAction</span><span class="o">&gt;</span><span class="p">)</span><span class="nf">actionForLayer</span><span class="p">:(</span><span class="n">CALayer</span> <span class="o">*</span><span class="p">)</span><span class="nv">layer</span> <span class="nf">forKey</span><span class="p">:(</span><span class="n">NSString</span> <span class="o">*</span><span class="p">)</span><span class="nv">key</span><span class="p">;</span>
+        <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span> <span class="n">layer</span> <span class="o">==</span> <span class="n">transitionLayer</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span> <span class="p">[</span><span class="n">key</span> <span class="nf">compare</span><span class="p">:</span><span class="err">@”</span><span class="n">bounds</span><span class="err">”</span><span class="p">]</span><span class="o">==</span> <span class="n">NSOrderedSame</span> <span class="p">)</span> <span class="p">{</span>
+        <span class="kt">float</span> <span class="n">w</span> <span class="o">=</span> <span class="p">[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span><span class="nf">frame</span><span class="p">].</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="p">;</span>
+        <span class="kt">float</span> <span class="n">h</span> <span class="o">=</span> <span class="p">[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">frame</span><span class="p">].</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">;</span>
+        <span class="n">CIFilter</span> <span class="o">*</span><span class="n">rippleFilter</span> <span class="o">=</span> <span class="p">[</span><span class="nf">CIFilterfilterWithName</span><span class="p">:</span><span class="err">@”</span><span class="n">CIRippleTransition</span><span class="err">”</span><span class="p">];</span>
+        <span class="p">}</span> 
+<span class="p">}</span>
+<span class="p">[</span><span class="n">rippleFilter</span> <span class="nf">setDefaults</span><span class="p">];</span>
+<span class="p">[</span><span class="n">rippleFilter</span> <span class="nf">setValue</span><span class="p">:[</span><span class="nf">selfshadingImage</span><span class="p">]</span>
+<span class="nl">forKey:</span><span class="err">@”</span><span class="n">inputShadingImage</span><span class="err">”</span><span class="p">];</span>
+<span class="p">[</span><span class="n">rippleFilter</span> <span class="nf">setValue</span><span class="p">:</span>
+<span class="p">[</span><span class="n">CIVector</span> <span class="nf">vectorWithX</span><span class="p">:</span> <span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="o">*</span><span class="nf">wY</span><span class="p">:</span> <span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="o">*</span><span class="n">h</span><span class="p">]</span>
+<span class="nl">forKey:</span><span class="err">@”</span><span class="n">inputCenter</span><span class="err">”</span><span class="p">];</span>
+<span class="n">CATransition</span><span class="o">*</span><span class="n">theTransition</span><span class="o">=</span><span class="p">[</span><span class="n">CATransition</span> <span class="nf">animation</span><span class="p">];</span> 
+<span class="p">[</span><span class="nf">theTransitionsetFilter</span><span class="p">:</span><span class="n">rippleFilter</span><span class="p">];</span>
+ <span class="p">[</span><span class="n">theTransition</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+<span class="k">return</span> <span class="n">theTransition</span><span class="p">;</span>
+<span class="c1">// Cause the layer to use itsdefault transition</span>
+<span class="k">return</span> <span class="nb">nil</span><span class="p">;</span> 
+<span class="p">}</span>
+<span class="k">-</span> <span class="p">(</span><span class="n">CIImage</span> <span class="o">*</span><span class="p">)</span><span class="n">shadingImage</span> <span class="p">{</span>
+        <span class="k">if</span><span class="p">(</span><span class="o">!</span><span class="n">shadingImage</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">NSURL</span> <span class="o">*</span><span class="n">url</span><span class="p">;</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSURL</span> <span class="nf">fileURLWithPath</span><span class="p">:</span>
+        <span class="p">[[</span><span class="n">NSBundle</span> <span class="nf">mainBundle</span><span class="p">]</span><span class="nf">pathForResource</span><span class="p">:</span><span class="err">@”</span><span class="n">Shading</span><span class="err">”</span> <span class="nf">ofType</span><span class="p">:</span><span class="err">@”</span><span class="n">tiff</span><span class="err">”</span><span class="p">]];</span>
+        <span class="n">shadingImage</span> <span class="o">=</span> <span class="p">[[</span><span class="nf">CIImagealloc</span><span class="p">]</span> <span class="nf">initWithContentsOfURL</span><span class="p">:</span> <span class="n">url</span><span class="p">];</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">shadingImage</span><span class="p">;</span> 
+<span class="p">}</span>
+
+<span class="k">-</span><span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">doTransition</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span> <span class="p">{</span>
+        <span class="n">CGRect</span> <span class="n">contentRect</span> <span class="o">=</span>
+        <span class="n">NSRectToCGRect</span><span class="p">([[</span><span class="nf">windowcontentView</span><span class="p">]</span> <span class="nf">frame</span><span class="p">]);</span>
+        <span class="k">if</span><span class="p">(</span><span class="n">toggle</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">[</span><span class="nf">transitionLayersetBounds</span><span class="p">:</span><span class="n">contentRect</span><span class="p">];</span>
+        <span class="p">}</span>
+        <span class="k">else</span>
+        <span class="p">{</span>
+        <span class="n">CGRect</span> <span class="n">newFrame</span> <span class="o">=</span><span class="n">CGRectMake</span><span class="p">((</span><span class="n">contentRect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">-</span> <span class="mi">100</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span>
+        <span class="p">(</span><span class="n">contentRect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span><span class="o">-</span> <span class="mi">100</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="n">contentRect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">-</span> <span class="mi">200</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="n">contentRect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">-</span> <span class="mi">200</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+        <span class="p">[</span><span class="nf">transitionLayersetBounds</span><span class="p">:</span><span class="n">newFrame</span><span class="p">];</span> <span class="p">}</span>
+        <span class="n">toggle</span> <span class="o">=</span> <span class="o">!</span><span class="n">toggle</span><span class="p">;</span> 
+<span class="p">}</span>
+<span class="k">@end</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>清单6-15
+</code></pre></div></div>
+
+<p>无论你实现变换滤镜的方法是什么，-doTransition方法是恒定不变的。它使用一个叫toggle的变量，来跟踪层是否覆盖了整个内容区域或者减小了尺寸。在层上调用-setBounds方法就会触发变换动画的发生。当toggle是被设定时，我们就变换成整个视图的框架，而当它没有设定时，就变换成更小的框架。然后我们就变换这个toggle变量。</p>
+
+<p>总结，在封装和代理的主要不同是：</p>
+
+<p>封装要求你创建一个自己的继承类，需要重载+(id<CAAction>)defaultActionForKey:(NSString*)key方法；</CAAction></p>
+
+<p>代理要求你的应用程序代理实现-(id<CAAction>)actionForLayer: (CALayer *)layer，同时要设定的层的代理为appDelegate的实例，通常也就是自己。</CAAction></p>
+
+<h2 id="总结">总结</h2>
+
+<p>无论是提供一个简单的视图效果，抑或增加用户界面的动画，或者改变滤镜的参数，或者改变默认的变换，核心图像滤镜在核心动画工具包中都是一个强大的有用的组件。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

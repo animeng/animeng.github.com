@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>如何使用一门新技术开始你的项目0x3 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2019/07/13/flutter-2.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="如何使用一门新技术开始你的项目0x3">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2019/07/13/flutter-2.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">如何使用一门新技术开始你的项目0x3</h1>
+  
+  <span class="post-meta">07月 13日, 2019</span><br>
+  
+  <span class="post-meta small">4 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>Flutter框架的学习方式和Dart语言大致一样。首先了解flutter的整体架构。很多技术类的教程，一般上来就是教你创建第一个xxx，其实我一般不太喜欢这种比葫芦画瓢的方式学习，如果按照教程来，基本就是人云亦云，根本不了解里面的一些基本原理。如果在了解完一些基础知识后，再来写demo会明白很多。</p>
+
+<p>flutter的UI布局方式和ios平台还是有蛮大的区别的。ios原生的frame和autolayout布局页面的方式，很像是搭建积木，一层一层堆上去。而flutter的声明式布局的方式，更像是一个七巧板，每个widget就像是一块板子，要按照板子的规格一块一块拼起来。这两种不同的思想，其实对之后写页面布局还是有很大的影响，使用中难免会用native那套思路构建UI，其实会造成开发上一些简单问题复杂化。</p>
+
+<p>flutter作为移动端的UI框架，控件自然是学习很重要的一点。不过官网教程并没有花费大量篇幅讲控件，只是讲了几个常用的控件，其实这种学习路线是非常好的。因为控件对于一个UI框架来讲一定是非常庞大的。并且每种类型的控件往往都有独特的用法，api调用的方式也是千奇百怪，如果实际项目中没有长期使用很容易遗忘，所以大量篇幅讲一些控件知识，会造成很多琐碎的记忆，对flutter整体的理解没有什么好处。其实google把flutter的控件的使用都放在了官网教程的<a href="https://flutter.dev/docs/reference/widgets">Reference</a>里面，也方便开发者之后查看。</p>
+
+<p>学习前端框架，控件如何布局和渲染，以及数据在呈现到界面上的生命周期是怎样的特别重要。对于控件如何布局和渲染，官方教程里面的<a href="https://flutter.dev/docs/development/ui/layout">Layout</a>应该讲的很详细了，先看一张图:</p>
+
+<p><img src="/images/flutter-2-1.png" alt="图1" /></p>
+
+<p>从这个树形结构来看flutter的渲染，你会发现有一个widget在里面至关重要就是Container,他就像Html5中的div，Container里面的很多约束，对于分解一个区域的UI布局特别关键。然后还有Row和Collum的用法，基本和Android的线性布局如出一辙。关于这些，教程里都有详细描述，对于里面flutter的控件是如何在界面上渲染的至关重要。</p>
+
+<p>然后就是数据如何呈现在控件上的，以及数据的刷新逻辑，官网教程里面有张图可以说是一针见血。
+<img src="/images/flutter-2-2.png" alt="图2" />
+其实就是React的SetState的思想，这里我想引用下教程中如何讲解widget的生命周期的</p>
+
+<blockquote>
+  <p>After calling createState on the StatefulWidget, the framework inserts the new state object into the tree and then calls initState on the state object. A subclass of State can override initState to do work that needs to happen just once. For example, override initState to configure animations or to subscribe to platform services. Implementations of initState are required to start by calling super.initState.
+When a state object is no longer needed, the framework calls dispose on the state object. Override the dispose function to do cleanup work. For example, override dispose to cancel timers or to unsubscribe from platform services. Implementations of dispose typically end by calling super.dispose.
+For more information, see State.</p>
+</blockquote>
+
+<p>这里就会了解到StatefulWidget本质上是渲染引擎在渲染的生命周期中，给上层一些代理事件，让开发者可以控制UI的展现的内容。对于数据应该如何更好的呈现，flutter把state分为两种Ephemeral state 和 App state。至于怎么选择两类数据，下图描述的已经非常详细。</p>
+
+<p><img src="/images/flutter-2-3.png" alt="图3" /></p>
+
+<p>教程中提到的Provider的用法，展示了如何管理App state这种类型数据的渲染。
+其实上面这些内容基本就可以让你写一些常用的demo了，我在项目中用的核心控件是listView，这时候就可以用listView做一些小的部件，比如从相册中读取图片展示出来。</p>
+
+<p>在做这个demo的过程中，我就遇到了另个一技术点，flutter的native插件。官方教材中有专门的一节在讲native插件，<a href="https://flutter.dev/docs/development/platform-integration/platform-channels">Writing custom platform-specific code</a>。这部分讲的还是挺详细的，学习完基本就可以创建自己的插件了。对于插件的学习还有个很好的地方,<a href="http://pub.dev/packages">官方插件库</a>,这里面有大量第三方写的插件。</p>
+
+<p>由于flutter的插件都是开源的，而且都是第三方提交的，虽然google对插件有一些评分功能，都是基于文档一些硬性的标准，对于插件整体的质量很难把控。我在写demo的时候，使用过很多第三方的相册插件，基本可以说或多或少都会有一些小bug，总是不尽如人意，所以在开始写你的项目之前。第三方开源插件如何选择，其实至关重要，会直接影响你软件的质量。我的建议是，在用第三方插件的时候，尽量阅读完开源的源码，了解清楚插件的一些基本原理，方便之后排查问题。</p>
+
+<p>这里要吐槽下flutter插件的质量了，其实对于官方flutter团队开发的插件，质量也不是特别的好。自己在写内购的时候，用到了官方一个插件<a href="https://pub.dev/packages/in_app_purchase">in_app_purchase</a>。调试了插件，发现在解析一些支付回调时，解析失败的时候没有给上层错误反馈。造成了支付的时候长时间没响应。在我用<a href="https://pub.dev/packages/video_player">video_player</a>其实也遇到了一些问题，就是ios设备用户退到后台的时候，opengl绘制停止，暂停视频播放，然后textureId被清理后，从后台再次进来，如果没有重新播放视频，就不会重新渲染openglView，造成播放器黑屏，而不是暂停的最后一帧。不过flutter插件源码由于开源，发现bug可以及时的改动，不至于等到插件更新才能用，也算是一个补救的方案吧。</p>
+
+<p>这里也要说下开源的好处了，因为flutter框架的开源，有时候遇到的一些框架的bug，自己就可以及时的打补丁。记得在用flutter1.5版本的时候，有一个功能需求，就是用程序控制Tabbar的index，自己当时的代码是这样写的:</p>
+
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">var</span> <span class="n">_tabbarCurrentIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+<span class="n">CupertinoTabScaffold</span><span class="o">(</span>
+    <span class="nl">backgroundColor:</span> <span class="n">Colors</span><span class="o">.</span><span class="na">black</span><span class="o">,</span>
+    <span class="nl">tabBar:</span> <span class="n">CupertinoTabBar</span><span class="o">(</span>
+        <span class="nl">backgroundColor:</span> <span class="n">Color</span><span class="o">.</span><span class="na">fromRGBO</span><span class="o">(</span><span class="mi">10</span><span class="o">,</span> <span class="mi">10</span><span class="o">,</span> <span class="mi">10</span><span class="o">,</span> <span class="mf">0.96</span><span class="o">),</span>
+        <span class="nl">items:</span> <span class="n">_getTabBar</span><span class="o">(</span><span class="n">widget</span><span class="o">.</span><span class="na">deviceType</span><span class="o">,</span><span class="n">context</span><span class="o">),</span>
+        <span class="nl">currentIndex:</span> <span class="n">_tabbarCurrentIndex</span><span class="o">,</span>
+        <span class="nl">onTap:</span> <span class="o">(</span><span class="n">index</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(!</span><span class="n">model</span><span class="o">.</span><span class="na">hasPurchase</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">setState</span><span class="o">(()</span> <span class="o">{</span>
+            <span class="n">_tabbarCurrentIndex</span> <span class="o">=</span> <span class="mi">0</span><span class="o">;</span>
+            <span class="o">});</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">_tabbarCurrentIndex</span> <span class="o">=</span> <span class="n">index</span><span class="o">;</span>
+        <span class="o">}</span>
+    <span class="o">},</span>
+<span class="o">)</span>
+</code></pre></div></div>
+
+<p>功能很简单用过用户没有购买，就不跳转到第二个tab上面，但是测试发现，点击tabbar还是会跳转。自己当时反复检查代码都没有发现有什么问题。当时就想着看下flutter的CupertinoTabScaffold实现的逻辑吧。下面截取CupertinoTabScaffold的一部分代码，Tabbar的实现如下:</p>
+
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="nd">@override</span>
+  <span class="n">Widget</span> <span class="n">build</span><span class="o">(</span><span class="n">BuildContext</span> <span class="n">context</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">widget</span><span class="o">.</span><span class="na">tabBar</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">stacked</span><span class="o">.</span><span class="na">add</span><span class="o">(</span><span class="k">new</span> <span class="n">Align</span><span class="o">(</span>
+        <span class="nl">alignment:</span> <span class="n">FractionalOffset</span><span class="o">.</span><span class="na">bottomCenter</span><span class="o">,</span>
+        <span class="c1">// Override the tab bar's currentIndex to the current tab and hook in</span>
+        <span class="c1">// our own listener to update the _currentPage on top of a possibly user</span>
+        <span class="c1">// provided callback.</span>
+        <span class="nl">child:</span> <span class="n">widget</span><span class="o">.</span><span class="na">tabBar</span><span class="o">.</span><span class="na">copyWith</span><span class="o">(</span>
+          <span class="nl">currentIndex:</span> <span class="n">_currentPage</span><span class="o">,</span>
+          <span class="nl">onTap:</span> <span class="o">(</span><span class="kt">int</span> <span class="n">newIndex</span><span class="o">)</span> <span class="o">{</span>
+            <span class="n">setState</span><span class="o">(()</span> <span class="o">{</span>
+              <span class="n">_currentPage</span> <span class="o">=</span> <span class="n">newIndex</span><span class="o">;</span>
+            <span class="o">});</span>
+            <span class="c1">// Chain the user's original callback.</span>
+            <span class="k">if</span> <span class="o">(</span><span class="n">widget</span><span class="o">.</span><span class="na">tabBar</span><span class="o">.</span><span class="na">onTap</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span>
+              <span class="n">widget</span><span class="o">.</span><span class="na">tabBar</span><span class="o">.</span><span class="na">onTap</span><span class="o">(</span><span class="n">newIndex</span><span class="o">);</span>
+          <span class="o">}</span>
+        <span class="o">),</span>
+      <span class="o">));</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+</code></pre></div></div>
+
+<p>发现原来flutter内部实现Tabbar是把上层传递过去的TabBar做了一次copy的操作，然后在更新widget的时候，比较oldWidget的tabbar的currentIndex，如果不同就改变，代码如下:</p>
+
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// The user can still specify an exact desired index.</span>
+  <span class="kt">void</span> <span class="n">didUpdateWidget</span><span class="o">(</span><span class="n">CupertinoTabScaffold</span> <span class="n">oldWidget</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">super</span><span class="o">.</span><span class="na">didUpdateWidget</span><span class="o">(</span><span class="n">oldWidget</span><span class="o">);</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">widget</span><span class="o">.</span><span class="na">tabBar</span><span class="o">.</span><span class="na">currentIndex</span> <span class="o">!=</span> <span class="n">oldWidget</span><span class="o">.</span><span class="na">tabBar</span><span class="o">.</span><span class="na">currentIndex</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">_currentPage</span> <span class="o">=</span> <span class="n">widget</span><span class="o">.</span><span class="na">tabBar</span><span class="o">.</span><span class="na">currentIndex</span><span class="o">;</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+</code></pre></div></div>
+
+<p>从上面代码的注释来看，这个方法给用户指定currentIndex的机会。但是因为CupertinoTabScaffold在build里面对tabbar做了copy，也就是说其实是希望仅仅在初始化的时候可以更新Tabbar的index，初始化完成之后，这个语句判断就永远是false，并没有起到随时可以改变currentIndex的目的，其实如果这样改就可以达到修改的目的了。</p>
+
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// The user can still specify an exact desired index.</span>
+  <span class="kt">void</span> <span class="n">didUpdateWidget</span><span class="o">(</span><span class="n">CupertinoTabScaffold</span> <span class="n">oldWidget</span><span class="o">)</span> <span class="o">{</span>
+    <span class="k">super</span><span class="o">.</span><span class="na">didUpdateWidget</span><span class="o">(</span><span class="n">oldWidget</span><span class="o">);</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">widget</span><span class="o">.</span><span class="na">tabBar</span><span class="o">.</span><span class="na">currentIndex</span> <span class="o">!=</span> <span class="n">_currentPage</span><span class="o">)</span> <span class="o">{</span>
+      <span class="n">_currentPage</span> <span class="o">=</span> <span class="n">widget</span><span class="o">.</span><span class="na">tabBar</span><span class="o">.</span><span class="na">currentIndex</span><span class="o">;</span>
+    <span class="o">}</span>
+  <span class="o">}</span>
+</code></pre></div></div>
+
+<p>但是官方的目的并不是让用户随意控制index，只是文档也没有表达清楚，随后自己更新了下flutter1.8的beta版本，这个类注释就表达的很清楚了</p>
+
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="c1">/// The [tabBar] is a [CupertinoTabBar] drawn at the bottom of the screen</span>
+  <span class="c1">/// that lets the user switch between different tabs in the main content area</span>
+  <span class="c1">/// when present.</span>
+  <span class="c1">///</span>
+  <span class="c1">/// The [CupertinoTabBar.currentIndex] is only used to initialize a</span>
+  <span class="c1">/// [CupertinoTabController] when no [controller] is provided. Subsequently</span>
+  <span class="c1">/// providing a different [CupertinoTabBar.currentIndex] does not affect the</span>
+  <span class="c1">/// scaffold or the tab bar's active tab index. To programmatically change</span>
+  <span class="c1">/// the active tab index, use a [CupertinoTabController].</span>
+  <span class="c1">///</span>
+  <span class="c1">/// If [CupertinoTabBar.onTap] is provided, it will still be called.</span>
+  <span class="c1">/// [CupertinoTabScaffold] automatically also listen to the</span>
+  <span class="c1">/// [CupertinoTabBar]'s `onTap` to change the [controller]'s `index`</span>
+  <span class="c1">/// and change the actively displayed tab in [CupertinoTabScaffold]'s own</span>
+  <span class="c1">/// main content area.</span>
+  <span class="c1">///</span>
+  <span class="c1">/// If translucent, the main content may slide behind it.</span>
+  <span class="c1">/// Otherwise, the main content's bottom margin will be offset by its height.</span>
+  <span class="c1">///</span>
+  <span class="c1">/// Must not be null.</span>
+  <span class="kd">final</span> <span class="n">CupertinoTabBar</span> <span class="n">tabBar</span><span class="o">;</span>
+</code></pre></div></div>
+
+<blockquote>
+  <p>The [CupertinoTabBar.currentIndex] is only used to initialize a [CupertinoTabController] when no [controller] is provided. Subsequently providing a different [CupertinoTabBar.currentIndex] does not affect the</p>
+</blockquote>
+
+<p>官方重构了这个类，currentIndex确实只能初始化的时候用,提供了一个controller方法来控制index，而之前1.5版本官方对此类的注释如下:</p>
+
+<div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="c1">/// Setting and changing [CupertinoTabBar.currentIndex] programmatically will</span>
+  <span class="c1">/// change the currently selected tab item in the [tabBar] as well as change</span>
+  <span class="c1">/// the currently focused tab from the [tabBuilder].</span>
+
+  <span class="c1">/// If [CupertinoTabBar.onTap] is provided, it will still be called.</span>
+  <span class="c1">/// [CupertinoTabScaffold] automatically also listen to the</span>
+<span class="kd">final</span> <span class="n">CupertinoTabBar</span> <span class="n">tabBar</span><span class="o">;</span>
+</code></pre></div></div>
+
+<p>这应该是官方开发Tabbar时引入的一个bug。所以在学习一些新的框架的时候，确实会遇到一些不成熟的地方，只有充分理解了框架的一些原理才能更好的写自己的项目，不过这里也再次印证了开源框架对开发项目的一些好处和弊端。</p>
+
+<p>flutter毕竟是一个新的UI框架，还有很多需要改善的地方，也需要不断的完善开发生态。不过flutter总体来讲，在新手学习成本和性能方面已经算是优秀的。对于开发一些简单实用性的软件已经足够。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

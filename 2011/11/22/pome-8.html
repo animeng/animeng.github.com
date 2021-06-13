@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>囚犯分绿豆问题解答 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2011/11/22/pome-8.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="囚犯分绿豆问题解答">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2011/11/22/pome-8.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">囚犯分绿豆问题解答</h1>
+  
+  <span class="post-meta">11月 22日, 2011</span><br>
+  
+  <span class="post-meta small">1 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>5个囚犯，分别按1-5号在装有100颗绿豆的麻袋抓绿豆
+规定每人至少抓一颗，而抓得最多和最少的人将被处死，而且，他们之间不能交流，但在抓的时候，可以摸出剩下的豆子数。问他们中谁的存活机率最大？</p>
+
+<ol>
+  <li>他们都是非常聪明的人</li>
+  <li>他们的原则是先求保命，再去多杀人；不能保命的话，也要多杀人。</li>
+  <li>100颗不必都分完</li>
+  <li>若有重复的情况，则也算最大或最小，一并处死 (中间数的重复不算）</li>
+</ol>
+
+<p>有一种分析是这样的：</p>
+
+<p>第一个和第二个的活命机会是均等的。他们的机会关键是看剩下的人如何拿。 因为后面的看不到前面人拿的颗数，只能看到剩下的颗数。。。所以第一个如果拿N个，第二个就会拿N+1个或N-1个，如果他不拿N+1或N-1。就会给第三个机会拿他俩中间的数，所以第二个只会拿N+1或N-1个。。。而第三个则会按照袋里剩下数得出前两人拿之和。他也会尽量与他俩拿的数字接近，但不同。当前两人的和为2N+1时第三人他可以拿N+2或N-1，当前两人之和为2N-1时他可以拿N-2或N+1。。。 而第四人也会按照前三人之和除以三以后选择拿的颗数，但此时的平均数未必会=N，他会选择新的平均数加减2颗来拿，但也必定与前三人拿之数相连。 而第五人其实是没有活命的机会的，他只是用来决定前四人中谁陪他死的。</p>
+
+<p>这样就得出结论：从死亡概率的角度来算，第一个和第二个死亡的概率是这样变化的，每当抓取的人数多1个的时候他们的概率就是前一次死亡概率P*1/2,（这里稍微解释一下，比如A，B，C三个人，下面的排序是按照他们拿绿豆的个数排列的，在C没加入之前，A，B的排列只有两种AB，BA如果没任何人加入，他们俩都得死，幸运的是C现在要加入，所以必定是这样排列的CAB，ABC，CBA，BAC。从中可以看出A和B的存活概率都增加了1/2，当然C必定死，以此类推如果加入D，则C存活的概率就回是1/2）。所以第一个和第二个后面还有3个人，故死亡的概率就为1/2 * 1/2 * 1/2 = 1/8，同理第三个人死亡的概率就为1/2 * 1/2 = 1/4，那么第四个人的死亡概率就为1/2，第5个人别想了必定要死。</p>
+
+<p>但是这样分析，你会发现100课绿豆这个限定条件就没有任何意义了？就是1k和1w个绿豆都一样，那聪明的囚犯会这样想么？同样100这个数字就给了第一个囚犯机会，让他有机会决定这个豆子如何分配。所以这个分析虽然没错，但是忽略了一个前提条件，那么完整的分析应该包含下面的内容。
+所以这里根据100个绿豆5个人可以看出第一个人肯定会考虑这个数字100/5 = 20。同时考虑到5人选择的数字肯定连续。那么第一个人就回考虑以下3种情况：</p>
+
+<ol>
+  <li>第一人如果取1个绿豆，那第一个人智商基本为0，不符合题目要求。</li>
+  <li>考虑拿的绿豆个数1&lt;N &lt; 5时
+那么第一个人如果取1&lt;N&lt;5那么后果是什么那？第二人肯定取N+1，而不会取N-1，因为第二个人清楚的知道不可能出现54321这种排列了，因为第一个人取得的绿豆没有超过5个，所以如果自己取N-1自然减少了自己生存的概率，这些问题1自然可以推论出2肯定取N+1，那么自然1的生存概率就减少了，1肯定不干。</li>
+  <li>考虑拿的绿豆个数18&lt;N （这里为何是18哪？因为18,19,20,21,22的和正好是100）
+那同样就不可能出现12345这种排列，所以也不可能。所以第一个人取得绿豆的合理范围是5&lt;=N&lt;=18.</li>
+</ol>
+
+<p>综上所述第一个人最有权力决定整个事件的结果，而往往最后的人基本没有决定权。也符合现实中的很多决策逻辑！所以在处理实际问题的时候，我们尽量争取自己作为决策的第一人，因为这样才能使自己的利益最大化！</p>
+
+<p><a href="https://blog.csdn.net/mengtnt/article/details/7002323">原文链接</a></p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

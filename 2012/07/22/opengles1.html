@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>如何配置OpenGL ES的上下文 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2012/07/22/opengles1.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="如何配置OpenGL ES的上下文">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2012/07/22/opengles1.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">如何配置OpenGL ES的上下文</h1>
+  
+  <span class="post-meta">07月 22日, 2012</span><br>
+  
+  <span class="post-meta small">1 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>OpenGL ES的每种实现，都会有个方法，来创建渲染图形的上下文，从而可以管理Opengl ES指定的状态。通过放置这些状态到上下文中，这样在多任务的情况下，就很容易的共享图像的硬件设备，从而互不影响各自的状态。</p>
+
+<p>这一章就是来详解，如何创建和配置IOS中的图形上下文。
+一个EAGL上下文就是一个OpenGL ES图形渲染上下文在IOS中的实现。
+在你使用Opengl ES的函数之前，你必须初始化EAGLContext对象，并且设置它作为当前上下文。EAGLContext类也为你的应用程序提供了一些方法，这些方法可以使Opengl ES的内容方便的同核心动画进行集成工作。没有这些方法，你的应用程序在协同离屏图像工作时，会被限制很多。</p>
+
+<p>一个线程中的当前上下文是作为Opengl ES函数调用的目标
+在IOS应用程序中，每个线程都会维护一个当前上下文。当你的应用程序使用Opengl ES的调用时，线程的上下文就会被那个调用改变。
+要设置当前上下文，你可以通过调用EAGLContext类的setCurrentContext:方法。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">EAGLContext</span> <span class="nf">setCurrentContext</span><span class="p">:</span><span class="n">myContext</span><span class="p">];</span>
+</code></pre></div></div>
+
+<p>你的应用程序也可以通过EAGLContext类的currentContext方法来获取一个线程的当前上下文。</p>
+
+<p>当你的应用程序设置了一个新的上下文时，EAGL会释放先前的上下文，并且获取新的上下文。</p>
+
+<p>注意：如果你的应用程序需要在同一个线程中转换两个或者更多的上下文时，在设置一个新的上下文作为当前上下文之前，要调用glFlush函数。这样确保先前提交的一些命令可以及时的传递给图像硬件设备。
+每个上下文都会指定一个Opengl的版本作为目标</p>
+
+<p>一个EAGLContext对象可以支持Opengl ES1.1和Opengl ES2.0中的任何一个，但是不能同时支持两个。原因归于Opengl ES2.0的设计。Opengl ES 2.0移除了Opengl ES 1.0中所有的处理图像的固定功能流水线（其实也就是对顶点和纹理进行处理的变换引擎）的函数，并且增加了许多新的函数，以便于提供一个更清晰的着色接口。如果你的应用程序在Opengl ES1.1的上下文中尝试调用Opengl ES 2.0的函数，那么结果会是未定义的。</p>
+
+<p>当你的应用程序创建和初始化EAGLContext对象时，可以来决定那种版本的Opengl ES会被支持。创建Opengl ES 2.0上下文时，你的应用程序可以如下初始化：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">EAGLContext</span><span class="o">*</span> <span class="n">myContext</span> <span class="o">=</span> <span class="p">[[</span><span class="n">EAGLContext</span> <span class="nf">alloc</span><span class="p">]</span>
+<span class="nl">initWithAPI:</span><span class="nf">kEAGLRenderingAPIOpenGLES2</span><span class="p">];</span>
+</code></pre></div></div>
+
+<p>如果你的设备不支持相应的Openggl ES的版本，那么initWithAPI:的方法会返回nil。在使用EAGLContext的上下文时，你的应用程序应该测试下，确保上下文是被成功的初始化。</p>
+
+<p>为了支持Opengl ES2.0和Opengl ES1.1的渲染特性，你的应用程序应该首先尝试初始化一个Opengl ES 2.0的渲染上下文。如果返回的对象是nil，那么就应该初始化一个Opengl ES 1.1的上下文来代替。清单2-1 演示了如何去做。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">EAGLContext</span><span class="o">*</span> <span class="nf">CreateBestEAGLContext</span><span class="p">()</span>
+  <span class="p">{</span>
+     <span class="n">EAGLContext</span> <span class="o">*</span><span class="n">context</span><span class="p">;</span>
+     <span class="n">context</span> <span class="o">=</span> <span class="p">[[</span><span class="n">EAGLContext</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithAPI</span><span class="p">:</span><span class="n">kEAGLRenderingAPIOpenGLES2</span><span class="p">];</span>
+     <span class="k">if</span> <span class="p">(</span><span class="n">context</span> <span class="o">==</span> <span class="nb">nil</span><span class="p">)</span>
+     <span class="p">{</span>       <span class="n">context</span> <span class="o">=</span> <span class="p">[[</span><span class="n">EAGLContext</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithAPI</span><span class="p">:</span><span class="n">kEAGLRenderingAPIOpenGLES1</span><span class="p">];</span>
+     <span class="p">}</span>
+     <span class="k">return</span> <span class="n">context</span><span class="p">;</span>
+  <span class="p">}</span>
+</code></pre></div></div>
+
+<p>清单 2-1 在同一个应用程序中支持Opengl ES 1.1和Opengl ES 2.0</p>
+
+<p>一个上下文的API属性表明了上下文支持那个Opengl ES的版本。你的应用程序应该测试上下文的API属性，并且使用它选择正确的渲染路径。通常的做法是为每一个渲染的路径创建一个类。你的应用程序可以在初始化的时候，一次创建一个渲染器并且测试上下文。</p>
+
+<p>一个EAGL的共享组（sharegroup）管理上下文中的Openggl ES对象。
+尽管上下文保存了Openggl ES的状态，但是它不能直接管理Opengl ES的对象。相反，Openggl ES对象是通过EAGLSharegroup对象创建和管理的。每一个上下文都包含了一个EAGLSharegroup对象，由它代笔创建对象。</p>
+
+<p>假如两个或者更多的上下文引用到了同样的共享组，一个共享组的优点就会变得很明显，如图表2-1所示。当多个上下文关联到同一个共享组时，被任意一个上下文创建的Opengl ES对象在所有的上下文中都是可用的。假如你创建了一个对象，而把这个相同的对象绑定到了另一个上下文中时，你就可以引用同样的对象。在移动设备中，资源是非常匮乏的。在多个上下文中创建同样内容的备份是浪费的。共享通用的资源可以更好的利用设备的图形资源。</p>
+
+<p>你的应用程序会把共享组看成一个不透明的对象。也就是你没有方法和属性可以调用，并且它都是通过引用的上下文自动的retain和release的。</p>
+
+<p><img src="/images/opengl-1-1.png" alt="图 2-1 两个上下文共享一个Opengl ES对象" /></p>
+
+<p>共享组最有用的是以下两种情况：</p>
+<ol>
+  <li>
+    <p>在不同的上下文中，共享的资源不会变化
+当你想要应用程序在一个线程中创建新的Opengl ES对象，而在主线程渲染时。在这种情况下，第二个上下文运行在一个独立的线程中，并且致力于获取数据和创建资源。在所有的资源都加载完成后，第一个上下文绑定到这些对象上，然后立即使用它。</p>
+  </li>
+  <li>
+    <p>创建多个上下文引用到同一个共享组的方法，首先第一个上下文通过调用initWithAPI:初始化，那么一个共享组就会自动的被创建。然后第二个或者之后的上下文初始化时，就可以通过调用initWithAPI:sharegroup:的方法使用第一个上下文创建的贡献组。清单2-2展示了如何工作。在清单2-1中，第一个上下文通过使用快捷方法。第二个上下文是通过一个扩展的API传递了第一个上下文的共享组从而被创建。</p>
+  </li>
+</ol>
+
+<p>重要：共享同一个共享组的所有的上下文，都必须使用同一个版本的Opengl ES API来初始化上下文。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">EAGLContext</span><span class="o">*</span> <span class="n">firstContext</span> <span class="o">=</span> <span class="n">CreateBestEAGLContext</span><span class="p">();</span>
+<span class="n">EAGLContext</span><span class="o">*</span> <span class="n">secondContext</span> <span class="o">=</span> <span class="p">[[</span><span class="n">EAGLContext</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithAPI</span><span class="p">:[</span><span class="n">firstContext</span> <span class="nf">API</span><span class="p">]</span>
+<span class="nl">sharegroup:</span> <span class="p">[</span><span class="n">firstContext</span> <span class="nf">sharegroup</span><span class="p">]];</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>清单 2-2 用同一个共享组创建2个上下文 当共享组是被多个上下文共享时，你的应用程序就有义务要管理Opengl ES对象状态的改变。规则如下： 当你的应用程序可能要通过多个上下文进入某个对象的同时，要确保对象没有被同时改变。 当对象要被发给上下文的命令改变时，对象此时不能被另外的上下文读取或者改变。 在一个对象被改变时，必须是被绑定对象的所有的上下文才能看到这些改变。如果一个上下文在绑定之前就引用它，那么这个对象的内容是没有被定义的。 这里有一些步骤，是你在更新Opengl ES对象需要遵循的：
+</code></pre></div></div>
+
+<ol>
+  <li>在每一个可能使用该对象的上下文中调用glFlush方法</li>
+  <li>在某个上下文想要改变对象的同时，调用一个或者更多的Opengl ES的函数来改变对象</li>
+  <li>在接收到上下文状态改变的通知时，调用glFlush函数</li>
+  <li>在每个其他的上下文中，绑定对象的标志。</li>
+</ol>
+
+<p>注意：共享对象的另一个方法是去使用单一的渲染上下文，但是多个目的缓冲帧。在渲染时，你的应用程序绑定需要的缓冲帧，然后渲染成需要的帧。因为所有的Opengl ES对象都是从单一的上下文中渲染的，所以他们看到的是同样的Opengl ES的数据。这个方式使用的资源很少，但是仅仅对单线程的应用程序有用，在单线程中你可以很好的控制上下文的状态。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

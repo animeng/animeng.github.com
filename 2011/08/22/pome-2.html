@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>UIViewController使用技巧 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2011/08/22/pome-2.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="UIViewController使用技巧">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2011/08/22/pome-2.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">UIViewController使用技巧</h1>
+  
+  <span class="post-meta">08月 22日, 2011</span><br>
+  
+  <span class="post-meta small">1 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>UIViewController顾名思义，视图控制器应该在MVC设计模式中扮演控制层的角色。最开始的时候一直不理解为何有了UIView还要UIViewController做什么用，不都是向视图中增加view。如果你开发的应用界面非常的简单，确实没有这个必要，但是对于视图中复杂的数据显示和数据处理，如果没有这个控制器，这样会使得代码的继承深度大大增加，不利于代码的阅读，首先看下官方API对UIViewController的解释：</p>
+<blockquote>
+  <p>The UIViewController class provides the fundamental view-management model for iPhone applications,
+You use each instance of UIViewController to manage a view hierarchy(视图控制器为Iphone的应用程序提供了基础的视图管理模型,你可以使用视图控制器管理视图的继承树)。从这里就可以看出，如果使用了视图控制器，你就可以方便的管理视图中的子视图，假如没有了这个控制器，可想而知每个视图岂不是都要用继承才能管理彼此的关系。</p>
+</blockquote>
+
+<p> UIViewController的基础功能是管理界面中的view，但是一个复杂的应用程序肯定有好多的视图控制器，那么自然如果视图控制要有管理自己的功能就更加强大。先看API文:</p>
+
+<blockquote>
+  <p>View controllers rarely operate in isolation.
+If your application uses a navigation or tab bar controller,
+or if your application presents views modally,then it typically has several view controllers
+interacting with each other to implement those navigaion features(视图控制器很少单独使用。假如你的应用程序要使用导航或者转换条控制器，或许是你的应用程序要呈现模态的视图，明显的这里有很多的视图控制器相互关联来实现导航的功能)。</p>
+</blockquote>
+
+<p>所以可以看出，UINavigationController和UITabBarController是用来控制视图控制器的使用的，同样他们的跟视图也是UIViewController，这里就说明了UIViewController是自己可以控制自己的。这也是为何我们使用UINavigationController的时候不允许在把一个NavigationController推入堆栈中，这样极容易形成自己队递归调用自己，造成堆栈溢出。以下是使用UIViewController应该注意的地方）</p>
+
+<p>1.首先看loadView和viewDidLoad的区别，两者都是用来初始化试图控制器中的视图如何显示的。还是先看官方API解释:</p>
+
+<blockquote>
+  <p>If you create your views manually, you must override this method and use it to create your views.
+If you use Interface Builder to create your views and initialize the view controller that is you initialize the view using the initWithNibName:bundle: method,
+set the nibName and nibBundle properties directly,or create both your views and view controller in Interface Builder—then you must not override this method.
+(如果你手动创建一个视图控制器，你必须重载这个方法，去使用他创建你的视图。如果你使用Interface builder创建和初始化的视图控制器，你就不必重载此方法)。所以当你手动创建一个视图控制器的时候一定要注意重载loadView，否则你的视图将不回显示你增加的任何字视图）</p>
+</blockquote>
+
+<p>2.viewDidUnLoad这个方法最容易误导人，先看API解释：Called when the controller’s view is released from memory(当控制器的视图从内存中释放的时候被调用),个人觉得官方的解释对英语非母语的国家的人来说，很容易理解为视图控制器release的时候，调用此方法。但是如果实际调试以下，视图控制器释放的时候不会调用该方法。再进一步分析API文档：</p>
+
+<blockquote>
+  <p>This method is called as a counterpart to the viewDidLoad method It is called during low memory conditions when the view controller needs to release its view and any objects associated with that view to free up memory(这个方法是被调用相对于viewDidLoad方法的，在内存警告的情况下，当试图控制器需要释放它的视图和这个视图中相关联的任何对象来释放内存的时候，调用此方法)。</p>
+</blockquote>
+
+<p>这里还有一点要注意的时，当出现内存警告的时候，是调用正在显示的视图控制器的父视图控制器的viewdidUnload方法，而不是正在显示的视图控制器的viewDidUnload方法。因为如果调用了正在显示的视图控制器的viewDidUnload方法，那么用户正在看的界面就会消失，虽然释放了内存但是用户显然没法接受，自然要释放该视图下面看不到的视图控制器中的视图。被释放的视图，下次加载的时候再调用viewDidLoad的方法，所以ViewDidUnload的方法是和viewDidload方法相互对应的。</p>
+
+<p>3.为了方便内存的管理，曾经写过这样的代码：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">MyNibController</span>  <span class="err">＊</span><span class="n">nibController</span> <span class="o">=</span> <span class="p">[[</span><span class="n">myNibController</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithNibName</span><span class="p">:</span><span class="s">@"myNibController"</span> <span class="nf">bundle</span><span class="p">:</span><span class="nb">nil</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">view</span> <span class="nf">addSubview</span><span class="p">:</span><span class="n">nibController</span><span class="p">.</span><span class="n">view</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">nibController</span> <span class="nf">release</span><span class="p">];</span>
+</code></pre></div></div>
+
+<p>分析下这样的代码潜在的危害，这个应该清楚一点当AddSubView这个方法调用的时候，nibController.view这个视图的引用计数就会加1。但是这里释放了nibController这个控制器，那么管理这个视图的控制器没有了，但是该视图确实还存在。想象下，就像你开动了汽车发动机，但是没有人驾驶，任之随便的跑，这辆汽车会带来多大的危害。这里很容易出问题的地方就是，如果再nibController中写了一个按钮响应方法：（－IBAction）click(id)sender，当点击此按钮的时候程序就会crash掉，因为这个方法已经不存在了，自然会bad access。</p>
+
+<p>4.有时候常常需要找到一个view的控制器。怎么办，其实从官方API中也是可以找到的。API解释：</p>
+<blockquote>
+  <p>UIViewController is part of your application’s controller layer,
+a view controller is responsible for coordinating interactions,
+between your application’s visual presentation (your custom views) and your application’s data model (your custom objects).
+A view controller is also responsible for handling changes to the views that comprise its view layer.(视图控制器是应用的控制器层的一部分，一个视图控制器视图层和数据层交互时的响应者，一个视图控制器也能响应视图层中的响应控制)这个自然就找到方法如下，这里view是当前的视图：</p>
+</blockquote>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="n">UIResponder</span><span class="o">*</span> <span class="n">nextResponder</span> <span class="o">=</span> <span class="p">[</span><span class="n">view</span> <span class="nf">nextResponder</span><span class="p">];</span>
+
+    <span class="k">if</span> <span class="p">([</span><span class="n">nextResponder</span> <span class="nf">isKindOfClass</span><span class="p">:[</span><span class="n">UIViewController</span> <span class="nf">class</span><span class="p">]])</span> <span class="p">{</span>
+
+      <span class="k">return</span> <span class="p">(</span><span class="n">UIViewController</span><span class="o">*</span><span class="p">)</span><span class="n">nextResponder</span><span class="p">;</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>以上都是viewController使用过程中容易出错的地方，希望总结完了，让自己能更深一步的理解，同时也能给广大需要的朋友一些启发吧！</p>
+
+<p><a href="https://blog.csdn.net/mengtnt/article/details/6709930">原文链接</a></p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

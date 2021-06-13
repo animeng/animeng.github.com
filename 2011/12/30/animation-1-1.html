@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>第二章 我们怎么来做动画？ </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2011/12/30/animation-1-1.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="第二章 我们怎么来做动画？">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2011/12/30/animation-1-1.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">第二章 我们怎么来做动画？</h1>
+  
+  <span class="post-meta">12月 30日, 2011</span><br>
+  
+  <span class="post-meta small">2 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>核心动画提供了大量的属性，你可以用这些属性在核心动画的层、cocoa的窗口和视图上面做动画。在你的工具包中，核心动画不应该在你的应用程序的每处都使用。这章就是讲你可以使用的属性以及讨论那些属性你应该使用。</p>
+
+<p>核心动画是一个伟大的技术，但是每个伟大的技术都不能被滥用。 这里有一些建议，可以避免你进入过度使用的误区。你会感激你采取了这个建议，用户也会感谢的。</p>
+
+<h2 id="那些属性可以让我们做动画哪">那些属性可以让我们做动画哪</h2>
+
+<p>动画是要应用到可视的东西上：窗口，视图，和层。除非有些可视的东西要被改变，否则动画没有任何意义。这就是为什么虽然你使用了一个层，这个层也包含了这些动画属性的键值对，你也不能激活这些动画属性。这些动画属性只有根据核心动画指定改变时，才能提供视觉的反馈。</p>
+
+<p>这个章节的段落，罗列了一些条目，这些条目可以帮助你更好的理解，哪些动画属性对你来说是可用的。</p>
+
+<h2 id="颜色">颜色</h2>
+
+<p>核心动画使用了一个内部的算法来计算颜色的改变。当你在CABasicAnimation中指定一个fromValue和一个toValue，或者你提供给CAKeyframeAnimation一个颜色数组，数组中的值为CGColorRef，那么核心动画就在动画其间，在视图上把所有的颜色都填充。</p>
+
+<p>列表2-1 演示了一个基本的动画，如何在5秒内改变背景颜色从红色到绿色。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">CABasicAnimation</span><span class="o">*</span><span class="p">)</span><span class="n">backgroundColorAnimation</span><span class="p">;</span>
+
+<span class="p">{</span>
+
+<span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">anim</span> <span class="o">=</span>
+
+<span class="p">[</span><span class="n">CABasicAnimation</span>
+
+<span class="nl">animationWithKeyPath:</span><span class="err">@”</span><span class="n">backgroundColor</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">anim</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="p">];</span>
+
+<span class="n">CGColorRef</span> <span class="n">red</span> <span class="o">=</span>
+
+<span class="n">CGColorCreateGenericRGB</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+
+<span class="n">CGColorRef</span> <span class="n">green</span> <span class="o">=</span>
+
+<span class="n">CGColorCreateGenericRGB</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+
+<span class="p">[</span><span class="n">anim</span> <span class="nf">setFromValue</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="n">red</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">anim</span> <span class="nf">setToValue</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="n">green</span><span class="p">];</span>
+
+<span class="n">CFRelease</span><span class="p">(</span><span class="n">red</span><span class="p">);</span>
+
+<span class="n">CFRelease</span><span class="p">(</span><span class="n">green</span><span class="p">);</span>
+
+<span class="k">return</span> <span class="n">anim</span><span class="p">;</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这个示例代码创建了一个基础的动画对象CABasicAnimation，使用了关键路径backgroundColor，并且通过setFromValue和setToValue为它设定了参数。通过setDuration：5.0设置了执行时间为5秒。当这个动画增加到层中时，层的背景颜色就立刻开始了动画。</p>
+
+<p>在Iphone下颜色的改变是通过UIColore类来操控的。列表2-2演示了在iphone下如何创建同样的动画。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="n">CABasicAnimation</span><span class="o">*</span><span class="p">)</span><span class="n">backgroundColorAnimation</span><span class="p">;</span>
+
+<span class="p">{</span>
+
+<span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">anim</span> <span class="o">=</span>
+
+<span class="p">[</span><span class="n">CABasicAnimation</span>
+
+<span class="nl">animationWithKeyPath:</span><span class="err">@”</span><span class="n">backgroundColor</span><span class="err">”</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">anim</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">anim</span> <span class="nf">setFromValue</span><span class="p">:(</span><span class="n">id</span><span class="p">)[[</span><span class="n">UIColor</span> <span class="nf">redColor</span><span class="p">]</span> <span class="nf">CGColor</span><span class="p">]];</span>
+
+<span class="p">[</span><span class="n">anim</span> <span class="nf">setToValue</span><span class="p">:(</span><span class="n">id</span><span class="p">)[[</span><span class="n">UIColor</span> <span class="nf">greenColor</span><span class="p">]</span> <span class="nf">CGColor</span><span class="p">]];</span>
+
+<span class="k">return</span> <span class="n">anim</span><span class="p">;</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>你可以做动画的颜色属性有</p>
+
+<p>backgroundColor，层的背景颜色</p>
+
+<p>borderColor，层的边框颜色</p>
+
+<p>shadowColor，层的阴影颜色，目前，shadowColor这个属性在iphone上不可用。</p>
+
+<h2 id="动作">动作</h2>
+
+<p>当你想在屏幕上移动时，核心动画为每个可以做动画的层上，提供了矩阵和点。你可以移动的属性有</p>
+
+<h3 id="anchorpoint">anchorPoint</h3>
+
+<p>默认的锚点是0.5,0.5，表示在层的中间。如果你改变锚点为0.0,0.0，那么层的锚点就移动到了左上角。</p>
+
+<h3 id="bounds">Bounds</h3>
+
+<p>边框属性只能使边框矩阵的形状做动画，但是不会影响到层的位置。</p>
+
+<h3 id="frame">Frame</h3>
+
+<p>框架的属性在层中不能够做动画。你可以设定这个参数和层内部改变的值，然而你却不能看到真实的动画。如果你想使层的边框做动画，你需要使用bounds属性改变边框的矩阵。如果你想改变位置，使用position这个属性。在视图和窗口上，设定frame会引起边框的动画。</p>
+
+<p>Position</p>
+
+<p>使用position属性来移动一个层的位置。Position属性依赖于anchorPoint属性。如果你想在父视图中居中一个层，那么你需要把层的anchorPoint设定为默认的0.5,0.5，然后计算父视图的中心位置。表2-3演示了怎么去居中一个层。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">NSRect</span> <span class="n">parentViewRect</span> <span class="o">=</span> <span class="p">[[</span><span class="n">window</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">frame</span><span class="p">];</span>
+
+<span class="p">[</span><span class="n">layer</span> <span class="nf">setPosition</span><span class="p">:</span>
+
+<span class="n">CGPointMake</span><span class="p">(</span><span class="n">parentView</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="o">/</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span>
+
+<span class="n">parentView</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="o">/</span><span class="mi">2</span><span class="p">)];</span>
+</code></pre></div></div>
+
+<h3 id="zposition">zPosition</h3>
+
+<p>zPosition控制层的z轴。这决定了层从前到后的位置。它能做这样的动画，在一个层的顶部转换出一个层。</p>
+
+<h2 id="特征">特征</h2>
+
+<p>一个层每一个可视的特性都能做动画。这些是被称为attributes，因为他们是可以影响层可视属性的字段。你能做动画的属性字段有</p>
+
+<p>borderWidth</p>
+
+<p>borderWidth属性可以设定层周围的边框宽度。</p>
+
+<p>cornerRadius</p>
+
+<p>cornerRadius属性可以设定一个层的圆角。</p>
+
+<h2 id="可视度">可视度</h2>
+
+<p>层是一个可视的组件，但是你可以决定怎么可视。有时，你需要全部或者部分的看到，这就需要你来控制这些可视字段。你可以做动画的可视字段如下：</p>
+
+<h3 id="opacity">Opacity</h3>
+
+<p>Opacity属性决定层的透明度。1.0代表层不透明，0.0代表全透明。使用这两个数值之间的值，来设定你要显示的层的透明情况。</p>
+
+<h3 id="hidden">Hidden</h3>
+
+<p>理论上，hidden属性是具有动画性质的。然而，它仅仅是一个开关。如果你想要做透明的动画变化，最好使用opacity属性代替hidden属性。</p>
+
+<h2 id="滤镜">滤镜</h2>
+
+<p>当它和核心图像一起使用时，核心动画的层可以有复杂的滤镜效果，通过设定一个或者更多的字段来应用。核心图像滤镜在写本书之前，在iphone下是不可用的。你可以做动画的滤镜字段如下：</p>
+
+<h3 id="filters">Filters</h3>
+
+<p>Filters属性是一个滤镜数组，你可以直接应用在层的内容上。它影响整个层，包括边框和背景。</p>
+
+<h4 id="compositingfilter">compositingFilter</h4>
+
+<p>不同于filters属性，compositingFilter属性使用了一个单一的滤镜作为参数。</p>
+
+<h4 id="backgroundfilters">backgroundFilters</h4>
+
+<p>backgroundFilters属性提供了一个唯一的方法，应用滤镜到层的背景上。</p>
+
+<h2 id="内容">内容</h2>
+
+<p>一个层的内容字段就是设定使用的图像，就是CGImageRef。如果你使用CAKeyframeAnimation来动画这个字段，你可以使用很少的代码创建一个简单的幻灯片应用。当这个动画是被增加到层中时，每张图片会按照你在数组中指定的图片位置进行放映。你也能够改变放映的类型。我们在第六章“Layer Filters”会详细讲解转变。</p>
+
+<p>你可以做动画的内容字段包括：</p>
+
+<h3 id="contents">Contents</h3>
+
+<p>Contens这个属性就是你要展示的图片对象CGImageRef</p>
+
+<h3 id="contentsrect">contentsRect</h3>
+
+<p>想像下contentsRect作为层内容的可视区域。内容的矩形区域（x，y，width，height）也是绑定到层的框架上的。contentRect是一个比例值，而不是屏幕上真实的像素点。默认的是0.0,0.0,1.0,1.0.当你改变x时，例如，在0和1之间你设定为0.25，那么内容的观察窗口就展示在400像素中的100像素的位置（400 x 0.25），也就是一个层原始宽度的25%。如果你设定了width属性为0.25，那么观察窗口的宽度就是100，也就是一个层原始宽度的25%。图2-1和2-2演示了contentsRect如何展示原始的图像层的区域。</p>
+
+<p><img src="/images/animation-2-1.gif" alt="图2-1" /></p>
+<center>图2-1</center>
+
+<p><img src="/images/animation-2-2.gif" alt="图2-2" /></p>
+<center>图2-1</center>
+
+<h2 id="遮罩">遮罩</h2>
+
+<p>层提供了一个方法，用这个方法去遮罩内容图像。你可以控制的遮罩字段包括：</p>
+
+<h3 id="mask">Mask</h3>
+
+<p>Mask属性就是层本身。遮罩层的透明度决定了渲染的效果。当你指定一个遮罩时，记住遮罩的宽度决定了那些需要被展示，而非来自于视图。换句话说，如果你指定了遮罩层的宽和高为300x300像素，指定了遮罩的中心属性为窗口的中心。你会看到一个300x300的部分展示在了窗口中心。300x300区域周围的部分就被遮去了。</p>
+
+<h3 id="maskstobounds">masksToBounds</h3>
+
+<p>masksToBounds这个属性确保了内容是被裁剪到矩阵中。当你设定圆角时，这个属性尤其有用。它确保了内容区域不会溢出到内容矩阵的外面。</p>
+
+<h2 id="我们应该使那些属性激活哪">我们应该使那些属性激活哪？</h2>
+
+<p>核心动画给了你一个强大和方便的能力，让你提升应用程序的用户体验。然而，在你使用核心动画的时候，你应该坚持一些法则。换句话说，你可以使某些东西做动画，并不意味这你应该让它做这个动画。在下面的段落里，我们谈论一些重要的规律，可以用来指导你的设计，那些东西可以做动画，那些不应该。</p>
+
+<h2 id="设计法则">设计法则</h2>
+
+<p>我们需要面对的是，开发者不是设计者。对于下面的陈述会有一些例外，但是大多数都会是一个规则。假如你是一个设计者，你可能会介意下面的声明，我会感谢你的大度原谅的。对于剩下，这都是一些有用的向导。</p>
+
+<h3 id="保持简单">保持简单</h3>
+
+<p>这个建议你听了上千遍了，但是你仍然忽略它。不得不提醒开发者这个基本的规则是，并不因为你可以给如此小的iphone视图上，增加所有的控件来执行一些任务，就意味着你应该这样做。当你思考简单时，不是让你思考如何更简单的实现，而是要思考用户如何能更简单的使用。对用户保持简单而不是你。</p>
+
+<h3 id="不要设计借鉴">不要设计，借鉴</h3>
+
+<p>You are likely in the nondesigner engineer camp as that label applies to the majority.。因此，你从来就不应该白手起家的设计一个用户体验。相反，你应该看一看你比较佩服的应用程序，然后借鉴你喜欢的创意。</p>
+
+<h3 id="聘用一个艺术家">聘用一个艺术家</h3>
+
+<p>如果你可以支付起一个艺术家的钱，聘用他。我曾经看到过一些令人惊讶的设计，他会让整个项目如此的完美，以至于没有一点可以挑剔的空间。得到一个恰当的设计是值得花这些钱的。你打算销售的应用程序，需要建立这些项目的预算。</p>
+
+<h3 id="通过书籍">通过书籍</h3>
+
+<p>当你开始设计的时候，你应该遵循苹果的用户设计向导（HIG）。这点对于iphone开发者尤其重要，这里要是用其他的方法设计，不仅可能使应用看起来不好，而且也会给最终用户带来易用性的问题。例如，如果你尝试在目前视图的顶端，放置一个视图，而作为一个子视图。而不是通过导航控制器加载视图的。这样你将困难维护代码，并且应用程序的流程也会迷惑最终用户。相反，当你创建一个新视图，你应该像iphone的用户设计向导建议的那样，使用视图控制器，利用导航堆栈把视图进行拉入和推出。</p>
+
+<h2 id="什么时候我们应该使用核心动画那">什么时候我们应该使用核心动画那?</h2>
+
+<p>在某些在线论坛中，人们经常这样问问题：“我听到了核心动画是我应该使用的，但是我不确定什么时候使用它，而什么时候应该使用标准的视图”。我这里这样总结这个答案。使用视图来处理用户交互的，而使用核心动画来处理设计的元素的。有些情况可能要混合使用。</p>
+
+<h3 id="用户交互">用户交互</h3>
+
+<p>如果你需要捕获用户的输入，使用标准的控件。这些控件在Mac上是基于NSView的，而在iphone上是基于NSView。如果你设计了某些特效，核心动画的层可以给你提供一个简单的路径来改变你的控件的外观，来满足你的设计，但是剩下的，就留给视图了。你的用户就会认识他们，自然也就知道怎么用了。</p>
+
+<h3 id="设计元素">设计元素</h3>
+
+<p>如果你的应用程序要求一些动画去装饰视图，使用核心动画层。例如，如果你要在你的嘉年华的游戏里面旋转一个金光璀璨的背景，使用核心动画层。或者你想要一个图片在视图中做动画，装载图片并且设置层的内容字段来展示图片。然后显示的或者隐示的移动它的位置。</p>
+
+<h3 id="混合">混合</h3>
+
+<p>有时候你想用层装饰你的视图，因为这样在视觉上提升了视图的效果。例如，当一些数据从网络上下载时，你想展示一个进度条，你可以在界面设计中（interface builder），设计这样的视图，然后放置一个进度条到视图中。然后你可以通过设定cornerRadius和borderwidth两个属性，使视图有一个边框和一个圆角的矩阵。</p>
+
+<h2 id="那些我们不应该做动画">那些我们不应该做动画</h2>
+
+<p>可以说没有固定的规则，因此如果你已经看过了这些章节，但是仍然不确定那些应该做动画，你应该重温一下到目前为止讨论的规则。这些都可以引导你。</p>
+
+<p>在我使用核心动画工作数月后，了解到了其中的各种细节，然而，确实没有一个绝对的规则，说那些动画不应该做。你可以给任何东西加入支持的动画。但你不应该因为加入了一些动画，使用户界面变的难以使用。事实上，不要在用户准备点击的控件或者超链接上做动画。当你让整个视图在窗口的外面或者里面动画，来引起注意，尤其在iphone上是非常好的，但是你不要在屏幕上移动按钮和文本框。这是讨厌的，像是给用户一个恶作剧一样。但是，最后你需要决定在你的应用程序里，哪些动画不应该有。如果你不确定是否一个动画有意义，那么你就让一些人使用它，看他们的反应。这些将给你比本书更多的设计建议。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>哪些可以做动画是受限于核心动画提供的东西。幸运的是，它提供了你需要的和你想做的任何事情。好吧，让我们面对哪些动画应该做吧。我希望你坚持我们讨论过的简单原则，但是我们相信你做的无论什么，因为你可以做出来既漂亮又实用的软件。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

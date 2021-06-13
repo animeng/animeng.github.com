@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>一 Cocoa编程学习心得 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2010/11/11/cocoa-study-1.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="一 Cocoa编程学习心得">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2010/11/11/cocoa-study-1.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">一 Cocoa编程学习心得</h1>
+  
+  <span class="post-meta">11月 11日, 2010</span><br>
+  
+  <span class="post-meta small">2 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>刚毕业工作差不多有半年了，虽说自己在QQ空间和校内上都写过日志，毕竟那些都是些感情帖，写起来也好写。但是在CSDN上发表技术帖，还真是第一次，也望大家见谅自己的水平，能给一个中肯的评价，鄙人不胜感激。哎，感情不能扯多了，还是回到正题吧！</p>
+
+<p>自己目前工作的主要内容，就是在MAC OS下开发一些小工具，为公司内部使用。一进公司就开始学习了Objective c。由于本人c++还是有点功底，所以学习起来也不怎么吃力。因为毕竟objective c的语法很接近c语言，只是语法的表述符号不同而已。不过cocoa编程，objective c是基础中的基础必须要学好点了。</p>
+
+<p> 推荐大家的入门书籍是《Objective c第一版》，这本书相信有过语言基础的都能很容易的看懂。里面大都是基础的语法。看了这本书，也就是学会了Objective c的hello world的程序。接下来有点难度的就是《Objective c第二版》。郁闷的是这本书我当时看的时候还没有中文版，不知道是没有，还是我太笨了没找到。反正是在网上搜了半天大都是零零散散的翻译，没有整篇的，就只能硬着头皮看英文版的了。呵呵，顺便也提升下英文水平。不过现在好像是有人翻译了。大家也要感谢翻译的人，帮助了像我这种不喜欢看英文文档的人。下面就说下自己学习 《Objective c第二版》的一点心得吧！</p>
+
+<p>其实第二版相对于第一版难度提高了许多，有好多地方当时自己也是不大明白。不过现在经过进一步学习有些开始明白了。就拿Properties这一章来说吧，其实Properties在objective c中说到底了就是访问器。就像java里面常用的get和set方法一样，只是objective c语言增加了这个特性，不用程序员来增加这些方法了，直接给定义的成员变量增加Property的属性就行了。下面是我截取书中的例子：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">@interface</span> <span class="nc">MyClass</span> <span class="p">:</span> <span class="nc">NSObject</span>
+<span class="p">{</span>
+<span class="err">   </span> <span class="n">NSString</span> <span class="o">*</span><span class="n">value</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">@property</span><span class="p">(</span><span class="n">copy</span><span class="p">,</span> <span class="n">readwrite</span><span class="p">)</span> <span class="n">NSString</span> <span class="o">*</span><span class="n">value</span><span class="p">;</span>
+
+<span class="k">@end</span>
+<span class="c1">// assume using garbage collection</span>
+
+<span class="k">@implementation</span> <span class="nc">MyClass</span>
+
+<span class="k">@synthesize</span> <span class="n">value</span><span class="p">;</span>
+
+<span class="k">@end</span>
+</code></pre></div></div>
+
+<p>我当时看到这里的时候，虽然很容易理解了property的特性。但是对下面的代码 @property(copy, readwrite) NSString *value;其中的copy迷惑了，因为我看了前面的一个例子里面用的是retain。那么copy和retain的区别又是什么那？copy也就是我们常说的深度copy，而retain只是把指针赋给了对象。比如你创建了一个MyClass的对象MyClass str。然后NSString ＊copyStr ＝ ［str value］；这里就可以体现出retain和copy的区别了，如果你是用的retain，那么copyStr所指向的内存地址和str对象指向value的内存地址是一样的，只是value这个对象的引用计数被加一了。顺便说下引用计数这个概念，如果了解了c++中的auto_Ptr的实现，相信就很好理解了，不过后面我也会介绍的。我们接着刚才的讨论，如果你用的是copy那么copyStr所指向的地址和value就不一样了，就相当于value又复制了一份内容放到内存中，供copyStr使用。好像同名的二个人一样，名字相同本质可就大不一样了。想起了三字经中的一句话，人之初，性本善，习相近，性相远。表面看起来一样，实质确实不同的。不过提醒下大家用了copy的话，引用计数同样也会加一的。</p>
+
+<p>    下面就开始解决上面提到的引用计数的问题吧，这就涉及到了objective c的内存管理问题。也是学习objective c的一个重要部分，如果能很好的理解内存管理，这样以后你写出来的cocoa的程序，建壮性绝对比较好。否则，等到了不停的为运行时出错调试的时候，就知道当初自己内存管理学的多烂了。为了说明这个问题，我们被迫跳到The Runtime System这一章节来，不过我个人觉得这一章对内存管理讲的不够细致，要想更细致的学习还是看下cocoa的开发文档：Memory Management Programming Guide for Cocoa。下面是自己从网上看到的一篇非常不错的objective c内存管理的文章，拿来供大家参考。</p>
+
+<p>Objective-C的内存管理机制与.Net/Java那种全自动的垃圾回收机制是不同的，它本质上还是C语言中的手动管理方式，只不过稍微加了一些自动方法。</p>
+
+<p> Objective-C的对象生成于堆之上，生成之后，需要一个指针来指向它。例如：Obj ＊obj ＝ ［［Obje alloc］init］ 
+Objective-C的对象在使用完成之后不会自动销毁，需要执行dealloc来释放空间（销毁），否则内存泄露。 [obj dealloc]; 但是 Objective-C大多不直接调用dealloc，而是调用relelease下面就是解释。
+Objective-C采用了引用计数(ref count或者retain count)。对象的内部保存一个数字，表示被引用的次数。例如，某个对象被两个指针所指向（引用）那么它的retain count为2。需要销毁对象的时候，不直接调用dealloc，而是调用release。release会让retain count减1，只有retain count等于0，系统才会调用dealloc真正销毁这个对象。
+要想获得该对象的时候就用retain，［obj retain］
+Objective-C指针赋值时，retain count不会自动增加，需要手动retain。
+ClassA *obj1 = [[ClassA alloc] init]; //retain count = 1
+ClassA *obj2 = obj1; //retain count = 1
+[obj2 retain]; //retain count = 2
+[obj1 hello]; //输出hello
+[obj1 release]; //retain count = 2 – 1 = 1
+[obj2 hello]; //输出hello
+[obj2 release]; //retain count = 0，对象被销毁
+问题解决！注意，如果没有调用[obj2 release]，这个对象的retain count始终为1，不会被销毁，内存泄露。</p>
+
+<p>上面已经比较详细的讲解了Objective c的内存管理。但是还有一个经典的问题没有提到，就是autorelease pool。为什么说这个东西经典那？下面我们就来仔细的剖析。不管在c还是在c++里面，我们每次在内存中开辟了一块空间都要，一定要手动的来释放。然而往往一个大的工程里面有很多对象，对象的释放往往是很头疼的一件事，很可能开辟了一个对象但是忘记释放了。 所以我们经常说malloc和free，new和delete要成对出现，否则就会出现内存泄露。 但是有时候代码会欺骗我们，例如下面一个简单的工厂模式代码：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">class</span> <span class="n">CPU</span>
+<span class="p">{</span>
+<span class="p">};</span>
+
+<span class="n">class</span> <span class="n">SimpleFactory</span>
+<span class="p">{</span>
+
+<span class="nl">public:</span>
+
+<span class="err"> </span><span class="k">static</span> <span class="n">CPU</span> <span class="o">*</span> <span class="n">GetCPU</span><span class="p">()</span>
+<span class="err"> </span><span class="p">{</span>
+<span class="err">  </span><span class="k">return</span> <span class="n">new</span> <span class="n">CPU</span><span class="p">;</span>
+<span class="err"> </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+
+<span class="p">{</span>
+
+<span class="err">    </span> <span class="n">CPU</span> <span class="o">*</span> <span class="n">cpu</span> <span class="o">=</span> <span class="n">SimpleFactory</span><span class="o">::</span><span class="n">GetCPU</span><span class="p">();</span>
+
+<span class="err">    </span> <span class="n">delete</span> <span class="n">cpu</span><span class="p">;</span>
+
+<span class="err">    </span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>假设这个简单工厂模式是系统封装的API，我们只是调用API的GetCPU()方法，然后就得到了一个对象CPU。那么有的程序员就会困惑了，没有出现new你为何要delete哪？所以往往因为这些原因造成了内存泄露，C++的一个解决方法就是用智能指针，把对象的开辟和释放放到堆栈上，这样一个函数调用完，必定释放堆栈中的变量，这样内存中的空间就被释放了。而Apple的工程师可不认为这是个好方法，他们采用了autorelease。autorelease会使引用计数减1。不过它和release的不同之处是，引用计数为0的时候，对象并不会立刻释放，而是等待autoreleasepool的释放。 AutoreleasePool内部包含一个数组（NSMutableArray），用来保存声明为autorelease的所有对象。如果一个对象声明为autorelease，系统所做的工作就是把这个对象加入到这个数组中去。AutoreleasePool自身在销毁的时候，会遍历一遍这个数组，release数组中的每个成员。如果此时数组中成员的retain count为1，那么autorelease release之后，retain count为0，对象正式被销毁。如果此时数组中成员的retain count大于1，那么 autorelease release之后，retain count大于0，此对象依然没有被销毁。所以上面的工厂模式在objective c中实现就会像下面的代码</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">@interface</span> <span class="nc">CPU</span> <span class="p">:</span> <span class="nc">NSObject</span>
+<span class="p">{</span>
+<span class="p">}</span>
+
+<span class="k">@interface</span> <span class="nc">SimpleFactory</span> <span class="p">:</span> <span class="nc">NSObject</span>
+<span class="p">{</span>
+<span class="p">}</span>
+
+<span class="k">+</span> <span class="p">(</span><span class="n">CPU</span> <span class="o">*</span><span class="p">)</span><span class="n">getCPU</span><span class="p">;</span>
+
+<span class="k">@end</span>
+<span class="c1">// .mm文件，类的实现。</span>
+
+<span class="k">@implementation</span> <span class="nc">SimpleFactory</span>
+
+<span class="k">+</span> <span class="p">(</span><span class="n">CPU</span> <span class="o">*</span><span class="p">)</span><span class="n">getCPU</span>
+
+<span class="p">{</span>
+
+<span class="err">    </span> <span class="k">return</span> <span class="p">[[[</span><span class="n">CPU</span> <span class="nf">alloc</span><span class="p">]</span><span class="nf">init</span><span class="p">]</span><span class="err"> </span> <span class="nf">autorelease</span><span class="p">];</span>
+
+<span class="p">}</span>
+
+<span class="k">@end</span>
+
+<span class="kt">int</span> <span class="nf">main</span><span class="p">()</span>
+
+<span class="p">{</span>
+
+<span class="err">    </span> <span class="n">NSAutoreleasePool</span> <span class="o">*</span><span class="n">pool</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSAutoreleasePool</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+
+<span class="err">    </span> <span class="n">CPU</span> <span class="o">*</span> <span class="n">cpu</span> <span class="o">=</span> <span class="n">SimpleFactory</span><span class="o">::</span><span class="n">GetCPU</span><span class="p">();</span>
+
+<span class="err">    </span> <span class="p">[</span><span class="n">pool</span> <span class="nf">release</span><span class="p">];</span>
+
+<span class="err">    </span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这样objective c中所有的alloc retain和release autorelease都是成对出现的。代码中不会出现release而没有alloc retain的情况。这样就可以大大减少程序员不认真而造成的内存泄露问题，因为只要你自己的代码中有alloc retain关键字的时候你释放就行了，其他情况都不用考虑，你仅仅只要在函数中加上NSAutoreleasePool就行了。看来苹果的工程师果然不是等闲之辈，考虑的还真是周到。</p>
+
+<p>今天写了不少了，也望那位老鸟能给自己指点一下其中的不足，也欢迎大家提出各种建议。有错误需要更正的地方，更请你不要手下留情，果断留下踩踏的脚印。好了今天就到这里吧，到下次再来剖析下 objective c的Protocols和How Messaging Works，这两点可是 实现 cocoa程序消息循环的基础啊 。</p>
+
+<p><a href="https://blog.csdn.net/mengtnt/article/details/6003459">原文链接</a></p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

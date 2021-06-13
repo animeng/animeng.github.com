@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>如何使用一门新技术开始你的项目0x2 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2019/07/04/flutter-1.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="如何使用一门新技术开始你的项目0x2">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2019/07/04/flutter-1.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">如何使用一门新技术开始你的项目0x2</h1>
+  
+  <span class="post-meta">07月 04日, 2019</span><br>
+  
+  <span class="post-meta small">6 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>开始学习一个框架，我的习惯不是按照官网教程一步一步搭建环境，而是先看下官网的一些<a href="https://flutter.dev/docs/resources/faq">FAQ</a>和<a href="https://flutter.dev/docs/resources/technical-overview">blog</a>。从中你可以了解到框架的历史由来，以及框架要解决的问题。往往里面还会涉及一些框架的架构，对于之后理解框架的细节很有用处。所以花半天的时间了解这些很有必要，有时候按照教程搭建环境的时候，安装的很多依赖包，可能并不了其中的功能，如果你提前阅读了这些博客文章，从中可能就略知一二，不至于完全的不理解。</p>
+<blockquote>
+  <p>How does Flutter run my code on iOS?
+The engine’s C and C++ code are compiled with LLVM. The Dart code (both the SDK’s and yours) are ahead-of-time (AOT) compiled into a native, ARM library. That library is included in a “runner” iOS project, and the whole thing is built into an .ipa. When launched, the app loads the Flutter library. Any rendering, input or event handling, and so on, are delegated to the compiled Flutter and app code. This is similar to the way many game engines work.
+Debug mode builds use a virtual machine (VM) to run Dart code (hence the “debug” banner they show to remind people that they’re slightly slower) in order to enable Stateful Hot Reload.</p>
+</blockquote>
+
+<p>通过这个FAQ阅读，你会发现flutter，应该是通过集成flutter的engine的sdk、dart代码生成的sdk和native插件生成的sdk，导出的ios的project，所以肯定需要包管理工具。之后学习flutter的时候，在编译ios项目的时候，会发现生成一些ruby的脚本，其实就是用来使用pod管理sdk依赖的。一些游戏引擎比如unity和cocos2d这些跨平台工具的，也是编译生成sdk的方式来加载，但是略有些不同的是，这些平台往往是直接把脚本语言转换成平台的语言，集成到工程里面，而flutter则直接把dart上层的代码直接生成了一个sdk集成进去的。</p>
+
+<p>所以通过阅读这些内容，对于之后flutter理解有挺大的帮助。</p>
+
+<h2 id="搭建flutter环境">搭建flutter环境</h2>
+
+<p>这里没有什么好赘述的，安装官网的<a href="https://flutter.dev/docs/get-started/">教程</a>。应该没多大问题，需要的可能是梯子和电脑的空间😂</p>
+
+<h2 id="dart语言的学习">Dart语言的学习</h2>
+
+<p>环境搭建完成后，学习dart语言放到了我的todolist里面了。我大致分了2个阶段:dart语言来龙去脉和dart语言详细语法的了解。</p>
+
+<h3 id="了解dart语言的来龙去脉">了解dart语言的来龙去脉</h3>
+
+<p>了解dart语言，其实和文章开头说的方法一样，先看下<a href="https://dart.dev/faq">dart语言的FAQ</a>和<a href="https://medium.com/dartlang">blog</a>.下面我列举下从官方的blog和FAQ中了解的一些知识点。</p>
+
+<ol>
+  <li>
+    <p>从中可以了解到为何dart是一门类JS的语言，甚至web应用可以直接编译成js语言。dart从2.0之后，已经成为静态语言。官方解释的原因是动态语言对于开发大型的web项目，后期维护起来极其困难，并且一些错误也很不容易发现。这些本质上都是弱类型语言的一些缺点。不过虽然dart为静态语言，但是像类型推断这种动态语言的特性依然保留，这样让程序写起来更简洁。编译阶段会检查这些类型，也同时保证了类型的正确性。</p>
+
+    <blockquote>
+      <p>Q. Is Dart a statically typed language?
+ Yes, Dart 2 is statically typed. For more information, read about Dart’s type system.
+ With its combination of static and runtime checks, Dart has a sound type system, which guarantees that an expression of one type cannot produce a value of another type. No surprises!
+ Even with type-safe Dart, you can annotate any variable with dynamic if you need the flexibility of a dynamic language. The dynamic type itself is static, but can contain any type at runtime. Of course, that removes many of the benefits of a type-safe language for that variable.</p>
+    </blockquote>
+  </li>
+  <li>dart语言的函数和闭包用法和JS大同小异，同时也做了一些改进。比如增加参数列表特征，=&gt;单行函数的功能。其实这些特征正是之后要重点学习的功能。
+    <blockquote>
+      <p>Q. Why isn’t Dart syntax more exciting?
+ We did throw in some nice syntactic features such as this. constructor args and =&gt; for one-line functions, but we’d agree that Dart chooses familiarity over excitement. One team member’s personal testimonial: “I wish it had a little more razzle dazzle but I can’t deny that literally on my first day of writing Dart code, I was productive in it.”</p>
+    </blockquote>
+  </li>
+  <li>dart拥有比js更多的OOP的特性,这点也应该是之后学习的重点。</li>
+</ol>
+
+<h3 id="dart语法的学习">Dart语法的学习</h3>
+
+<p>通过了解到的一些Dart语言的特性，带着问题学习这门语言,可能效果会更好一些。自己大概花了一天的时间看了下<a href="https://dart.dev/guides/language/language-tour">dart的基本语法</a>。分享下一些dart的学习笔记。下面的笔记只是一部分内容，分享的目的不在于dart语言学习，而在于自己学习新语言的方式。</p>
+
+<ol>
+  <li>
+    <p>相对苹果的swift来讲dart语法复杂度相对比较低，但是都有类型推断的功能。比如下面的代码，类型会推断出name是String.</p>
+
+    <div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="kd">var</span> <span class="n">name</span> <span class="o">=</span> <span class="s">'Bob'</span><span class="o">;</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>还有一个和swift很像的特性就是Optional parameters.这种方式对于写声明式结构的程序，尤其重要。参数的命名可以很清楚表达参数意义。并且函数的参数是可省略，不必把函数所有的参数都列出来，也会让臃肿的UI代码阅读起来非常简洁。突然让我感觉到了flutter和swiftUI异曲同工😂</p>
+
+    <div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="kt">String</span> <span class="nf">say</span><span class="p">(</span><span class="o">{</span><span class="nd">@required</span> <span class="kt">String</span> <span class="n">from</span><span class="o">,</span> <span class="nd">@required</span> <span class="kt">String</span> <span class="n">msg</span><span class="o">,</span> <span class="o">[</span><span class="kt">String</span> <span class="n">device</span><span class="o">]})</span> <span class="o">{</span>
+ <span class="kd">var</span> <span class="n">result</span> <span class="o">=</span> <span class="s">'</span><span class="si">$from</span><span class="s"> says </span><span class="si">$msg</span><span class="s">'</span><span class="o">;</span>
+ <span class="k">if</span> <span class="o">(</span><span class="n">device</span> <span class="o">!=</span> <span class="kc">null</span><span class="o">)</span> <span class="o">{</span>
+     <span class="n">result</span> <span class="o">=</span> <span class="s">'</span><span class="si">$result</span><span class="s"> with a </span><span class="si">$device</span><span class="s">'</span><span class="o">;</span>
+ <span class="o">}</span>
+ <span class="k">return</span> <span class="n">result</span><span class="o">;</span>
+ <span class="o">}</span>
+
+ <span class="n">say</span><span class="o">(</span><span class="nl">from:</span><span class="s">"xiaoming"</span><span class="o">,</span><span class="nl">msg:</span><span class="s">"chifan"</span><span class="o">);</span>
+ <span class="n">say</span><span class="o">(</span><span class="nl">from:</span><span class="s">"xiaoming"</span><span class="o">,</span><span class="nl">msg:</span><span class="s">"chifan"</span><span class="o">,</span><span class="nl">device:</span><span class="o">[</span><span class="s">"saymicrophone"</span><span class="o">]);</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>链式结构，可以让代码阅读的时候更简洁，尤其对象赋值的时候。很多动态语言都有这个语法特性。但是很多静态语言是没有实现这个语法的。尤记得自己看过一本书DSLs in Action，上面介绍java实现链式结构的方法，通过每个方法返回对象，然后实现链式调用，如下就是通过返回对象本身。</p>
+
+    <div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="kd">public</span> <span class="kd">class</span> <span class="nc">Widget</span> <span class="o">{</span>
+
+     <span class="kd">private</span> <span class="nc">String</span> <span class="n">color</span><span class="o">;</span>
+     <span class="kd">private</span> <span class="kt">double</span> <span class="n">height</span><span class="o">;</span>
+     <span class="kd">private</span> <span class="kt">double</span> <span class="n">width</span><span class="o">;</span>
+
+     <span class="kd">public</span> <span class="kt">double</span> <span class="nf">getWidth</span><span class="o">()</span> <span class="o">{</span>
+         <span class="k">return</span> <span class="n">width</span><span class="o">;</span>
+     <span class="o">}</span>
+
+     <span class="kd">public</span> <span class="nc">Apple</span> <span class="nf">setWidth</span><span class="o">(</span><span class="kt">double</span> <span class="n">height</span><span class="o">)</span> <span class="o">{</span>
+         <span class="k">this</span><span class="o">.</span><span class="na">width</span> <span class="o">=</span> <span class="n">width</span><span class="o">;</span>
+         <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+     <span class="o">}</span>
+
+     <span class="kd">public</span> <span class="kt">double</span> <span class="nf">getHeight</span><span class="o">()</span> <span class="o">{</span>
+         <span class="k">return</span> <span class="n">height</span><span class="o">;</span>
+     <span class="o">}</span>
+
+     <span class="kd">public</span> <span class="nc">Apple</span> <span class="nf">setHeight</span><span class="o">(</span><span class="kt">double</span> <span class="n">height</span><span class="o">)</span> <span class="o">{</span>
+         <span class="k">this</span><span class="o">.</span><span class="na">height</span> <span class="o">=</span> <span class="n">height</span><span class="o">;</span>
+         <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+     <span class="o">}</span>
+
+     <span class="kd">public</span> <span class="nc">String</span> <span class="nf">getColor</span><span class="o">()</span> <span class="o">{</span>
+         <span class="k">return</span> <span class="n">color</span><span class="o">;</span>
+     <span class="o">}</span>
+
+     <span class="kd">public</span> <span class="nc">Widget</span> <span class="nf">setColor</span><span class="o">(</span><span class="nc">String</span> <span class="n">color</span><span class="o">)</span> <span class="o">{</span>
+         <span class="k">this</span><span class="o">.</span><span class="na">color</span> <span class="o">=</span> <span class="n">color</span><span class="o">;</span>
+         <span class="k">return</span> <span class="k">this</span><span class="o">;</span>
+     <span class="o">}</span>
+
+     <span class="kd">public</span> <span class="nf">Widget</span><span class="o">()</span> <span class="o">{</span>
+     <span class="o">}</span>
+
+     <span class="nd">@Override</span>
+     <span class="kd">public</span> <span class="kt">boolean</span> <span class="nf">equals</span><span class="o">(</span><span class="nc">Object</span> <span class="n">obj</span><span class="o">)</span> <span class="o">{</span>
+         <span class="k">return</span> <span class="kd">super</span><span class="o">.</span><span class="na">equals</span><span class="o">(</span><span class="n">obj</span><span class="o">);</span>
+     <span class="o">}</span>
+
+     <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+         <span class="nc">Widget</span> <span class="n">widget</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Widget</span><span class="o">();</span>
+         <span class="n">widget</span><span class="o">.</span><span class="na">setWidth</span><span class="o">(</span><span class="mi">100</span><span class="o">).</span><span class="na">setHeight</span><span class="o">(</span><span class="mi">100</span><span class="o">).</span><span class="na">setColor</span><span class="o">(</span><span class="s">"red"</span><span class="o">);</span>
+     <span class="o">}</span>
+ <span class="o">}</span>
+</code></pre></div>    </div>
+
+    <p>而dart本身已经实现了这个语法，使用起来也方便很多。</p>
+
+    <div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="kd">final</span> <span class="n">_controller</span> <span class="o">=</span> <span class="n">AnimationController</span><span class="o">(</span><span class="nl">duration:</span> <span class="n">Duration</span><span class="o">(</span><span class="nl">milliseconds:</span> <span class="mi">250</span><span class="o">),</span><span class="nl">vsync:</span> <span class="k">this</span><span class="o">);</span>
+ <span class="kd">final</span> <span class="n">_curve</span> <span class="o">=</span> <span class="n">CurvedAnimation</span><span class="o">(</span><span class="nl">parent:</span> <span class="n">_controller</span><span class="o">,</span> <span class="nl">curve:</span> <span class="n">Curves</span><span class="o">.</span><span class="na">easeInOut</span><span class="o">);</span>
+ <span class="n">Animation</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;</span> <span class="n">_animation</span><span class="o">;</span>
+ <span class="n">_animation</span> <span class="o">=</span> <span class="n">Tween</span><span class="o">&lt;</span><span class="kt">double</span><span class="o">&gt;(</span><span class="nl">begin:</span> <span class="mi">0</span><span class="o">,</span><span class="nl">end:</span> <span class="mi">1</span><span class="o">).</span><span class="na">animate</span><span class="o">(</span><span class="n">_curve</span><span class="o">)</span>
+   <span class="o">..</span><span class="na">addListener</span><span class="o">(()</span> <span class="o">{</span>
+     <span class="n">setState</span><span class="o">(()</span> <span class="o">{});</span>
+   <span class="o">})</span>
+   <span class="o">..</span><span class="na">addStatusListener</span><span class="o">((</span><span class="n">status</span><span class="o">)</span> <span class="o">{</span>
+   <span class="o">});</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>类似于JS，dart里面也有大量匿名函数使用，非常方便的写异步的回调。</p>
+
+    <div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="kt">void</span> <span class="nf">main</span><span class="p">(</span><span class="o">)</span> <span class="o">{</span>
+ <span class="kd">var</span> <span class="n">list</span> <span class="o">=</span> <span class="o">[</span><span class="s">'apples'</span><span class="o">,</span> <span class="s">'bananas'</span><span class="o">,</span> <span class="s">'oranges'</span><span class="o">];</span>
+ <span class="n">list</span><span class="o">.</span><span class="na">forEach</span><span class="o">((</span><span class="n">item</span><span class="o">)</span> <span class="o">{</span>
+     <span class="n">print</span><span class="o">(</span><span class="s">'</span><span class="si">${list.indexOf(item)}</span><span class="s">: </span><span class="si">$item</span><span class="s">'</span><span class="o">);</span>
+ <span class="o">});</span>
+ <span class="o">}</span>
+</code></pre></div>    </div>
+
+    <p>并且dart提供了一个语法糖，可以把匿名函数变成一行,非常的简洁.</p>
+
+    <div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="n">list</span><span class="o">.</span><span class="na">forEach</span><span class="o">(</span>
+ <span class="o">(</span><span class="n">item</span><span class="o">)</span> <span class="o">=&gt;</span> <span class="n">print</span><span class="o">(</span><span class="s">'</span><span class="si">${list.indexOf(item)}</span><span class="s">: </span><span class="si">$item</span><span class="s">'</span><span class="o">));</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>dart的oop特性相对来讲比js加强了很多，几乎和很多静态语言oop特性差不多。但是我笔记里特意记录下了，dart的一个特性mixin-based inheritance。本质上mix有点像C++的多重继承，并不是所有的类都可以多重继承，可以成为多重继承的父类，必须用Mix关键字。</p>
+
+    <div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+ <span class="n">mixin</span> <span class="n">Musical</span> <span class="o">{</span>
+ <span class="kt">bool</span> <span class="n">canPlayPiano</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+ <span class="kt">bool</span> <span class="n">canCompose</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+ <span class="kt">bool</span> <span class="n">canConduct</span> <span class="o">=</span> <span class="kc">false</span><span class="o">;</span>
+
+ <span class="kt">void</span> <span class="n">entertainMe</span><span class="o">()</span> <span class="o">{</span>
+     <span class="k">if</span> <span class="o">(</span><span class="n">canPlayPiano</span><span class="o">)</span> <span class="o">{</span>
+     <span class="n">print</span><span class="o">(</span><span class="s">'Playing piano'</span><span class="o">);</span>
+     <span class="o">}</span> <span class="k">else</span> <span class="k">if</span> <span class="o">(</span><span class="n">canConduct</span><span class="o">)</span> <span class="o">{</span>
+     <span class="n">print</span><span class="o">(</span><span class="s">'Waving hands'</span><span class="o">);</span>
+     <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+     <span class="n">print</span><span class="o">(</span><span class="s">'Humming to self'</span><span class="o">);</span>
+     <span class="o">}</span>
+ <span class="o">}</span>
+ <span class="o">}</span>
+
+ <span class="kd">class</span> <span class="nc">Person</span> <span class="o">{</span>
+ <span class="kt">String</span> <span class="n">firstName</span><span class="o">;</span>
+
+ <span class="n">Person</span><span class="o">.</span><span class="na">fromJson</span><span class="o">(</span><span class="n">Map</span> <span class="n">data</span><span class="o">)</span> <span class="o">{</span>
+     <span class="n">print</span><span class="o">(</span><span class="s">'in Person'</span><span class="o">);</span>
+ <span class="o">}</span>
+ <span class="o">}</span>
+
+ <span class="kd">class</span> <span class="nc">Musician</span> <span class="kd">extends</span> <span class="n">Person</span> <span class="k">with</span> <span class="n">Musical</span> <span class="o">{</span>
+ <span class="c1">// ··</span>
+ <span class="o">}</span>
+
+</code></pre></div>    </div>
+
+    <p>虽然说mix特性可以让代码重用起来更方便，但是我个人觉得对于阅读复杂的继承代码的时候，因为里面混合的对象特性太多，尤其命名不是很规范的时候，不能很容易的理解。</p>
+  </li>
+  <li>
+    <p>Dart的异步编程，这点和很多脚本语言用法差不多，都是协程的概念。之前我基本都是做oc,c++,swift项目，很少用到协程，所以我还是很好奇，找了下协程实现的逻辑。看到了云风的<a href="https://github.com/cloudwu/coroutine">coroutine源码</a>，这个源码使用C写的。实现的基本原理是利用unix内核中C的库ucontext，通过一个状态机，来保存函数的堆栈信息，从而来管理中断和保证线程的顺序。在mac上运行这个程序还是有点问题，因为mac新版本ucontext已经被遗弃了，不过阅读完源码大致就了解协程的实现方式。下面可以看下dart协程的用法,主要是Future async await这几个关键字的使用。</p>
+
+    <div class="language-dart highlighter-rouge"><div class="highlight"><pre class="highlight"><code> <span class="n">Future</span> <span class="nf">checkVersion</span><span class="p">(</span><span class="o">)</span> <span class="n">async</span> <span class="o">{</span>
+ <span class="kd">var</span> <span class="n">version</span> <span class="o">=</span> <span class="n">await</span> <span class="n">lookUpVersion</span><span class="o">();</span>
+ <span class="c1">// Do something with version</span>
+ <span class="o">}</span>
+</code></pre></div>    </div>
+  </li>
+  <li>
+    <p>Dart里面异步编程还有个重要的概念就是Streams,本质上是一种观察者模式。在做异步更新数据，刷新UI的时候很有用。Flutter的widget的state管理，基本都是用这个异步特性来实现的。其实有了这个语法特性，就很容易实现像前端React这种框架的状态管理。</p>
+  </li>
+  <li>
+    <p>Metadata特性，类似于java里面的标注特性。给了开发者一种编译期间，改变语法结构的能力。对于给一些类和方法，增加一些语法上的约束功能非常有用.其实Dart元编程的能力也是蛮强大的，在flutter框架里，有大量的Temporary类功能使用，但是由于自己项目上暂时用不到，就没有特意学习。</p>
+  </li>
+</ol>
+
+<h2 id="总结">总结</h2>
+
+<p>新语言的学习，语法其实基本一致，主要是要了解语言一些新特征。看该语言为何适合用来做某方面的开发。比如Dart2.0虽然是一门静态语言，但是有很多动态语言的特性，基本的用法和js很像。主要目的是为了做前端开发。自己也对一些新特性做了笔记，回头看这些笔记，发现这些关键点对后面理解flutter框架确实很有帮助。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

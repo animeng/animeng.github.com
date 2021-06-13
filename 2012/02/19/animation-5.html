@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>第五章 核心动画的层 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2012/02/19/animation-5.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="第五章 核心动画的层">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2012/02/19/animation-5.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">第五章 核心动画的层</h1>
+  
+  <span class="post-meta">02月 19日, 2012</span><br>
+  
+  <span class="post-meta small">9 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>到现在，我们已经讨论了如何在屏幕周围移动一些几何元素，改变颜色，和多种多样其他有趣的效果。在这一章中，我们将进一步讨论。转换器是一个容器，用来描述应用到层上的一些矩阵转换，从而达到一些惊奇的效果。</p>
+
+<p>变换又是什么那？一个变换是一个术语，它包含了一些改变尺寸，位置或者沿着一个或者更多的面，旋转一个物体的功能。变换是被应用使用一个矩阵函数，幸运的是我们不需要关心这个矩阵函数。无论我们需要旋转或者缩放一个层，我们必须使用一个变换去完成这个渴望的效果。</p>
+
+<p>矩阵变换这个话题可以涉及到一个很深的数学问题上，这个超越了我们本章的范围。相反，这一章触及了一些更加普通和有趣的变换，例如在3D空间旋转一个层，或者一个有趣的缩放效果，这些如何发生。</p>
+
+<h3 id="缩放变换">缩放变换</h3>
+
+<p>为了展示一些矩阵变化的效果，我们使用一个简单的层，然后进行一些变换。第一个变换是缩放一个层从一个尺寸到另一个。开始做这个例子，如清单5-1</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">applicationDidFinishLaunching</span><span class="p">:(</span><span class="n">NSNotification</span><span class="o">*</span><span class="p">)</span><span class="nv">notification</span> <span class="p">{</span>
+<span class="n">NSView</span> <span class="o">*</span><span class="n">contentView</span> <span class="o">=</span> <span class="p">[[</span><span class="nf">selfwindow</span><span class="p">]</span> <span class="nf">contentView</span><span class="p">];</span> 
+<span class="n">CALayer</span> <span class="o">*</span><span class="n">layer</span> <span class="o">=</span> <span class="p">[</span><span class="n">CALayer</span> <span class="nf">layer</span><span class="p">];</span>
+<span class="n">CGColorRef</span> <span class="n">color</span><span class="p">;</span>
+<span class="n">color</span> <span class="o">=</span> <span class="n">CGColorCreateGenericRGB</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">);</span> 
+
+    <span class="p">[</span><span class="n">layer</span> <span class="nf">setBackgroundColor</span><span class="p">:</span><span class="n">color</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">contentView</span> <span class="nf">setLayer</span><span class="p">:</span><span class="n">layer</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">contentView</span> <span class="nf">setWantsLayer</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+
+    <span class="n">workLayer</span> <span class="o">=</span> <span class="p">[</span><span class="n">CALayer</span> <span class="nf">layer</span><span class="p">];</span>
+    <span class="n">color</span> <span class="o">=</span><span class="n">CGColorCreateGenericRGB</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">);</span> <span class="p">[</span><span class="nf">workLayersetBackgroundColor</span><span class="p">:</span><span class="n">color</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">workLayersetCornerRadius</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+    <span class="n">color</span> <span class="o">=</span><span class="n">CGColorCreateGenericRGB</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">);</span> 
+    <span class="p">[</span><span class="nf">workLayersetBorderColor</span><span class="p">:</span><span class="n">color</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">workLayersetBorderWidth</span><span class="p">:</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+
+    <span class="n">CGRect</span> <span class="n">workFrame</span> <span class="o">=</span> <span class="p">[</span><span class="nf">layerbounds</span><span class="p">];</span> 
+    <span class="n">workFrame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">workFrame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">/</span> <span class="mi">4</span><span class="p">;</span> 
+    <span class="n">workFrame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span><span class="n">workFrame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">/</span> <span class="mi">4</span><span class="p">;</span> 
+    <span class="n">workFrame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">/=</span> <span class="mi">2</span><span class="p">;</span> <span class="n">workFrame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">/=</span><span class="mi">2</span><span class="p">;</span>
+    <span class="p">[</span><span class="nf">workLayersetAnchorPoint</span><span class="p">:</span><span class="n">CGPointMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)];</span> 
+    <span class="p">[</span><span class="n">workLayer</span> <span class="nf">setFrame</span><span class="p">:</span><span class="n">workFrame</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">layeraddSublayer</span><span class="p">:</span><span class="n">workLayer</span><span class="p">];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                清单5-1
+</code></pre></div></div>
+
+<p>在-applicationDidFinishLaunching:方法中，我们获得了contentView的一个引用，设置了它的层和标志它作为层的背景。通过设置这个层，我们保证了那个视图背景使用了什么类型的层。</p>
+
+<p>当contentView是被安装好时，我们下一步就就是构造这个我们需要操作的层。它的背景颜色设置为灰色，并且通过使用-setCornerRadius:设置角是圆形的。下面，把边框的颜色用2个像素设置为绿色的。最后，那个层的大小设定为contentView的1/4，剧中显示。</p>
+
+<p>在Interfacebuilder中，给窗口增加3个按钮；我们要演示的每个变换：缩放，旋转，和3D旋转。结果窗口显示如下</p>
+
+<p><img src="/images/animation-5-1.gif" alt="图5-1 窗口" /></p>
+
+<p>scale按钮是关联到方法-scaleTransform:，实现如下清单5-2</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">scaleTransform</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span> <span class="p">{</span>
+
+    <span class="n">NSValue</span> <span class="o">*</span><span class="n">value</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">animation</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span> 
+    <span class="n">CATransform3D</span> <span class="n">transform</span><span class="p">;</span>
+    <span class="p">[[</span><span class="n">self</span> <span class="nf">workLayer</span><span class="p">]</span> <span class="nf">removeAllAnimations</span><span class="p">];</span>
+
+    <span class="n">animation</span> <span class="o">=</span> <span class="p">[</span><span class="nf">CABasicAnimationanimationWithKeyPath</span><span class="p">:</span><span class="err">@”</span><span class="n">transform</span><span class="err">”</span><span class="p">];</span> <span class="n">transform</span> <span class="o">=</span> <span class="n">CATransform3DMakeScale</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="n">f</span><span class="p">,</span><span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">);</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="nf">NSValuevalueWithCATransform3D</span><span class="p">:</span><span class="n">transform</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">animation</span> <span class="nf">setToValue</span><span class="p">:</span><span class="n">value</span><span class="p">];</span>
+    <span class="n">transform</span> <span class="o">=</span><span class="n">CATransform3DMakeScale</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">);</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="nf">NSValuevalueWithCATransform3D</span><span class="p">:</span><span class="n">transform</span><span class="p">];</span> 
+
+    <span class="p">[</span><span class="n">animation</span> <span class="nf">setFromValue</span><span class="p">:</span><span class="n">value</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">animationsetAutoreverses</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span> <span class="p">[</span><span class="n">animation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span> <span class="p">[</span><span class="nf">animationsetRepeatCount</span><span class="p">:</span><span class="mi">100</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">workLayeraddAnimation</span><span class="p">:</span><span class="n">animation</span> <span class="nf">forKey</span><span class="p">:</span><span class="n">kScaleKey</span><span class="p">];</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                  清单 5-2 缩放转换 这个方法会移除所有已经存在的动画，如果用户点击了好几个按钮，那些存在的动画就会堆积起来。下一步，我们想构造一个动画对象，那可以指导层怎么去变换。为了做这些，构造一个CABasicAnimation使用变换路径，这将告诉动画它要改变transform这个属性，无论这个层是否被应用，然后开始应用矩阵的变换到动画中。你可以使用很多种方法构造矩阵变换。这里的方法，我们使用CATransform3DMakeScale这个方法，需要传递x,y,z轴用来完成转换。就像列表5-2所示，我们设定CATransform3DMakeScale的x，y分别为0.5，然后我们单独留下z轴。为了创建抖动效果，下一步就要设定CATransform3DMakeScale为1.0。通过设定x和y为1.0，我们就可以触发放大恢复的效果。
+</code></pre></div></div>
+
+<p>当CATransform3DMakeScale值被设定后，设定autoReverse为YES，给它设定一个1秒的慢的时间段，然后设定一个最大的重复数；这里我们使用100。最后，我们增加创建好的动画到层上面，通过使用关键字指派动画。我们要使用一个大一点重复数，以至于给于一个动画一直运行的假象。如果动画真的遍历到了100遍，那么就会停止。</p>
+
+<h3 id="使用旋转变换">使用旋转变换</h3>
+
+<p>下一个变换我们来旋转层。层就沿着一个轴旋转，然后就自动恢复这个旋转，如清单5-3所示</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">rotateTransform</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span> <span class="p">{</span>
+    <span class="n">NSValue</span> <span class="o">*</span><span class="n">value</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">animation</span> <span class="o">=</span><span class="nb">nil</span><span class="p">;</span> 
+    <span class="n">CATransform3D</span> <span class="n">transform</span><span class="p">;</span>
+
+    <span class="p">[[</span><span class="n">self</span> <span class="nf">workLayer</span><span class="p">]</span><span class="nf">removeAllAnimations</span><span class="p">];</span>
+    <span class="n">animation</span> <span class="o">=</span> <span class="p">[</span><span class="nf">CABasicAnimationanimationWithKeyPath</span><span class="p">:</span><span class="err">@”</span><span class="n">transform</span><span class="err">”</span><span class="p">];</span> 
+
+    <span class="n">transform</span> <span class="o">=</span><span class="n">CATransform3DMakeRotation</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">57</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">);</span> <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="nf">NSValuevalueWithCATransform3D</span><span class="p">:</span><span class="n">transform</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">animation</span> <span class="nf">setToValue</span><span class="p">:</span><span class="n">value</span><span class="p">];</span>
+
+    <span class="n">transform</span> <span class="o">=</span><span class="n">CATransform3DMakeRotation</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">);</span> <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="nf">NSValuevalueWithCATransform3D</span><span class="p">:</span><span class="n">transform</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">animationsetFromValue</span><span class="p">:</span><span class="n">value</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">animationsetAutoreverses</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">animation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">animationsetRepeatCount</span><span class="p">:</span><span class="mi">100</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">workLayeraddAnimation</span><span class="p">:</span><span class="n">animation</span> <span class="nf">forKey</span><span class="p">:</span><span class="n">kScaleKey</span><span class="p">];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>      清单5-3 旋转转换
+</code></pre></div></div>
+
+<p>在这个例子中，CATransform3DMakeRotation被应用沿着一个轴在层上旋转。不像清单5-2所展示的那样，这个例子用了4个参数：第一个参数是角度，用弧度表示，和下面三个数字是x，y和z轴。层是在x轴上被旋转1.57个弧度（那是90度）。x,y,z这些值有些不寻常。这个值涉及到了旋转的向量值，这些值在-1.0和1.0之间。旋转是被设置成全正的沿z轴，那就会产生一个顺时针的2D旋转。</p>
+
+<h3 id="使用3d旋转">使用3D旋转</h3>
+
+<p>下面的例子，比先前的例子更进一步了，使用了2个轴的旋转；看清单5-4</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">rotate3DTransform</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span> <span class="p">{</span>
+    <span class="n">NSValue</span> <span class="o">*</span><span class="n">value</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span>
+    <span class="n">CABasicAnimation</span> <span class="o">*</span><span class="n">animation</span> <span class="o">=</span> <span class="nb">nil</span><span class="p">;</span> 
+    <span class="n">CATransform3D</span> <span class="n">transform</span><span class="p">;</span>
+
+    <span class="p">[[</span><span class="n">self</span> <span class="nf">workLayer</span><span class="p">]</span><span class="nf">removeAllAnimations</span><span class="p">];</span>
+    <span class="n">animation</span> <span class="o">=</span> <span class="p">[</span><span class="nf">CABasicAnimationanimationWithKeyPath</span><span class="p">:</span><span class="err">@”</span><span class="n">transform</span><span class="err">”</span><span class="p">];</span> 
+    <span class="n">transform</span> <span class="o">=</span> <span class="n">CATransform3DMakeRotation</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">57</span><span class="n">f</span><span class="p">,</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">);</span> 
+    <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSValue</span> <span class="nf">valueWithCATransform3D</span><span class="p">:</span><span class="n">transform</span><span class="p">];</span>
+
+    <span class="p">[</span><span class="n">animation</span> <span class="nf">setToValue</span><span class="p">:</span><span class="n">value</span><span class="p">];</span>
+    <span class="n">transform</span> <span class="o">=</span><span class="n">CATransform3DMakeRotation</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">);</span> <span class="n">value</span> <span class="o">=</span> <span class="p">[</span><span class="nf">NSValuevalueWithCATransform3D</span><span class="p">:</span><span class="n">transform</span><span class="p">];</span>
+
+    <span class="p">[</span><span class="n">animation</span> <span class="nf">setFromValue</span><span class="p">:</span><span class="n">value</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">animationsetAutoreverses</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">animation</span> <span class="nf">setDuration</span><span class="p">:</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">animationsetRepeatCount</span><span class="p">:</span><span class="mi">100</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">workLayeraddAnimation</span><span class="p">:</span><span class="n">animation</span> <span class="nf">forKey</span><span class="p">:</span><span class="n">kScaleKey</span><span class="p">];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>            清单5-4
+</code></pre></div></div>
+
+<p>清单5-4的方法和清单5-4的方法接近，除了CATransform3DMakeRotation这个方法传递的值不一样。这个例子设置x和y轴为1.0，这会产生一个旋转，这种旋转会给你一种沿着两个轴的对角线滑过的幻觉。</p>
+
+<p>因为我们旋转层90度并且自动恢复，这个例子貌似是沿着2个轴滑动。这是有用的，当你有一个两面的层（如一个图标或者一个戳），这样就让你在两面可以翻转。</p>
+
+<h3 id="锚点">锚点</h3>
+
+<p>关于层中先前已经提到过这个概念，在用变换时，锚点非常的重要。当你要给一个层应用一个变换时，变换会使用锚点来决定那一点来旋转，缩放等等。</p>
+
+<p>到目前为止某些例子，缩放的变换（在清单5-2中展示的）会引起层在窗口的中间抖动，就像图5-2所示的那样。这是因为任何层默认的锚点都是在中间。</p>
+
+<p>然而，如果我们改变-applicationDidFinishLaunching:并且移动锚点到左下角，就像列表5-5所示的那样，我们就可以得到一个信服的结果。</p>
+
+<p><img src="/images/animation-5-2.gif" alt="图 5-2 锚点在中间" /></p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">CGRect</span> <span class="n">workFrame</span> <span class="o">=</span> <span class="p">[</span><span class="nf">layerbounds</span><span class="p">];</span> <span class="n">workFrame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">workFrame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">/</span> <span class="mi">4</span><span class="p">;</span> <span class="n">workFrame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span><span class="n">workFrame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">/</span> <span class="mi">4</span><span class="p">;</span> <span class="n">workFrame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">/=</span> <span class="mi">2</span><span class="p">;</span> <span class="n">workFrame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">/=</span><span class="mi">2</span><span class="p">;</span>
+<span class="p">[</span><span class="nf">workLayersetAnchorPoint</span><span class="p">:</span><span class="n">CGPointMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)];</span> <span class="p">[</span><span class="n">workLayer</span> <span class="nf">setFrame</span><span class="p">:</span><span class="n">workFrame</span><span class="p">];</span>
+<span class="p">[</span><span class="nf">layeraddSublayer</span><span class="p">:</span><span class="n">workLayer</span><span class="p">];</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>               清单 5-5 升级锚点
+</code></pre></div></div>
+
+<p>在清单5-5中，我们增加了一行代码[worklayer setAnchorPoint:CGPointMake(0,0)];这将重新定位锚点到层的左下角。当缩放的变换运行时，你可以看到层好像在左下角抖动，就像图5-3所示的那样。</p>
+
+<p>通过锚点和变换的联合控制，你可以生产一些有趣的结果。例如，我们想要在一个固定的角落中，让一个层沿着z轴旋转。通过移动锚点到渴望的角落，这里旋转仅仅沿着z轴，那么这个层旋转就像是粘在一个东西上面一样。假如我们放置另一个层在同样的角落，这将有一个难以置信的效果。</p>
+
+<p><img src="/images/animation-5-3.gif" alt="图5-3 左下角的锚点" /></p>
+
+<h3 id="联合变换">联合变换</h3>
+
+<p>到目前为止，我们所涉及的都是单一的变换，要么旋转要么缩放层。但是如果你想要同时执行多个变换怎么办？幸运的是我们将会展示给你。</p>
+
+<p>为了演示怎么来联合变换，我们建立了一个不同的工程。我们开始一个标准的cocoa应用程序从xcode模板中，然后增加一个appDelegate。那个appDelegate会获得一个NSWindwo的引用计数，以便于可以控制它。然后，在-applicationDidfinishLauching:这个方法中，我们安装到层上，展示如清单5-6.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">applicationDidFinishLaunching</span><span class="p">:(</span><span class="n">NSNotification</span><span class="o">*</span><span class="p">)</span><span class="nv">notification</span> <span class="p">{</span>
+    <span class="n">CGColorRef</span> <span class="n">color</span><span class="p">;</span>
+    <span class="n">NSView</span> <span class="o">*</span><span class="n">contentView</span> <span class="o">=</span> <span class="p">[[</span><span class="nf">selfwindow</span><span class="p">]</span> <span class="nf">contentView</span><span class="p">];</span> 
+    <span class="n">CALayer</span> <span class="o">*</span><span class="n">rootLayer</span> <span class="o">=</span> <span class="p">[</span><span class="n">CALayer</span> <span class="nf">layer</span><span class="p">];</span>
+
+    <span class="n">color</span> <span class="o">=</span><span class="n">CGColorCreateGenericRGB</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span> <span class="p">[</span><span class="nf">rootLayersetBackgroundColor</span><span class="p">:</span><span class="n">color</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">contentView</span> <span class="nf">setLayer</span><span class="p">:</span><span class="n">rootLayer</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">contentView</span> <span class="nf">setWantsLayer</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+    <span class="n">layer</span> <span class="o">=</span> <span class="p">[</span><span class="n">CALayer</span> <span class="nf">layer</span><span class="p">];</span>
+
+    <span class="n">color</span> <span class="o">=</span><span class="n">CGColorCreateGenericRGB</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">);</span>
+    <span class="p">[</span><span class="nf">layersetBackgroundColor</span><span class="p">:</span><span class="n">color</span><span class="p">];</span> 
+    <span class="p">[</span><span class="n">layer</span> <span class="nf">setCornerRadius</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+    <span class="n">color</span> <span class="o">=</span><span class="n">CGColorCreateGenericRGB</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">);</span> 
+    <span class="p">[</span><span class="n">layer</span> <span class="nf">setBorderColor</span><span class="p">:</span><span class="n">color</span><span class="p">];</span>
+
+    <span class="p">[</span><span class="n">layer</span> <span class="nf">setBorderWidth</span><span class="p">:</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">layersetBounds</span><span class="p">:</span><span class="n">CGRectMake</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">)];</span> 
+    <span class="p">[</span><span class="n">layer</span> <span class="nf">setPosition</span><span class="p">:</span><span class="n">CGPointMake</span><span class="p">(</span><span class="mi">55</span><span class="p">,</span> <span class="mi">55</span><span class="p">)];</span>
+    <span class="p">[</span><span class="nf">rootLayeraddSublayer</span><span class="p">:</span><span class="n">layer</span><span class="p">];</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                     清单 5-6联合转换
+</code></pre></div></div>
+
+<p>-applicationDidFinishLaunching:方法获得了contentView的一个引用，然后在开启这个层的后面增加一个CALayer给它。rootLayer的背景颜色也是黑的。</p>
+
+<p>下一步，创建我们准备操控的那个层，并且设置它的颜色为灰绿色，2像素的边框和5像素的圆角率。不像清单5-1，这个层会是100x100像素和位置在contentView的左下角。</p>
+
+<p>在interfaceBuilder中有另一个改变。增加一个方块按钮NSButton给contentView，设置为透明，并且调整大小和窗口一样。这就使用户无论点击窗口的那一点，都可以出发我们下面要做的行动。</p>
+
+<p>绑定这个大按钮的行动给appDelegate，然后它的-(IBAction)action:(id)sender这个方法就是我们下面要声明的。</p>
+
+<p>当用户点击窗口时，我们想要workingLayer移动到右上角。伴随这个，我们也要旋转层180度平且缩放到原来尺寸的1/10。在清单5-7就是这个问题的解决方法。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">action</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span> <span class="p">{</span>
+    <span class="n">NSRect</span> <span class="n">frame</span> <span class="o">=</span> <span class="p">[[[</span><span class="nf">selfwindow</span><span class="p">]</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">frame</span><span class="p">];</span> 
+    <span class="kt">float</span> <span class="n">x</span> <span class="o">=</span> <span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">-</span> <span class="mi">30</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">y</span> <span class="o">=</span> <span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">-</span> <span class="mi">30</span><span class="p">;</span> 
+
+    <span class="n">CATransform3D</span> <span class="n">rotate</span><span class="p">;</span>
+    <span class="p">[</span><span class="n">CATransaction</span> <span class="nf">begin</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">CATransactionsetValue</span><span class="p">:[</span><span class="n">NSNumber</span> <span class="nf">numberWithFloat</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">]</span>
+    <span class="nl">forKey:</span><span class="n">kCATransactionAnimationDuration</span><span class="p">];</span>
+
+    <span class="p">[</span><span class="nf">layersetPosition</span><span class="p">:</span><span class="n">CGPointMake</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)];</span>
+    <span class="n">scale</span> <span class="o">=</span><span class="n">CATransform3DMakeScale</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">1</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">1</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">);</span>
+    <span class="n">rotate</span> <span class="o">=</span><span class="n">CATransform3DMakeRotation</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">57</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">);</span>
+
+    <span class="p">[</span><span class="nf">layersetTransform</span><span class="p">:</span><span class="n">rotate</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">layer</span> <span class="nf">setTransform</span><span class="p">:</span><span class="n">scale</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">CATransaction</span> <span class="nf">commit</span><span class="p">];</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>           清单5-7 行动
+</code></pre></div></div>
+
+<p>然而，当代码运行时，这个层移动和旋转，但是它不能缩放。这是因为调用-setTransform:这个方法仅仅能设置一个属性，之后最后设置的那个值将替换先前设置的值。尽管在一些情况下，这看起来是有用的。即使老的变换的移除和新的变换的设置也是2个动画，但是它没有影响我们例子中看到的效果。</p>
+
+<p>因为变换覆盖了彼此，变换需要在应用到层上时，被联合起来。这个可以用CATransform3DConcat方法，这将用2个CATransform3D的引用，然后返回一个联合的CATransform3D，例如清单5-8.</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span><span class="p">(</span><span class="n">IBAction</span><span class="p">)</span><span class="nf">action</span><span class="p">:(</span><span class="n">id</span><span class="p">)</span><span class="nv">sender</span> <span class="p">{</span>
+    <span class="n">NSRect</span> <span class="n">frame</span> <span class="o">=</span> <span class="p">[[[</span><span class="nf">selfwindow</span><span class="p">]</span> <span class="nf">contentView</span><span class="p">]</span> <span class="nf">frame</span><span class="p">];</span> 
+    <span class="kt">float</span> <span class="n">x</span> <span class="o">=</span> <span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span> <span class="o">-</span> <span class="mi">30</span><span class="p">;</span>
+    <span class="kt">float</span> <span class="n">y</span> <span class="o">=</span> <span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">-</span> <span class="mi">30</span><span class="p">;</span> 
+
+    <span class="n">CATransform3D</span> <span class="n">rotate</span><span class="p">;</span>
+    <span class="n">CATransform3D</span> <span class="n">scale</span><span class="p">;</span><span class="n">CATransform3D</span> <span class="n">combine</span><span class="p">;</span>
+    <span class="p">[</span><span class="n">CATransaction</span> <span class="nf">begin</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">CATransaction</span> <span class="nf">setValue</span><span class="p">:[</span><span class="nf">NSNumbernumberWithFloat</span><span class="p">:</span><span class="mi">5</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span> <span class="nf">forKey</span><span class="p">:</span><span class="n">kCATransactionAnimationDuration</span><span class="p">];</span>
+    <span class="p">[</span><span class="nf">layersetPosition</span><span class="p">:</span><span class="n">CGPointMake</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)];</span>
+    
+    <span class="n">scale</span> <span class="o">=</span><span class="n">CATransform3DMakeScale</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">1</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">1</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">);</span>
+    <span class="n">rotate</span> <span class="o">=</span><span class="n">CATransform3DMakeRotation</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="mi">57</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="n">f</span><span class="p">);</span> 
+    <span class="n">combine</span> <span class="o">=</span><span class="n">CATransform3DConcat</span><span class="p">(</span><span class="n">rotate</span><span class="p">,</span> <span class="n">scale</span><span class="p">);</span>
+    <span class="p">[</span><span class="n">layer</span> <span class="nf">setTransform</span><span class="p">:</span><span class="n">combine</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">CATransaction</span> <span class="nf">commit</span><span class="p">];</span> 
+<span class="p">}</span>
+</code></pre></div></div>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>                              清单5-8 在这个完整的-action:方法中，CALayer最后应该留下来的位置在开始CATransaction块开始之前就计算好了。这确保了改变动画在同一期间执行。我们给CATransaction设定执行时间段，通过使用+setValue:forKey:这个方法，传递一个kCATransactionAnimationDuration这个关键字。
+</code></pre></div></div>
+
+<p>在CATransaction已经开始之后，我们可以在层上设定我们想要的动画属性，然后它就使用CATransaction的执行时间自动的执行动画。代替构造若干个CABasicAnimation对象然后应用到层中，你可以直接设定属性。</p>
+
+<p>第一个设定的属性就是位置。因为锚点就在层的中间，你能容易的计算出这个位置离窗口的右上角5个像素的位置，然后设定这个位置属性给层。</p>
+
+<p>下一步，你需要构造变换来应用到这个层中。开始，先构造2个子变换，例如：</p>
+
+<p>创建一个缩放变换，缩放层到原来尺寸的1/10。</p>
+
+<p>构造一个旋转变换，旋转层1.57个弧度。</p>
+
+<p>在这里带着这两个变换，下一步就是使用CATransform3DConcat方法来联合它们。</p>
+
+<p>当这两个变换是被联合时，应用它们到层上，然后提交CATransaction。结果就是那个层会优雅的从左下角移到右上角，缩放成原来尺寸的1/10并且移动时旋转180度。这给你的印象就像是随着层滑动到指定的位置，从无到有的缩放。</p>
+
+<h3 id="缩放vs边框">缩放vs边框</h3>
+
+<p>在联合变换的例子中，我们联合了缩放和旋转变换以达到渴望的效果。你可能说：为什么不仅仅用改变层的边框来替代，以避免联合变换的麻烦？</p>
+
+<p>原因是在缩放层和改变它的边框之间有着非常重要的不同之处。当一个层缩放时，任然会认为层是一个原始的尺寸，并且在缩放被应用之前绘制原始的尺寸。然而，如果我们改变了尺寸，然后缩放层，层就看起来就不对了，因为它知道自己是一个不同的尺寸了。</p>
+
+<p>例如，如果我们改变层的边框，在联合变换的例子中代替做一个层的变换，动画的结果将看起来如图5-4.</p>
+
+<p><img src="/images/animation-5-4.gif" alt="图5-4 边框和缩放的动画" /></p>
+
+<p>注意到最后层好像是一个圈。这是因为我们改变了层的边框，但是没有改变层的圆角率和边框的宽度。然而，当缩放变换是被使用时，结果就是我们看到的那样，如图5-5.这会是一个正方形。当你在看图5-5时，你会发现一个特点边框不可见。这是因为缩放后的边框比0.5个像素要小。同样，因为圆角(原始是5个像素)比1个像素要少，它也不再可见。当用一个复杂的层树工作时，改变边框和缩放的不同之处就富有戏剧性了。如果我们在放大这个层到100%，那么边框就将成为50个像素宽了。</p>
+
+<p><img src="/images/animation-5-5.gif" alt="图5-5 缩放和旋转的动画" /></p>
+
+<h3 id="总结">总结</h3>
+
+<p>当你第一次使用变换进行工作时，会令人生畏。更糟糕的是，如果你决定在互联网上搜索时，它会使你更加的迷惑。这里过了一遍概念希望能帮助你意识到变换的有用和便捷之处。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>二 Cocoa编程Protocol and Message用法 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2010/11/16/cocoa-study-2.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="二 Cocoa编程Protocol and Message用法">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2010/11/16/cocoa-study-2.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">二 Cocoa编程Protocol and Message用法</h1>
+  
+  <span class="post-meta">11月 16日, 2010</span><br>
+  
+  <span class="post-meta small">1 minute read</span>
+</div>
+
+<article class="post-content">
+  <h3 id="protocol用法">protocol用法</h3>
+
+<p>protocol顾名思义，就是联系两个东西的桥梁。翻译成中文就叫协议，protocol在实际编程中应用的比较少，但是cocoa的API中却大量用到了它。例如：cocoa编程中，如果你在UI上使用了Table View控件，最常用的一个方法numberOfRowsInTableView。它返回将要在Table View上显示条目的个数，但是这个Cocoa的API怎么使用哪？程序员直接调用么？显然不是，因为apple工程师写这个方法的时候，他们怎么知道程序员将来要在Table View上显示几行啊！那么下面我们就拿这个例子分析protocol到底是怎么工作的。</p>
+
+<p>   numberOfRowsInTableView这个方法虽然是cocoa提供的，但是它要由程序员实现。其实这个方法就相当于java中的接口，在c++中一般用纯虚函数定义这种方法。这样程序员就可以根据实际情况改变函数的实现方法。虽说思想相同，但是cocoa实现的这种方法和java，c++却大不一样。下面就拿java的实现和此方法对比吧，首先如果java定义一个接口，那么如果想用这个接口，程序员的类就必须继承这个接口。这样接口中的方法也就必须全部实现，相当于方法都暴露给程序员了。而cocoa实现的原理是定义一个协议NSTableViewDelegetProtocol，在这个协议中定义此这个方法。程序员要想用此方法只要如下，加上协议的名字就行了</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">@interface</span> <span class="nc">NSTableView</span> <span class="p">:</span> <span class="nc">NSObject</span> <span class="o">&lt;</span> <span class="n">NSTableViewDelegetProtocol</span> <span class="o">&gt;</span>
+</code></pre></div></div>
+
+<p>这样就实现了这个方法而不用继承，因为继承往往会暴露父类的所用方法，所以在程序设计中尽量用关联关系来代替继承。</p>
+
+<p>协议有两中，一种是正式的，一种是非正式的，非正式协议时objective c的新特性。正式的协议，就是在你自定义好协议后，如果使用它，像java中的接口一样，就要实现协议中的所有方法。而非正式的协议像如下声明</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">@interface</span> <span class="nc">NSObject</span> <span class="p">(</span> <span class="nl">MyXMLSupport</span> <span class="p">)</span>
+
+<span class="k">-</span> <span class="p">(</span><span class="n">NSXMLElement</span> <span class="o">*</span><span class="p">)</span> <span class="n">XMLRepresentation</span><span class="p">;</span>
+
+<span class="k">-</span> <span class="nf">initFromXMLRepresentation</span><span class="p">:(</span><span class="n">NSXMLElement</span> <span class="o">*</span><span class="p">)</span><span class="nv">XMLElement</span><span class="p">;</span>
+
+<span class="k">@end</span>
+</code></pre></div></div>
+
+<p>这样你的类，只要继承NSObject就可以使用协议了，并且你不必实现所有的方法，只要实现你用的方法就可以了。 大概是正式协议本来是实现接口的功能的 ，这里又给加入了新的特性，所以称之为非正式协议。</p>
+
+<h3 id="message用法">Message用法</h3>
+
+<p>开始学习Objective c的时候总认为[obj  add]，这种就是objective c的对象中方法的调用。很多人也这样说这就是objective c的方法调用。但是为何好多objective编程书籍上，都称 [obj  add]是obj 对象发了一个add消息。难道apple的工程师为了与众不同，故意把方法调用叫成发消息么？那你就大错特错了。下面我们仔细剖析一下吧。</p>
+
+<p>C＋＋中除了虚函数方法，大部分类方法的调用都是静态绑定，就是编译期间已经确定了函数的名字和地址以及所属于的类。所谓的动态方法，一个不负责任的解释就是运行时绑定。这种解释只会让人更加迷惑。下面这段是我从网上看到的一篇博客，截取的一段内容对动态和静态绑定的理解。</p>
+
+<blockquote>
+  <p>犹记当时自己看第一本C++的书时候，那个时候什么也不懂，竟然在“动态”与“静态”之间徘徊。每本书都很“清楚”地说：“编译链接之前的内存分配就是静态，程运行之后的分配就是动态！”
+不说，我还有点明白，说了我更加不懂。因为我们只知道编译链接是语言的翻译过程，把源代码转换成计算机懂得的机器指令罢了。无论选择任何的编译器，最终目的只是更有效地生成一个可执行文件。既然是一个文件，程序还没有运行的时候，它是以.EXE的扩展名存储在磁盘中。</p>
+</blockquote>
+
+<blockquote>
+  <p>如果把编译链接和运行间断开来，程序在还没有载入运行的时候，它只是一个文件，关内存什么事？这还不算，绝大多数（几乎我看到的都是）书本上在讲多态性的时候，还讲到一种“运行时绑定”,“在这些重载的函数中，可一系列虚函数中，编译时还不确定调用哪个函数，运行时就知道了！”</p>
+</blockquote>
+
+<blockquote>
+  <p>“屁话！通通都是屁话！”在我编程多年以后，才发觉书上写得特错大错。试想一想，编译器都不能确定将会调用那个函数，那么程序运行之后又如何确定（当然，那些根据判断和返回值调等用的函数另当别论）。系统能确定吗，系统是一个冰冷的机器，加上一个来料加工，甚至更多是被我们程序去操纵的操作系统，它如何能知道你自己写程序直到编译时自己都弄不清楚的东西？其实在函数重载或虚函数当中，编译器早就用按规则改名，或创建虚函数表，清清楚楚地确定将要调用的函数。</p>
+</blockquote>
+
+<p>看了上面的解释相信动态和静态调用，你心中会有了你自己的看法吧。其实objective c为何成这种函数调用为发消息那，因为这种调用的方法就使用了所谓的动态绑定。有点c++虚函数表的意思。那么我们也暂且称这种函数调用为发送消息吧！objective c中的消息经过编译器的解释，回变成如下结构：objc_msgSend(receiver, selector, arg1, arg2, …)那么下面就逐个解释消息中各个参数的意义。</p>
+
+<p>所谓receiver就是你调用的类的对象。在objective c中每个对象都有一个isa的指针，他指向对象的首地址。当一个消息发给一个对象的时候，对象的指针就会搜索里面的方法表，如果有这个方法就回调用它，如果没有就指向对象的父类指针。所谓方法表就是对象中维护的selector表。下图就表明了objective c方法调用的过程</p>
+
+<p><img src="/images/cocoa-study-1.gif" alt="图片" /></p>
+
+<p>其中selector包含两部分内容，一个是编译后的函数名字SEL，一个就是函数中实际的地址cmd。根据地址和名字就可以正确的调用到函数，后面的参数就是也就是函数的参数了。根据这种调用方法cocoa的程序就可以很轻松的实现动态绑定了。其实在cocoa编程中，UI的消息响应就很好的利用了objective c的这个特性。例如一个Button按钮，就用此方法动态的实现不同的按钮按下的响应。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">[</span><span class="n">myButtonCell</span> <span class="nf">setAction</span><span class="p">:</span><span class="k">@selector</span><span class="p">(</span><span class="nf">reapTheWind</span><span class="p">:)];</span>
+<span class="p">[</span><span class="n">myButtonCell</span> <span class="nf">setTarget</span><span class="p">:</span><span class="n">anObject</span><span class="p">];</span>
+</code></pre></div></div>
+
+<p>这样只要在myButtonCell这个父类中调用此方法，所有继承自它的子类的响应函数就不用在调用任何方法了，方便的实现不同的按钮响应。
+其实大家只要有语言基础，objective c学习起来还是挺容易的。如果objective c感觉学习的可以了，那你就可以看cocoa编程方面的书籍了。这样你就可以在mac os开发自己的应用程序了。
+<a href="https://blog.csdn.net/mengtnt/article/details/6013516">原文链接</a></p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

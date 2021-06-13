@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>对WM_PAINT使用的认识 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2009/06/27/WM_PAINT.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="对WM_PAINT使用的认识">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2009/06/27/WM_PAINT.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">对WM_PAINT使用的认识</h1>
+  
+  <span class="post-meta">06月 27日, 2009</span><br>
+  
+  <span class="post-meta small">2 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>最近看Windows游戏编程大师的时候，第一部分Windows编程基础中，有一段代码一直疑惑，不知道怎么解决。就是在Demo3_6中，有段响应WM_PAINT的代码，主要代码如下：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">case</span> <span class="n">WM_PAINT</span><span class="p">:</span>
+  <span class="p">{</span>
+  <span class="c1">// simply validate the window</span>
+  <span class="n">hdc</span> <span class="o">=</span> <span class="n">BeginPaint</span><span class="p">(</span><span class="n">hwnd</span><span class="p">,</span><span class="o">&amp;</span><span class="n">ps</span><span class="p">);</span>  
+  <span class="c1">//hdc = GetDC(hwnd);</span>
+        <span class="c1">// set the foreground color to blue</span>
+        <span class="n">SetTextColor</span><span class="p">(</span><span class="n">hdc</span><span class="p">,</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">255</span><span class="p">));</span>
+        <span class="c1">// set the background color to black</span>
+        <span class="n">SetBkColor</span><span class="p">(</span><span class="n">hdc</span><span class="p">,</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">));</span>
+        <span class="c1">// finally set the transparency mode to transparent</span>
+        <span class="n">SetBkMode</span><span class="p">(</span><span class="n">hdc</span><span class="p">,</span> <span class="n">OPAQUE</span><span class="p">);</span>        <span class="c1">// draw some text at (0,0) reflecting number of times</span>
+        <span class="c1">// wm_paint has been called</span>
+        <span class="n">sprintf</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="s">"WM_PAINT called %d times.   "</span><span class="p">,</span> <span class="o">++</span><span class="n">wm_paint_count</span><span class="p">);</span>
+        <span class="n">TextOut</span><span class="p">(</span><span class="n">hdc</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">strlen</span><span class="p">(</span><span class="n">buffer</span><span class="p">));</span>
+        <span class="n">EndPaint</span><span class="p">(</span><span class="n">hwnd</span><span class="p">,</span><span class="o">&amp;</span><span class="n">ps</span><span class="p">);</span>
+        <span class="c1">//ReleaseDC(hwnd,hdc);</span>
+  <span class="c1">//GetClientRect(hwnd,&amp;rect);</span>
+  <span class="c1">//ValidateRect(hwnd,&amp;rect);</span>
+        <span class="c1">// return success</span>
+  <span class="k">return</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+     <span class="p">}</span> <span class="k">break</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>我在vc6.0下成功运行，但是不知道为什么当我移动窗口的时候，上面的窗口刷新次数没有改变。只有改变窗口大小，或者
+其他窗口变化的时候才会显示刷新的次数加一。当一个窗口移动，改变大小或被其他窗口或事件“弄脏”的时候，该窗口的用户区都要重绘。那为何移动窗口的时候会没变化，最开始自己就认为估计是移动的时候窗没有发送WM_PAINT消息。不过经过加入了一些调试代码入下:</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">case</span> <span class="n">WM_PAINT</span><span class="p">:</span>
+  <span class="p">{</span>
+  <span class="c1">// simply validate the window</span>
+  <span class="n">hdc</span> <span class="o">=</span> <span class="n">BeginPaint</span><span class="p">(</span><span class="n">hwnd</span><span class="p">,</span><span class="o">&amp;</span><span class="n">ps</span><span class="p">);</span>  
+  <span class="c1">//hdc = GetDC(hwnd);</span>
+        <span class="c1">// set the foreground color to blue</span>
+        <span class="n">SetTextColor</span><span class="p">(</span><span class="n">hdc</span><span class="p">,</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="mi">255</span><span class="p">));</span>
+        <span class="c1">// set the background color to black</span>
+        <span class="n">SetBkColor</span><span class="p">(</span><span class="n">hdc</span><span class="p">,</span> <span class="n">RGB</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">));</span>
+        <span class="c1">// finally set the transparency mode to transparent</span>
+        <span class="n">SetBkMode</span><span class="p">(</span><span class="n">hdc</span><span class="p">,</span> <span class="n">OPAQUE</span><span class="p">);</span>
+        <span class="c1">// draw some text at (0,0) reflecting number of times</span>
+        <span class="c1">// wm_paint has been called</span>
+        <span class="n">sprintf</span><span class="p">(</span><span class="n">buffer</span><span class="p">,</span><span class="s">"WM_PAINT called %d times.   "</span><span class="p">,</span> <span class="o">++</span><span class="n">wm_paint_count</span><span class="p">);</span>
+        <span class="n">TextOut</span><span class="p">(</span><span class="n">hdc</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span> <span class="n">buffer</span><span class="p">,</span> <span class="n">strlen</span><span class="p">(</span><span class="n">buffer</span><span class="p">));</span>
+        <span class="n">EndPaint</span><span class="p">(</span><span class="n">hwnd</span><span class="p">,</span><span class="o">&amp;</span><span class="n">ps</span><span class="p">);</span>
+<span class="n">MessageBox</span><span class="p">(</span><span class="n">hwnd</span><span class="p">,</span><span class="s">"WM_PAINT"</span><span class="p">,</span><span class="s">"message"</span><span class="p">,</span><span class="n">MB_OK</span><span class="p">);</span>
+        <span class="c1">//ReleaseDC(hwnd,hdc);</span>
+  <span class="c1">//GetClientRect(hwnd,&amp;rect);</span>
+  <span class="c1">//ValidateRect(hwnd,&amp;rect);</span>
+        <span class="c1">// return success</span>
+  <span class="k">return</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+     <span class="p">}</span> <span class="k">break</span><span class="p">;</span>
+<span class="k">case</span> <span class="n">WM_MOVE</span><span class="p">:</span>
+  <span class="p">{</span>
+  <span class="n">MessageBox</span><span class="p">(</span><span class="n">hwnd</span><span class="p">,</span><span class="s">"move"</span><span class="p">,</span><span class="s">"message"</span><span class="p">,</span><span class="n">MB_OK</span><span class="p">);</span>
+  <span class="k">return</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+  <span class="p">}</span><span class="k">break</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>这段代码调试的时候可以清楚看到，当移动窗口的时候WM_PAINT消息输出来了。说明移动窗口的时候进行了重绘。那到底怎么回事啊！当自己在网上看到了这片blog后恍然大悟。尽管窗口消息处理程序一旦接收到WM_PAINT消息之后，就准备更新整个显示区域，但它经常只需要更新一个较小的区域（最常见的是显示区域中的矩形区域）。显然，当对话框覆盖了部分显示区域时，情况即是如此。在擦除对话框之后，需要重画的只是先前被对话框遮住的矩形区域。这个区域称为「无效区域」或「更新区域」。正是显示区域内无效区域的存在，才会让Windows将一个WM_PAINT消息放在应用程序的消息队列中。只有在显示区域的某一部分失效时，窗口才会接受WM_PAINT消息。</p>
+
+<p>Windows内部为每个窗口保存一个「绘图信息结构」，这个结构包含了包围无效区域的最小矩形的坐标以及其它信息，这个矩形就叫做「无效矩形」，有时也称为「无效区域」。如果在窗口消息处理程序处理WM_PAINT消息之前显示区域中的另一个区域变为无效，则Windows计算出一个包围两个区域的新的无效区域（以及一个新的无效矩形），并将这种变化后的信息放在绘制信息结构中。Windows不会将多个WM_PAINT消息都放在消息队列中。</p>
+
+<p>窗口消息处理程序可以通过呼叫InvalidateRect使显示区域内的矩形无效。如果消息队列中已经包含一个WM_PAINT消息，Windows将计算出新的无效矩形。否则，它将一个新的WM_PAINT消息放入消息队列中。在接收到WM_PAINT消息时，窗口消息处理程序可以取得无效矩形的坐标（我们马上就会看到这一点）。通过呼叫GetUpdateRect，可以在任何时候取得这些坐标。</p>
+
+<p>在处理WM_PAINT消息处理期间，窗口消息处理程序在呼叫了BeginPaint之后，整个显示区域即变为有效。程序也可以通过呼叫ValidateRect函数使显示区域内的任意矩形区域变为有效。如果这呼叫具有令整个无效区域变为有效的效果，则目前队列中的任何WM_PAINT消息都将被删除。</p>
+
+<p>原因就在于虽然进入到了WM_PAINT函数中但是，BeginPaint()获得的是无效区域的HDC，可以想象此时的HDC指向的区域显然为空，所以说虽然执行了WM_PAINT但是窗口中显示的数据都没有变化！</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

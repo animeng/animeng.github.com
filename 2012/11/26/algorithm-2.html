@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>经典数学问题之----海盗分宝 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2012/11/26/algorithm-2.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="经典数学问题之----海盗分宝">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2012/11/26/algorithm-2.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">经典数学问题之----海盗分宝</h1>
+  
+  <span class="post-meta">11月 26日, 2012</span><br>
+  
+  <span class="post-meta small">1 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>什么是海盗分宝问题呢？顾名思义，就是几个海盗探讨如何分赃的问题。在分赃的过程中，依靠智慧使自己所获得利益最大化。海盗分宝问题的描述虽然非常简单，然而，通过一个人对这个简单问题的分析与思考可以迅速的看出这个人的逻辑思维能力。同时，这个问题也曾经出现在微软应聘的试卷中。简单的描述与复杂的逻辑使它问题成为一个经典的博弈问题，值得我们探讨。</p>
+
+<p>问题的描述是这样的：</p>
+
+<p>——5个海盗抢到了100颗宝石，每一颗都有一样的大小和价值。</p>
+
+<p>他们决定这么分：</p>
+
+<ol>
+  <li>
+    <p>抽签决定自己的号码（1，2，3，4，5）</p>
+  </li>
+  <li>
+    <p>首先，由1号提出分配方案，然后大家5人进行表决（即提议者本人也有表决的权利），当且仅当超过半数的人同意时，按照他的提案进行分配，否则将被扔入大海喂鲨鱼。</p>
+  </li>
+  <li>
+    <p>如果1号死后，再由2号提出分配方案，然后大家4人进行表决，当且仅当超过半数的人同意时，按照他的提案进行分配，否则将被扔入大海喂鲨鱼。</p>
+  </li>
+  <li>
+    <p>依次类推。</p>
+  </li>
+</ol>
+
+<p>每个海盗都被认为无比的聪明，他们会在保全性命的同时使自己的利益最大化。同时，他们都可以清晰地分析整个事情的始末。</p>
+
+<p>于是，问题出现了，1号海盗如何提议才能使自己的提案获得半数以上的通过率并且获得最大的利益呢？</p>
+
+<p>首先，请读者仔细思考，得出自己的答案后，再继续看。</p>
+
+<p>公认答案：1号海盗分给3号1枚金币，4号或5号海盗2枚，独得97枚。分配方案可写成（97，0，1，2，0）或（97，0，1，0，2）。</p>
+
+<p>答案的推导</p>
+
+<p>这个问题之所以成为经典博弈问题，能够成为微软的应聘测试题，也与其求解的巧妙思路有关。分析这个问题时，需要用到递归的思想，即将复杂的问题转化为同一问题的小规模模型。这是很常用的解决问题思路，同时，也是写程序，写算法时所不可或缺的思想。</p>
+
+<p>从后面往前推，将问题规模缩小、简化。如果1-3号海盗都已然由于自己的决策失误没有得到半数以上人的投票，喂了鲨鱼。于是，现在就剩下4号、5号两个海盗。5号海盗必然不会同意4号海盗的任何提议，这样4号的任何提议都不会得到半数以上的通过率。只要4号挂了，5号就可以独得所有金币。（海盗不仅唯利是图，同时阴险毒辣。）。</p>
+
+<p>由于所有的海盗都绝顶聪明，4号海盗必然不会让事态发展到如此地步，所以他至少要保证3号的存活。所以，将问题向回推，若1、2号海盗挂掉，只剩下3号提议时，他完全可以提出（100，0，0）的方案，由于4号必须保证3号的存活，所以即使他不能得到一枚金币也会同意3号的提议。这样3号的提议因得到两人的同意而通过。将问题继续向回推，当只有1号挂掉而2-5号海盗还在，由2号提议时，他只要保证4号5号有一个金币的收益，即（98，0，1，1）的方案，这样就可以使4号5号获得的收益比2号挂掉而由3号提议时获得的多，因此，4号5号会同意2号的如此提议。</p>
+
+<p>于是，我们已经接近最初的问题了，即1号提议时的情况。一号通过聪明的海盗头脑分析出，当自己死掉时，2号的策略将会是怎样。因此一号的提议只要让两个人的收益大于2号的提议时的收益，即可得到通过。而当1号死后2号的提议为（98，0，1，1）。因此，1号可以选择让3号和4号，或者3号和5号拥有更多的收益，而不顾及另外两个人的想法。于是他可以提出（97，0，1，2，0）或者（97，0，1，0，2）这样，他的方案便会得到自己以及另外两人的同意而得到通过。</p>
+
+<p>在解决这个问题的过程当中，我们采用了递归的手段，找到一个复杂的问题最本源的性质，并且在这个本源的基础上层层“加壳”，逐步分析，最终解决问题。这便是递归的主要思想，将一个复杂问题转化为同一个问题的简单模型。然后再逐步推回到原本的问题。这种解决问题的思路同时可以运用于解决许多问题。</p>
+
+<p>这个经典的博弈问题可以引发我们许多的思考。它不光是一个逻辑问题，还揭示着很多社会现象。</p>
+
+<p>比如，任何“分配者”想让自己的方案得到通过的关键是事先考虑清楚“挑战者”的分配方案是什么（在这个问题中，即是两个相邻号码海盗之间的关系），并用最小的代价获取最大收益，拉拢“挑战者”分配方案中最不得意的人们。想一想历朝历代的农民起义，想一想绵延起不断的宫廷斗争，想一想我们这个时代比比皆是的结盟与背叛，想一想企业内部的明争暗斗，想一想办公室脚下使绊的政治，哪一个得胜者不是采用的类似“海盗分金”的办法？</p>
+
+<p>为什么革命者总是找穷苦人，因为他们是最失意的人。为什么恐怖分子拉登在沙特阿拉伯没有市场，在阿富汗却大受欢迎，因为阿富汗是全球化的弃儿。为什么企业中的一把手，在搞内部人控制时，经常是抛开二号人物，而与会计和出纳们打得火热，难道不是因为公司里的小人物好收买，而二号人物却总是野心勃勃地想着取而代之么。</p>
+
+<p>同时，在这个问题中也充分的体现着“先发优势”与“后发略势”。1号看起来所处的地位最为危险，他的一个错误决策便会使自己喂鲨鱼。然后，与此同时，他也手握着第一个提出方案的先机，只要他充分分析、决策，就可以化险为夷，并使自己获得最多的收益。而5号看起来是最安全的，甚至可以坐收渔人之利，可由于他没有先发决策的权利，最终不得不看别人脸色行事而只能分得一小杯羹。可见，在为人处事中，老想把自己放在5号的位置，总想以逸待劳，最终会错失许多机会并任人摆布。若中国长期在世界市场中长期处在5号的位置，总是报着跟着别人混杯羹的态度，最终就将什么也得不到。</p>
+
+<p>这个简单的问题即揭示了无数复杂的真理，其实，在我们生活的世界中许多简单的数学问题，逻辑问题，都揭示着许多复杂的社会本质。而同时，许多复杂的社会本质，也可以用简单的数学方法，逻辑思维方法来抽象、分析。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

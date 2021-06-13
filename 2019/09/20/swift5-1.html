@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>SwiftUI的一些新语法特性 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2019/09/20/swift5-1.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="SwiftUI的一些新语法特性">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2019/09/20/swift5-1.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">SwiftUI的一些新语法特性</h1>
+  
+  <span class="post-meta">09月 20日, 2019</span><br>
+  
+  <span class="post-meta small">5 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>苹果swift开源之后，对每个新增的特性都会做公开透明的讨论，自己也主要是参考swift的官方<a href="https://apple.github.io/swift-evolution/">Evolution</a>,对一些比较有用的特性做一些总结，方便之后的查看，下面主要是swift5.1的新特性。下面的特性主要是针对2019年wwdc发布的swiftUI框架，使用swift5.1的一些新的语法特性。</p>
+
+<h2 id="property-wrapper">Property Wrapper</h2>
+
+<p>属性封装是一种更通用的方式封装属性。苹果在<a href="https://github.com/apple/swift-evolution/blob/master/proposals/0258-property-wrappers.md">swift语言进化</a>中，举了Lazy和@NSCopying这两个关键字的例子，来说明了为何swift5.1要设计这个语法功能。下面就拿Lazy的例子来分析下这个语法的好处。Lazy也就是惰性加载是之前swift语法的一个关键字，用法是程序实际调用这个属性的时候，才会真正的使用这个属性自定义的初始化的方法，可以避免定义的时候就初始化，从而提升程序的运行效率。其实把之前的Lazy关键字语法展开就是如下的代码:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">struct</span> <span class="kt">Foo</span> <span class="p">{</span>
+  <span class="c1">// lazy var foo = 100</span>
+  <span class="kd">private</span> <span class="k">var</span> <span class="nv">_foo</span><span class="p">:</span> <span class="kt">Int</span><span class="p">?</span>
+  <span class="k">var</span> <span class="nv">foo</span><span class="p">:</span> <span class="kt">Int</span> <span class="p">{</span>
+    <span class="k">get</span> <span class="p">{</span>
+      <span class="k">if</span> <span class="k">let</span> <span class="nv">value</span> <span class="o">=</span> <span class="n">_foo</span> <span class="p">{</span> <span class="k">return</span> <span class="n">value</span> <span class="p">}</span>
+      <span class="k">let</span> <span class="nv">initialValue</span> <span class="o">=</span> <span class="mi">100</span>
+      <span class="n">_foo</span> <span class="o">=</span> <span class="n">initialValue</span>
+      <span class="k">return</span> <span class="n">initialValue</span>
+    <span class="p">}</span>
+    <span class="k">set</span> <span class="p">{</span>
+      <span class="n">_foo</span> <span class="o">=</span> <span class="n">newValue</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>上面这些代码本质上就是Lazy的实现，其实如果你想在get方法中定义一些自己想要的方法，比如做一些日志打印或者边界判断，直接用Lazy关键字就无能为力了，swift的语言设计者也认为这种硬编码的方式不是很优雅，应该用一种更通用的方式来定义这种语法，所以就诞生了属性封装这种语法特性。下面我们看下属性封装是如何来定义上面的用法的。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">@propertyWrapper</span>
+<span class="kd">enum</span> <span class="kt">Lazy</span><span class="o">&lt;</span><span class="kt">Value</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="k">case</span> <span class="nf">uninitialized</span><span class="p">(()</span> <span class="o">-&gt;</span> <span class="kt">Value</span><span class="p">)</span>
+  <span class="k">case</span> <span class="nf">initialized</span><span class="p">(</span><span class="kt">Value</span><span class="p">)</span>
+
+  <span class="nf">init</span><span class="p">(</span><span class="nv">wrappedValue</span><span class="p">:</span> <span class="kd">@autoclosure</span> <span class="kd">@escaping</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Value</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">self</span> <span class="o">=</span> <span class="o">.</span><span class="nf">uninitialized</span><span class="p">(</span><span class="n">wrappedValue</span><span class="p">)</span>
+  <span class="p">}</span>
+
+  <span class="k">var</span> <span class="nv">wrappedValue</span><span class="p">:</span> <span class="kt">Value</span> <span class="p">{</span>
+    <span class="k">mutating</span> <span class="k">get</span> <span class="p">{</span>
+      <span class="k">switch</span> <span class="k">self</span> <span class="p">{</span>
+      <span class="k">case</span> <span class="o">.</span><span class="nf">uninitialized</span><span class="p">(</span><span class="k">let</span> <span class="nv">initializer</span><span class="p">):</span>
+        <span class="k">let</span> <span class="nv">value</span> <span class="o">=</span> <span class="nf">initializer</span><span class="p">()</span>
+        <span class="k">self</span> <span class="o">=</span> <span class="o">.</span><span class="nf">initialized</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="c1">// TODO 做一些属性条件的判断</span>
+        <span class="k">return</span> <span class="n">value</span>
+      <span class="k">case</span> <span class="o">.</span><span class="nf">initialized</span><span class="p">(</span><span class="k">let</span> <span class="nv">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">value</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="k">set</span> <span class="p">{</span>
+      <span class="k">self</span> <span class="o">=</span> <span class="o">.</span><span class="nf">initialized</span><span class="p">(</span><span class="n">newValue</span><span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>在使用这个属性封装时，只要简单的调用@Lazy var foo = 100,用法和之前swift的Lazy关键字几乎一样，但是开发者却能灵活的控制属性的用法，比如上面代码中注释的地方，就可以增加一些条件控制的方法。用属性封装主要可以对哪些特性做封装哪？下面我列出来一些用法</p>
+
+<ul>
+  <li>约束属性的范围的时候，例如对某些整形设置为0-100</li>
+  <li>转换属性的数据时候，比如有些属性设置的时候，需要计算转换成其他数据，最常用的就是PI的设置，需要转换成度数表示法，就可以用这种方案</li>
+  <li>改变属性比较语法的时候</li>
+</ul>
+
+<p>如果想要上述这些特性的详细用法的，建议可以看下Mat大神的<a href="https://nshipster.com/propertywrapper">博客</a>，里面都有详细说明。
+其实本质上属性封装有点像C语言的宏的定义和java中的注解语法，给开发者一定的能力改变属性的一些语法特性，这种语法特性在很多脚本语言都具备，尤其做一些自定义的DSL，这个特点非常有用。所以在SwiftUI里面，标记语法中有大量的应用，熟悉这个特性对今后学习SwiftUI挺有帮助。</p>
+
+<h2 id="opaque-result-types">Opaque Result Types</h2>
+
+<p>如果这个特性按照字面的翻译意思是不透明结果类型，但是我个人认为这种字面翻译很难理解这个语法特性，自己也想不到什么好的翻译方法，所以暂时就用英文的原称来解释这个语法了。其实本质上这个语法特性，是让swift的泛型编程中返回的类型结构更简单、易懂。swift的api设计者用了一个<a href="https://github.com/apple/swift-evolution/blob/master/proposals/0244-opaque-result-types.md">Shape类的例子</a>，详细解释了这个语法特性设计的由来。下面看一个例子</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">protocol</span> <span class="kt">Shape</span> <span class="p">{</span>
+  <span class="kd">func</span> <span class="nf">draw</span><span class="p">(</span><span class="nv">to</span><span class="p">:</span> <span class="kt">Surface</span><span class="p">)</span>
+
+  <span class="kd">func</span> <span class="n">collides</span><span class="o">&lt;</span><span class="kt">Other</span><span class="p">:</span> <span class="kt">Shape</span><span class="o">&gt;</span><span class="p">(</span><span class="nv">with</span><span class="p">:</span> <span class="kt">Other</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span>
+<span class="p">}</span>
+
+<span class="kd">struct</span> <span class="kt">Rectangle</span><span class="p">:</span> <span class="kt">Shape</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">}</span>
+<span class="kd">struct</span> <span class="kt">Circle</span><span class="p">:</span> <span class="kt">Shape</span> <span class="p">{</span> <span class="cm">/* ... */</span> <span class="p">}</span>
+<span class="kd">struct</span> <span class="kt">Union</span><span class="o">&lt;</span><span class="kt">A</span><span class="p">:</span> <span class="kt">Shape</span><span class="p">,</span> <span class="kt">B</span><span class="p">:</span> <span class="kt">Shape</span><span class="o">&gt;</span><span class="p">:</span> <span class="kt">Shape</span> <span class="p">{</span>
+  <span class="k">var</span> <span class="nv">a</span><span class="p">:</span> <span class="kt">A</span><span class="p">,</span> <span class="nv">b</span><span class="p">:</span> <span class="kt">B</span>
+  <span class="c1">// ...</span>
+<span class="p">}</span>
+<span class="kd">struct</span> <span class="kt">Transformed</span><span class="o">&lt;</span><span class="kt">S</span><span class="p">:</span> <span class="kt">Shape</span><span class="o">&gt;</span><span class="p">:</span> <span class="kt">Shape</span> <span class="p">{</span>
+  <span class="k">var</span> <span class="nv">shape</span><span class="p">:</span> <span class="kt">S</span>
+  <span class="k">var</span> <span class="nv">transform</span><span class="p">:</span> <span class="kt">Matrix3x3</span>
+  <span class="c1">// ...</span>
+<span class="p">}</span>
+<span class="kd">protocol</span> <span class="kt">GameObject</span> <span class="p">{</span>
+  <span class="c1">// The shape of the object</span>
+  <span class="kd">associatedtype</span> <span class="kt">Shape</span>
+
+  <span class="k">var</span> <span class="nv">shape</span><span class="p">:</span> <span class="kt">Shape</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>如果我们想定义一个八角星的结构体，往往之前是这样写的</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">struct</span> <span class="kt">EightPointedStar</span><span class="p">:</span> <span class="kt">GameObject</span> <span class="p">{</span>
+  <span class="k">var</span> <span class="nv">shape</span><span class="p">:</span> <span class="kt">Union</span><span class="o">&lt;</span><span class="kt">Rectangle</span><span class="p">,</span> <span class="kt">Transformed</span><span class="o">&lt;</span><span class="kt">Rectangle</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kt">Union</span><span class="p">(</span><span class="kt">Rectangle</span><span class="p">(),</span> <span class="kt">Transformed</span><span class="p">(</span><span class="kt">Rectangle</span><span class="p">(),</span> <span class="nv">by</span><span class="p">:</span> <span class="o">.</span><span class="n">fortyFiveDegrees</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>如果这个时候想修改这个八角形的绘制方法，就是绘制的基础图像用Circle换成Rectangle，如下</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">struct</span> <span class="kt">EightPointedStar</span><span class="p">:</span> <span class="kt">GameObject</span> <span class="p">{</span>
+  <span class="k">var</span> <span class="nv">shape</span><span class="p">:</span> <span class="kt">Union</span><span class="o">&lt;</span><span class="kt">Circle</span><span class="p">,</span> <span class="kt">Transformed</span><span class="o">&lt;</span><span class="kt">Circle</span><span class="o">&gt;&gt;</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kt">Union</span><span class="p">(</span><span class="kt">Circle</span><span class="p">(),</span> <span class="kt">Transformed</span><span class="p">(</span><span class="kt">Circle</span><span class="p">(),</span> <span class="nv">by</span><span class="p">:</span> <span class="o">.</span><span class="n">fortyFiveDegrees</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>因为shape返回的类型做了改变，这样源码中用八角形绘制调用的地方就要做相应的更改。如果使用了这种新的泛型返回值的特性，我们只要简单的这样写就好了。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">struct</span> <span class="kt">EightPointedStar</span><span class="p">:</span> <span class="kt">GameObject</span> <span class="p">{</span>
+  <span class="k">var</span> <span class="nv">shape</span><span class="p">:</span> <span class="kd">some</span> <span class="kt">Shape</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="kt">Union</span><span class="p">(</span><span class="kt">Circle</span><span class="p">(),</span> <span class="kt">Transformed</span><span class="p">(</span><span class="kt">Rectangle</span><span class="p">(),</span> <span class="nv">by</span><span class="p">:</span> <span class="o">.</span><span class="n">fortyFiveDegrees</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>至于内部如何实现，都可以随时重构，不会影响外面的调用，可以说既利于代码的重构，也利于代码的简洁和阅读。
+所以在这个语法特性出现之前，如果想要在泛型函数中返回泛型，通常的做法如下:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">func</span> <span class="n">generic</span><span class="o">&lt;</span><span class="kt">T</span><span class="p">:</span> <span class="kt">Shape</span><span class="o">&gt;</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">T</span> <span class="p">{</span> <span class="o">...</span> <span class="p">}</span>
+
+<span class="k">let</span> <span class="nv">x</span><span class="p">:</span> <span class="kt">Rectangle</span> <span class="o">=</span> <span class="nf">generic</span><span class="p">()</span> <span class="c1">// T == Rectangle, chosen by caller</span>
+<span class="k">let</span> <span class="nv">x</span><span class="p">:</span> <span class="kt">Circle</span> <span class="o">=</span> <span class="nf">generic</span><span class="p">()</span> <span class="c1">// T == Circle, chosen by caller</span>
+</code></pre></div></div>
+
+<p>有了Opaque Result Types语法特性只要简单的在Shape前面加上some就完全可以达到这种效果了。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Proposed syntax</span>
+<span class="kd">func</span> <span class="nf">reverseGeneric</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kd">some</span> <span class="kt">Shape</span> <span class="p">{</span> <span class="k">return</span> <span class="kt">Rectangle</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="p">}</span>
+
+<span class="k">let</span> <span class="nv">x</span> <span class="o">=</span> <span class="nf">reverseGeneric</span><span class="p">()</span> <span class="c1">// abstracted type chosen by reverseGeneric's implementation</span>
+</code></pre></div></div>
+
+<p>所以这个通用的泛型返回的类型，在你编写泛型的一些类和函数的时候，就很方便的。同样在swiftUI框架中你也会看到有大量的some View这种用法。</p>
+
+<h2 id="identifiable-protocol">Identifiable Protocol</h2>
+
+<p>这个语法特性，就相当于给一个struct或者class定义一个唯一的标志符，对于比较两个类数据的区别非常有用。SwiftUI中的数据模型其实大量用到Identifiable这个协议，因为通过Identifiable协议，SwiftUI框架可以判断出那些数据模型做了更改，对做UI的增，删，改操作非常有用。这个协议的源码实现如下:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">/// A class of types whose instances hold the value of an entity with stable identity.</span>
+<span class="kd">protocol</span> <span class="kt">Identifiable</span> <span class="p">{</span>
+
+    <span class="c1">/// A type representing the stable identity of the entity associated with `self`.</span>
+    <span class="kd">associatedtype</span> <span class="kt">ID</span><span class="p">:</span> <span class="kt">Hashable</span>
+
+    <span class="c1">/// The stable identity of the entity associated with `self`.</span>
+    <span class="k">var</span> <span class="nv">id</span><span class="p">:</span> <span class="kt">ID</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>比如你用SwiftUI定义了ListView，显示所有通信录的对象往往应该这些写代码:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">struct</span> <span class="kt">Contact</span><span class="p">:</span> <span class="kt">Identifiable</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">id</span><span class="p">:</span> <span class="kt">Int</span>
+    <span class="k">var</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span>
+<span class="p">}</span>
+
+<span class="kd">struct</span> <span class="kt">ContactList</span><span class="p">:</span> <span class="kt">View</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">favorites</span><span class="p">:</span> <span class="p">[</span><span class="kt">Contact</span><span class="p">]</span>
+
+    <span class="k">var</span> <span class="nv">body</span><span class="p">:</span> <span class="kd">some</span> <span class="kt">View</span> <span class="p">{</span>
+        <span class="kt">List</span><span class="p">(</span><span class="n">favorites</span><span class="p">)</span> <span class="p">{</span> <span class="n">contact</span> <span class="k">in</span>
+            <span class="kt">FavoriteCell</span><span class="p">(</span><span class="n">contact</span><span class="p">)</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这样当你的contact对象做改变的时候，比如修改名字，SwiftUI框架通过Identifiable就很容易判断出来这个对象是新加的还是修改的，就很容易对此做UI方面的变化。其实这个属性对SwiftUI框架做数据响应式编程是非常有用的，框架会判断数据状态的改变，然后根据这些数据状态的变化，做响应的UI操作。</p>
+
+<h2 id="synthesize-default-values-for-the-memberwise-initializer">Synthesize default values for the memberwise initializer</h2>
+
+<p>增加了struct和class默认的构造函数,当struct和class有默认属性的时候，可以在调用初始化函数的时候，省略这些属性。下面给了一个例子做了解释</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">struct</span> <span class="kt">Dog</span> <span class="p">{</span>
+  <span class="k">var</span> <span class="nv">age</span><span class="p">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="k">var</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span>
+  
+  <span class="c1">// 这个初始化函数是swift的语言默认的实现</span>
+  <span class="nf">init</span><span class="p">(</span><span class="nv">age</span><span class="p">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">self</span><span class="o">.</span><span class="n">age</span> <span class="o">=</span> <span class="n">age</span>
+    <span class="k">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>在之前的swift语法中如果这样调用let sparky = Dog(name: “Sparky”)会报语法的错误，因为系统找不到这个构造方法，如果想要这样调用必须用下面的方法重新定义</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">struct</span> <span class="kt">Dog</span> <span class="p">{</span>
+  <span class="k">var</span> <span class="nv">age</span><span class="p">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">0</span>
+  <span class="k">var</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span>
+  
+  <span class="c1">// 这个构造方法必须定义，因为系统默认不提供。</span>
+  <span class="nf">init</span><span class="p">(</span><span class="nv">age</span><span class="p">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">self</span><span class="o">.</span><span class="n">age</span> <span class="o">=</span> <span class="n">age</span>
+    <span class="k">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>而在swift5.1中，这种构造方法的定义就完全没有必要了，只要有默认的赋值，就会自动就生成默认的构造方法。</p>
+
+<p>其实google的Flutter的框架中，Dart语言就有此种特性，可以看出这种特性可以减少大量UI控件初始化的冗余，对于声明式的UI构造非常有用。所以在SwiftUI中很多控件都可以使用这种简便的构造函数初始化，使代码看起来非常的简洁。</p>
+
+<h2 id="ordered-collection-diffing">Ordered Collection Diffing</h2>
+
+<p>这个特性其实是swift5.1提供的一个做差异运算的库函数，尤其在集合中筛选不同的元素和操作，用这个函数就非常方便。</p>
+
+<p>从一个集合中方便找出不同的对象，有一篇<a href="https://www.fivestars.blog/code/swift-5-1-collection-diffing.html">博客</a>描述的非常详细，如果想要用这个函数可以看下。其实苹果在wwdc2019中也讲到过如何利用差异化比较，来改造UI。尤其是tableView和collectionView需要重用的这些控件，差异化比较如何在其中发挥作用，做了详细的讲解。有兴趣可以看<a href="https://developer.apple.com/videos/play/wwdc2019/220/">wwdc教程</a>。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>由于最近苹果SwiftUI的release版本已经发布了，自己也看了下swift5.1的一些语法特性，也拿了几个跟swiftUI关联比较大的特性做了一些分析，为之后学习swiftUI框架打一点基础。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>三进制与一道经典的砝码问题 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2012/08/26/algorithm-1.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="三进制与一道经典的砝码问题">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2012/08/26/algorithm-1.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">三进制与一道经典的砝码问题</h1>
+  
+  <span class="post-meta">08月 26日, 2012</span><br>
+  
+  <span class="post-meta small">1 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>现在我们普遍使用十进位制进行数学运算，大概是源于我们的祖先喜欢用手指来计数，毕竟数学首先是一种实用的工具。另一种常使用的进位制是二进位制，在计算机运算之中。</p>
+
+<p>日常生活中好像没有三进制的立足之处。1个季度是3个月，应是三进位制，可是我们说1年是4个季度，而不是11个季度。交通信号的红绿黄的三种状态可以表示0、1、2来描述，这似乎与三进制沾上了边，可是最近红绿黄灯多变成了红绿灯，三进制变成了二进制。</p>
+
+<p>虽然在日常生活中少有表现的机会，但是用三进位制就非常容易解决一道关于砝码的经典趣味数学题。</p>
+
+<p>这道砝码问题是巴协（Bachet）给出的：要想在天平上称出1到40磅在内的任何整磅数，问最少需要几个多重的砝码？这里有两种放置砝码的办法：（1）所有砝码只放进天平的一端，（2）砝码可以放进天平的两端。</p>
+
+<p>对于（1），砝码具有两种状态，不放或者放。记不放为0，放为1，这个问题可以使用二进制来解决。二进制的砝码重量设置为1、2、4、8、16、32。在1到1+2+4+8+16+32也就是63之内的任何数量都可以用1、2、4、8、16、32中的某几个数相加得到。所以问题（1）的砝码数是6个，每个砝码的重量设置为1、2、4、8、16、32磅。</p>
+
+<p>对于（2），砝码具有三种状态，不放、放在天平左端、放在天平右端。记不放为0，放左边为1，放右边为-1，这个问题可以使用三进制来解决。在三进制中，砝码的重量设置为1、3、9、27.。在1到1+3+9+27也就是40之内的任何数量都可以用1、3、9、27中的某几个数相加或者相减获得。</p>
+
+<p>我们来看这几个砝码是如何称量1到40的：</p>
+
+<p>1=1；2=3-1；3=3 ；4=3+1；5=9-3-1 ；6=9-3 ；</p>
+
+<p>7=9-3+1；8=9-1 ；9=9  ；10=9+1 ；11=9+3-1</p>
+
+<p>……</p>
+
+<p>35=27+9-1； 36=27+9；37=27+9+1</p>
+
+<p>38=27+9+3-1；39=27+9+3；40=27+9+3+1</p>
+
+<p>这里，加号意味着天平左边放置砝码，减号意味着天平右边放置砝码（与被称重的物体放在同一端）。</p>
+
+<p>如果我们增加两个砝码81磅和243磅，用6个砝码可以就称重1到364磅的重量。如果砝码继续按3的幂次增加重量，则称重的范围越来越大。用重量为1、3^2、3^3、……、3^n的n个砝码可以称出从1到（3^n-1）/2的所有重量。</p>
+
+<p>问题是，如果一个被称物体较重，我们该如何在天平两端放置砝码呢？这里涉及到十进制向三进制的计算。像十进制转化为二进制一样，转化方法就是连续的除法运算（这里不打算详细介绍）。</p>
+
+<p>例如，（80）10=（2222）3</p>
+
+<p>等式右边的含义是，80可以用2个1、2个3、2个9、2个27相加而成。</p>
+
+<p>在天平称重中，我们要的是最少的砝码数，我们可以把2变成（10-1）3（简记为-1），也就是说，一个大一级的砝码减去一个小一级的砝码。大砝码放在天平左端，小砝码和被称重物一同放在天平右端。</p>
+
+<p>因为，（2222）3=（1000-1）3          ，该式的含义就是用2个1、2个3、2个9、2个27加成的得数等于用1个81减去1的得数。</p>
+
+<p>所以，要称重80磅的物体，需要在天平左边放置1个81磅的砝码，在天平右边放置一个1磅的砝码。</p>
+
+<p>又例如，如果我们用最少的砝码称出了一个331磅的东西，我们究竟用了哪几个砝码呢？</p>
+
+<p>因为（331）10=（110021）3=（1101-11）3</p>
+
+<p>所以，要称重331磅的物体，需要在天平左边放置1个243磅的砝码、1个81磅的砝码、1个9磅的砝码、1个1磅的砝码，在天平右边放置一个3磅的砝码。</p>
+
+<p>因为每一次称量能区别3个球，将12表示为三进制。</p>
+
+<p>在文章的最后，我们把巴协（Bachet）的砝码问题稍稍扩大一些：要想在天平上称出1到500磅在内的任何整磅数，问最少需要几个多重的砝码？这里有两种放置砝码的办法：（1）所有砝码只放进天平的一端，（2）砝码可以放进天平的两端。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>核心动画----mac和iphone开发的简化的动画技术 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2011/12/10/animation-1.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="核心动画----mac和iphone开发的简化的动画技术">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2011/12/10/animation-1.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">核心动画----mac和iphone开发的简化的动画技术</h1>
+  
+  <span class="post-meta">12月 10日, 2011</span><br>
+  
+  <span class="post-meta small">1 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>因为当初做iphone开发的时候，要做一些动画，所以自己就开始学习核心动画的一些技术，最开始也是从官方文档着手，顺便说一下，目前已经有人把官方文档翻译了，所以想学习的人，终于有了中文的资料。其实官方那个文档还是理论性质比较强，自己也在各大论坛搜了下关于核心动画的书，发现Core Animation Simplisfied Animatin Techniques for Mac and Iphone Development这本书实践性更强，虽说这本书基本也是参照官方文档写出来的，但是这本书省略了好多理论知识。这里并不是说理论就不讲了，毕竟有了理论才能指导实践，而是这本书更多的通过实践来总结出来理论，我觉得这样的书更利于开发者学习，因为开发者毕竟是要做事的，不是做学问的，各种公式推导对我们的用处真的不大，还不如讲点代码来的实在。不过这本书已经出了好久了，一直没有中文版本，所以自己就斗胆翻译一下吧，自己也水平有限，不满意的尽管拍砖。同时，也是拿翻译这本书的过程，以勉自己吧，告知自己理想是要在实践中获得的。</p>
+
+<p>下面说下自己翻译这本书的计划吧，无规矩不成方圆，无计划自然也成不了大事。因为平时自己要上班，并且最近项目也是挺紧的，所以如果安排在平时翻译有点不现实。目前就计划这每周末，拿出时间进行翻译，自己计划着，尽量在早上完成每周的计划。因为这样不至于把早上都荒废到睡懒觉上面。本书不是很多，也就200多页，前后有4个部分，13个章节，核心的也就是第二和三部分，所以这两部分自己计划拿出3周时间，剩下的每个部分就分别用1周时间。这样保证在过年之前把此书翻译完成。自己遵循的原则是能快则快，尽量吧，有句话这样说，人都是逼出来的，不给自己压力，自然也就没有动力。</p>
+
+<p>本书的章节及大致介绍如下：</p>
+
+<ol>
+  <li>
+    <p>核心动画开篇，主要是介绍什么是核心动画，以及我们应该什么时候用这个核心动画。其中包括两章：1 什么是核心动画，2 何时使用动画。</p>
+  </li>
+  <li>
+    <p>核心动画基础，主要讲了核心动画的一些基础概念和最简单的动画生成方式，不过这章可是本书的基石，如果不搞明白下面就很难看下去。其中包括2章：1 基础的动画 ，2 关键帧动画。</p>
+  </li>
+  <li>
+    <p>核心动画的层，众所周知动画都是在层上做的，但是核心动画又是怎么在层中运用的哪?这一章就是讲解这个问题的，实践中这章的知识是运用最多的。其中包括6章：1 层的转换， 2 滤镜层 ，3 多媒体层， 4 opengl的层， 5 Quartz（Quartz是一个图像绘制引擎，苹果下2d图像处理，基本都用Quartz 2d）组件层， 6 其他有用的层。</p>
+  </li>
+  <li>
+    <p>高级核心动画，简单的介绍了，核心动画如何捕获事件响应，以及在多线程程序中如何提高性能。但是都是些简单介绍，如果要了解更深层次的东西，恐怕这本书就满足不了你了。其中分为3章： 1 用户交互， 2 性能， 3 iphone上的核心动画。</p>
+  </li>
+</ol>
+
+<p>好了自己就按照计划开始第一章的翻译吧，也希望网友多给建议和指导，也算是对本人的鼓励吧，毕竟第一次翻译一本书也是需要有毅力的。万事开头难，既然自己开了这个头，就一定要把剩下的工作做完。言既出，行必果。半途而废者终不能成事。</p>
+
+<p><a href="/2011/12/18/animation-2.html">第一章 什么是核心动画</a></p>
+
+<p><a href="/2011/12/30/animation-1-1.html">第二章 我们怎么来做动画</a></p>
+
+<p><a href="/2012/01/02/animation-3.html">第三章 基础动画</a></p>
+
+<p><a href="/2012/02/12/animation-4.html">第四章 关键帧动画</a></p>
+
+<p><a href="/2012/02/19/animation-5.html">第五章 核心动画的层</a></p>
+
+<p><a href="/2012/02/23/animation-6.html">第六章 层的滤镜</a></p>
+
+<p><a href="/2012/03/11/animation-7.html">第七章 视频层</a></p>
+
+<p><a href="/2012/04/10/animation-8.html">第八章 OpenGL层</a></p>
+
+<p><a href="/2012/04/16/animation-10.html">第九章 其他有用的层</a></p>
+
+<p><a href="/2012/05/18/animation-11.html">第十章 用户交互</a></p>
+
+<p><a href="/2012/06/03/animation-12.html">第十一章 性能</a></p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

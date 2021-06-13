@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>UIScrollView用法 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2011/08/26/pome-10.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="UIScrollView用法">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2011/08/26/pome-10.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">UIScrollView用法</h1>
+  
+  <span class="post-meta">08月 26日, 2011</span><br>
+  
+  <span class="post-meta small">5 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>UIScrollView是iphone中的一个重要的视图，它提供了一个方法，让你在一个界面中看到所有的内容，从而不必担心因为屏幕的大小有限，必须翻到下一页进行阅览。确实对于用户来说是一个很好的体验。但是又是如何把所有的内容都加入到scrollview，是简单的addsubView。假如是这样，岂不是scrollView界面上要放置很多的图形，图片。移动设备的显示设备肯定不如PC，怎么可能放得下如此多的视图。所以在使用scrollView中一定要考虑这个问题，当某些视图滚动出可见范围的时候，应该怎么处理，是不管它那，还是进行内存回收或者重利用。苹果公司的UITableView就很好的展示了在UIScrollView中如何重用可视的空间，减少内存的开销。</p>
+
+<p>首先还是看官方API如何解释UIScrollView，一下是翻译官方UIScrollView的帮助文档。</p>
+
+<blockquote>
+  <p>UIScrollView类支持显示比屏幕更大的应用窗口的内容。它通过挥动手势，能够使用户滚动内容，并且通过捏合手势缩放部分内容。</p>
+</blockquote>
+
+<blockquote>
+  <p>UIScrollView是UITableView和UITextView的超类。
+UIScrollView的核心理念是，它是一个可以在内容视图之上，调整自己原点位置的视图。它根据自身框架的大小，剪切视图中的内容，通常框架是和应用程序窗口一样大。一个滚动的视图可以根据手指的移动，调整原点的位置。展示内容的视图，根据滚动视图的原点位置，开始绘制视图的内容，这个原点位置就是滚动视图的偏移量。ScrollView本身不能绘制，除非显示水平和竖直的指示器。滚动视图必须知道内容视图的大小，以便于知道什么时候停止；一般而言，当滚动出内容的边界时，它就返回了。</p>
+</blockquote>
+
+<blockquote>
+  <p>某些对象是用来管理内容显示如何绘制的，这些对象应该是管理如何平铺显示内容的子视图，以便于没有子视图可以超过屏幕的尺寸。就是当用户滚动时，这些对象应该恰当的增加或者移除子视图。</p>
+</blockquote>
+
+<blockquote>
+  <p>因为滚动视图没有滚动条，它必须知道一个触摸信号是打算滚动还是打算跟踪里面的子视图。为了达到这个目的，它临时中断了一个touch-down的事件，通过建立一个定时器，在定时器开始行动之前，看是否触摸的手指做了任何的移动。假如定时器行动时，没有任何的大的位置改变，滚动视图就发送一个跟踪事件给触摸的子视图。如果在定时器消失前，用户拖动他们的手指足够的远，滚动视图取消子视图的任何跟踪事件，滚动它自己。子类可以重载touchesShouldBegin:withEvent:inContentView:,pagingEnabled,和touchesShouldCancelInContentView:方法，从而影响滚动视图的滚动手势。</p>
+</blockquote>
+
+<blockquote>
+  <p>一个滚动视图也可以控制一个视图的缩放和平铺。当用户做捏合手势时，滚动视图调整偏移量和视图的比例。当手势结束的时候，管理视图内容显示的对象，就应该恰当的升级子视图的显示。当手势在处理的过程中，滚动视图不能够给子视图，发送任何跟踪的调用。</p>
+</blockquote>
+
+<blockquote>
+  <p>UIScrollView类有一个delegate，需要适配的协议是UIScrollViewDelegate。为了缩放和平铺工作，代理必须实现viewForZoomingInScrollView:和scrollViewDidEndZooming:withView:atScale:方法。另外，最大和最小缩放比例应该是不同的。</p>
+</blockquote>
+
+<blockquote>
+  <p>重要的提示：在UIScrollView对象中，你不应该嵌入任何UIWebView和UITableView。假如这样做，会出现一些异常情况，因为2个对象的触摸事件可能被混合，从而错误的处理。</p>
+</blockquote>
+
+<p>这些都是官方API的解释，重点是理解UIScrollView怎么来控制手势的。可以由canCancelContentTouches这个方法的运用来解释UIScrollView如何控制手势的。</p>
+
+<p>假如你设置canCancelContentTouches为YES，那么当你在UIScrollView上面放置任何子视图的时候,当你在子视图上移动手指的时候，UIScrollView会给子视图发送touchCancel的消息。而如果该属性设置为NO，ScrollView本身不处理这个消息，全部交给子视图处理。</p>
+
+<p>那么这里就有疑问了，既然该属性设置未来NO了，那么岂不是UIScrollView不能处理任何事件了，那么为何在子视图上快速滚动的时候，UIScrollView还能移动那。这个一定要区分前面所说的UIScrollView中断touch-Down事件，开启一个定时器。我们设置的这个cancancelContentTouches属性为NO时，只是让UIScrollView不能发送cancel事件给子视图。而前面所说的时，中断touch-down事件，和取消touch事件是俩码事，所以当快速在子视图上移动的时候，当然可以滚动。但是如果你慢速的移动的话，就可以区分这个属性了，假如设定为YES，在子视图上慢速移动也可以滚动视图，但是如果为NO 。因为UIScrollView，发送了cancel事件给子视图处理了，自己当然滚动不了了。</p>
+
+<p>事件处理看过了，就要考虑scrollView如何重用内存的，下面写了一个例子模仿UITableView的重用的思想，这里只是模仿，至于苹果公司怎么实现这种重用的，他们应该有更好的方法。</p>
+
+<p>这里的例子是在scrollView上放置4个2排2列的视图，但是内存中只占用6个视图的内存空间。当scrollView滚动的时候，通过不停的重用之前视图的内存空间，从而达到节省内存的效果。重用的方法如下：</p>
+
+<ol>
+  <li>
+    <p>如果scrollView向下面滚动，一旦一排视图滚出了可视范围，就改变滚动出去的那个view在scrollView中的frame，也就是改变位置到达末尾，达到重用的效果。</p>
+  </li>
+  <li>
+    <p>如果scrollView向上面滚动，一旦最末排的视图view滚出了可视范围，就改变滚动出去的那个view在scrollView中的frame，移动到最前面。</p>
+  </li>
+</ol>
+
+<p>下面就需要在你创建的视图控制器中，创建一个重用的视图数组，用来把这些要显示的视图放入内存中，这里虽然界面上显示的是2排2列的四个视图，但是当拖动的时候，可能出现前面一排的视图显示一部分，末尾一排的视图显示一部分的情况，所以重用的数组中要放置6个视图。下面是定义的一些宏：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#define sMyViewTotal 6
+</span>
+<span class="cp">#define sMyViewWidth 150
+</span>
+<span class="cp">#define sMyViewHeight 220
+</span>
+<span class="cp">#define sMyViewGap 10
+</span>
+
+<span class="err">具体实现代码如下：</span>
+
+    <span class="n">_aryViews</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSMutableArray</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">sMyViewTotal</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="n">CGFloat</span> <span class="n">x</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">i</span><span class="o">%</span><span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+
+            <span class="n">x</span> <span class="o">=</span> <span class="n">sMyViewWidth</span> <span class="o">+</span> <span class="n">sMyViewGap</span> <span class="o">+</span> <span class="n">sMyViewGap</span><span class="o">/</span><span class="mi">2</span><span class="p">;</span>
+
+        <span class="p">}</span>
+
+        <span class="k">else</span><span class="p">{</span>
+
+            <span class="n">x</span> <span class="o">=</span> <span class="n">sMyViewGap</span><span class="o">/</span><span class="mi">2</span><span class="p">;</span>
+
+        <span class="p">}</span>
+
+        <span class="n">CGFloat</span> <span class="n">y</span> <span class="o">=</span> <span class="p">(</span><span class="n">sMyViewHeight</span> <span class="o">+</span> <span class="n">sMyViewGap</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="n">i</span><span class="o">/</span><span class="mi">2</span><span class="p">);</span>
+
+        <span class="n">MyView</span> <span class="o">*</span><span class="n">myView</span> <span class="o">=</span> <span class="p">[[</span><span class="n">MyView</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithFrame</span><span class="p">:</span><span class="n">CGRectMake</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sMyViewWidth</span><span class="p">,</span> <span class="n">sMyViewHeight</span><span class="p">)];</span>
+
+        <span class="n">myView</span><span class="p">.</span><span class="n">showNumber</span> <span class="o">=</span> <span class="n">i</span><span class="p">;</span>
+
+    <span class="p">[</span><span class="n">myScrollView</span> <span class="nf">addSubview</span><span class="p">:</span><span class="n">myView</span><span class="p">];</span>
+
+      <span class="p">[</span><span class="n">_aryViews</span> <span class="nf">addObject</span><span class="p">:</span><span class="n">myView</span><span class="p">];</span>
+
+        <span class="p">[</span><span class="n">myView</span> <span class="nf">release</span><span class="p">];</span>
+
+    <span class="p">}</span>
+</code></pre></div></div>
+
+<p>所以这里的核心方法是，首先要判断是向上滚动还是向下滚动方法如下：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">scrollViewDidScroll</span><span class="p">:(</span><span class="n">UIScrollView</span> <span class="o">*</span><span class="p">)</span><span class="nv">scrollView</span><span class="p">{</span>
+
+    <span class="n">BOOL</span> <span class="n">directDown</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">previousOffSet</span><span class="p">.</span><span class="n">y</span> <span class="o">&lt;</span> <span class="n">scrollView</span><span class="p">.</span><span class="n">contentOffset</span><span class="p">.</span><span class="n">y</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="n">directDown</span> <span class="o">=</span> <span class="nb">YES</span><span class="p">;</span>
+
+    <span class="p">}</span>
+
+    <span class="k">else</span><span class="p">{</span>
+
+        <span class="n">directDown</span> <span class="o">=</span> <span class="nb">NO</span><span class="p">;</span>
+
+    <span class="p">}</span>
+
+    <span class="n">previousOffSet</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">scrollView</span><span class="p">.</span><span class="n">contentOffset</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+
+    <span class="c1">//防止最开始就向上面拖动的时候，改变数组视图树的位置。</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">scrollView</span><span class="p">.</span><span class="n">contentOffset</span><span class="p">.</span><span class="n">y</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="k">return</span><span class="p">;</span>
+
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">directDown</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="n">NSLog</span><span class="p">(</span><span class="s">@"down"</span><span class="p">);</span>
+
+        <span class="n">MyView</span> <span class="o">*</span> <span class="n">subView</span> <span class="o">=</span> <span class="p">[</span><span class="n">_aryViews</span> <span class="nf">objectAtIndex</span><span class="p">:</span><span class="n">firstViewIndex</span><span class="p">];</span>
+
+        <span class="n">CGFloat</span> <span class="n">firstViewYOffset</span> <span class="o">=</span> <span class="n">subView</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">subView</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span> <span class="o">+</span> <span class="n">sMyViewGap</span><span class="p">;</span>
+
+        <span class="c1">//寻找第一个视图是否滚动出去</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">firstViewYOffset</span> <span class="o">&lt;</span> <span class="n">scrollView</span><span class="p">.</span><span class="n">contentOffset</span><span class="p">.</span><span class="n">y</span><span class="p">)</span> <span class="p">{</span>
+
+            <span class="c1">//改变数组中第一排可见视图的位置。</span>
+
+            <span class="p">[</span><span class="n">self</span> <span class="nf">moveIndexInViewsWithDirect</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+
+        <span class="p">}</span>
+
+    <span class="p">}</span>
+
+    <span class="k">else</span><span class="p">{</span>
+
+        <span class="n">NSLog</span><span class="p">(</span><span class="s">@"up"</span><span class="p">);</span>
+
+        <span class="n">MyView</span> <span class="o">*</span> <span class="n">subView</span> <span class="o">=</span> <span class="p">[</span><span class="n">_aryViews</span> <span class="nf">objectAtIndex</span><span class="p">:(</span><span class="n">firstViewIndex</span> <span class="o">+</span> <span class="n">sMyViewTotal</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span><span class="o">%</span><span class="n">sMyViewTotal</span><span class="p">];</span>
+
+        <span class="n">CGFloat</span> <span class="n">lastViewYOffset</span> <span class="o">=</span> <span class="n">subView</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">scrollView</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">;</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="n">lastViewYOffset</span> <span class="o">&gt;</span> <span class="n">scrollView</span><span class="p">.</span><span class="n">contentOffset</span><span class="p">.</span><span class="n">y</span><span class="p">)</span> <span class="p">{</span>
+
+                           <span class="p">[</span><span class="n">self</span> <span class="nf">moveIndexInViewsWithDirect</span><span class="p">:</span><span class="nb">NO</span><span class="p">];</span>
+
+        <span class="p">}</span>
+
+    <span class="p">}</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>每次滚动的时候先判断滚动位置即offset，和先前的比较。如果先前的大就是向下滚动，否则就是向上滚动。</p>
+
+<p>找到了向下滚动了，就该判断是否子视图已经离开了可视范围。方法就是判断当前offset和视图的位置进行比较。如果判断滚到离开了可视范围，然后就是要改变重用视图数组中第一个视图的位置了。这里用了firstViewIndex来记录scrollView中第一个可见视图的位置， 循环使用这6个视图达到重用的目的。自然firstViewIndex上面的一个视图就是最后一个视图的位置（firstViewIndex + sMyViewTotal - 1）％sMyViewTotal。所以这里需要改变重用视图中firstViewIndex即第一个可见视图的位置。代码如下：</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">moveIndexInViewsWithDirect</span><span class="p">:(</span><span class="n">BOOL</span><span class="p">)</span><span class="nv">forward</span><span class="p">{</span>
+
+    <span class="p">[</span><span class="n">UIView</span> <span class="nf">setAnimationsEnabled</span><span class="p">:</span><span class="nb">NO</span><span class="p">];</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">forward</span><span class="p">)</span> <span class="p">{</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">firstViewIndex</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="p">(</span><span class="n">firstViewIndex</span> <span class="o">+</span> <span class="mi">2</span><span class="p">);</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+
+            <span class="n">MyView</span> <span class="o">*</span><span class="n">subView</span> <span class="o">=</span> <span class="p">[</span><span class="n">_aryViews</span> <span class="nf">objectAtIndex</span><span class="p">:</span><span class="n">i</span><span class="o">%</span><span class="n">sMyViewTotal</span><span class="p">];</span>
+
+            <span class="n">subView</span><span class="p">.</span><span class="n">showNumber</span> <span class="o">=</span> <span class="n">subView</span><span class="p">.</span><span class="n">showNumber</span> <span class="o">+</span> <span class="n">sMyViewTotal</span><span class="p">;</span>
+
+<span class="n">subView</span><span class="p">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">CGRectMake</span><span class="p">(</span><span class="n">subView</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">subView</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="p">(</span><span class="n">sMyViewTotal</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">sMyViewHeight</span> <span class="o">+</span> <span class="n">sMyViewGap</span><span class="p">),</span> <span class="n">subView</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="p">,</span> <span class="n">subView</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">);</span>
+
+        <span class="p">}</span>
+
+        <span class="n">firstViewIndex</span> <span class="o">=</span> <span class="p">(</span><span class="n">firstViewIndex</span> <span class="o">+</span> <span class="mi">2</span><span class="p">)</span><span class="o">%</span><span class="n">sMyViewTotal</span><span class="p">;</span>
+
+    <span class="p">}</span>
+
+    <span class="k">else</span><span class="p">{</span>
+
+        <span class="kt">int</span> <span class="n">lastViewIndex</span> <span class="o">=</span> <span class="n">firstViewIndex</span> <span class="o">+</span> <span class="n">sMyViewTotal</span> <span class="o">-</span> <span class="mi">1</span><span class="p">;</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">lastViewIndex</span><span class="p">;</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="p">(</span><span class="n">lastViewIndex</span> <span class="o">-</span> <span class="mi">2</span><span class="p">);</span> <span class="n">i</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>            <span class="n">MyView</span> <span class="o">*</span><span class="n">subView</span> <span class="o">=</span> <span class="p">[</span><span class="n">_aryViews</span> <span class="nf">objectAtIndex</span><span class="p">:(</span><span class="n">firstViewIndex</span> <span class="o">+</span> <span class="n">sMyViewTotal</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span><span class="o">%</span><span class="n">sMyViewTotal</span><span class="p">];</span>
+
+            <span class="n">subView</span><span class="p">.</span><span class="n">showNumber</span> <span class="o">=</span> <span class="n">subView</span><span class="p">.</span><span class="n">showNumber</span> <span class="o">-</span> <span class="n">sMyViewTotal</span><span class="p">;</span>
+
+<span class="n">subView</span><span class="p">.</span><span class="n">frame</span> <span class="o">=</span> <span class="n">CGRectMake</span><span class="p">(</span><span class="n">subView</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">subView</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span> <span class="o">-</span> <span class="p">(</span><span class="n">sMyViewTotal</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">sMyViewHeight</span> <span class="o">+</span> <span class="n">sMyViewGap</span><span class="p">),</span> <span class="n">subView</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="p">,</span> <span class="n">subView</span><span class="p">.</span><span class="n">frame</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">);</span>
+
+        <span class="p">}</span>
+
+        <span class="n">firstViewIndex</span> <span class="o">=</span> <span class="p">(</span><span class="n">firstViewIndex</span> <span class="o">+</span> <span class="n">sMyViewTotal</span> <span class="o">-</span> <span class="mi">2</span><span class="p">)</span><span class="o">%</span><span class="n">sMyViewTotal</span><span class="p">;</span>
+
+    <span class="p">}</span>
+
+    <span class="p">[</span><span class="n">UIView</span> <span class="nf">setAnimationsEnabled</span><span class="p">:</span><span class="nb">YES</span><span class="p">];</span>
+
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里创建的子视图数字属性，是用来在视图上画数字的，这样就可以看到视图重用的效果了，应该是从0开始到无穷多，但是实际上内存中就创建了6个视图。 </p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="nf">drawRect</span><span class="p">:(</span><span class="n">CGRect</span><span class="p">)</span><span class="nv">rect</span>
+
+<span class="p">{</span>
+
+    <span class="c1">// Drawing code</span>
+
+    <span class="n">NSString</span> <span class="o">*</span><span class="n">text</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSString</span> <span class="nf">stringWithFormat</span><span class="p">:</span><span class="s">@"%d"</span><span class="p">,</span><span class="n">showNumber</span><span class="p">];</span>
+
+    <span class="p">[[</span><span class="n">UIColor</span> <span class="nf">redColor</span><span class="p">]</span> <span class="nf">set</span><span class="p">];</span>
+
+    <span class="p">[</span><span class="n">text</span> <span class="nf">drawInRect</span><span class="p">:</span><span class="n">CGRectMake</span><span class="p">(</span><span class="n">rect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">rect</span><span class="p">.</span><span class="n">origin</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">rect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">30</span><span class="p">,</span> <span class="n">rect</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span> <span class="nf">withFont</span><span class="p">:[</span><span class="n">UIFont</span>      <span class="nf">fontWithName</span><span class="p">:</span><span class="s">@"Helvetica"</span> <span class="nf">size</span><span class="p">:</span><span class="mi">20</span><span class="p">]</span> <span class="n">lineBreakMode</span><span class="o">:</span><span class="n">UILineBreakModeWordWrap</span> <span class="n">alignment</span><span class="o">:</span><span class="n">UITextAlignmentCenter</span><span class="p">];</span>
+
+<span class="p">}</span>
+
+<span class="err">}</span>
+</code></pre></div></div>
+
+<p><a href="https://blog.csdn.net/mengtnt/article/details/6723245">原文链接</a></p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

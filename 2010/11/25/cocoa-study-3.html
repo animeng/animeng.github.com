@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>三 category和enumeration的用法 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2010/11/25/cocoa-study-3.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="三 category和enumeration的用法">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2010/11/25/cocoa-study-3.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">三 category和enumeration的用法</h1>
+  
+  <span class="post-meta">11月 25日, 2010</span><br>
+  
+  <span class="post-meta small">5 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>继承是面向对象程序设计的一个重要特性，但是继承的一些缺点也越来越多被人们意识到。因为继承有时候会破坏类的封装性，使子类可以使用父类的一些非pubic的方法。另外当继承树大到一定程度的时候相信许多程序员都不愿意看到，因为毕竟程序不仅仅是要让计算机运行的，更重要的一点就是要人能够看懂，否则这样的程序也只能束之高阁，供人膜拜了。根据研究表明继承的层次维持3层以下是最容易让人理解。</p>
+
+<p>  所以继承有时候并不表现的那么有用，其实在设计模式中，适配器模式就可以解释用继承是多么的糟糕。那么不用继承objective c如何扩展一个类那，那么Apple的工程师就设计了category这个新语法特性。它的功能就是实现类的扩展而完全不用继承。例如我们要给NSString类增加一个新的功能计算NSString的长度，并且返回值为NSNumber。假如你要用继承实现</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">@interface</span> <span class="nc">NSNewString</span><span class="p">:</span><span class="nc">NSString</span>
+<span class="k">-</span><span class="p">(</span><span class="n">NSNumber</span> <span class="o">*</span><span class="p">)</span><span class="n">lengthAsNumber</span><span class="p">;</span>
+<span class="k">@end</span>
+
+<span class="k">-</span><span class="p">(</span><span class="n">NSNumber</span> <span class="o">*</span><span class="p">)</span><span class="n">lengthAsNumber</span>
+<span class="p">{</span>
+<span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">length</span> <span class="o">=</span> <span class="p">[</span><span class="n">self</span> <span class="nf">length</span><span class="p">];</span>
+<span class="k">return</span> <span class="p">([</span><span class="n">NSNumber</span> <span class="nf">numberWithUnsignedInt</span><span class="p">:</span><span class="n">length</span><span class="p">]);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>现在我开始调用假如用下面的方法得到一个字符串</p>
+
+<p>NSNewString *str = [NSString stringWithFormat:”test”]然后你就会得到编译器的警告，stringWithFormat返回的是NSString而你要它成为NSNewString，这种向下转化是极不安全的。所以你写的子类当调用系统API的时候，无法获得你子类的对象结果你的方法就很难用到此处了。</p>
+
+<p>  而下面用category实现就大不一样了。实现如下：首先要给这个category定义一个名字</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">@interface</span> <span class="nc">NSString</span> <span class="p">(</span><span class="nl">NumberConvenience</span><span class="p">)</span>
+<span class="k">-</span> <span class="p">(</span><span class="n">NSNumber</span> <span class="o">*</span><span class="p">)</span> <span class="n">lengthAsNumber</span><span class="p">;</span>
+<span class="k">@end</span>
+
+<span class="k">@implementation</span> <span class="nc">NSString</span> <span class="p">(</span><span class="nl">NumberConvenience</span><span class="p">)</span>
+<span class="k">-</span> <span class="p">(</span><span class="n">NSNumber</span> <span class="o">*</span><span class="p">)</span> <span class="n">lengthAsNumber</span>
+<span class="p">{</span>
+<span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">length</span> <span class="o">=</span> <span class="p">[</span><span class="n">self</span> <span class="nf">length</span><span class="p">];</span>
+<span class="k">return</span> <span class="p">([</span><span class="n">NSNumber</span> <span class="nf">numberWithUnsignedInt</span><span class="p">:</span> <span class="n">length</span><span class="p">]);</span>
+<span class="p">}</span> <span class="c1">// lengthAsNumber</span>
+<span class="k">@end</span>
+</code></pre></div></div>
+
+<p>这样我就是用系统的API获得的NSString也可以用我这个方法了。下面就说下category使用的时候应该注意的地方。</p>
+
+<p>  category有2点限制首先你不能在里面定义任何实例变量，它只是方法的扩展，否则你就真的要用继承了。其次category里面的方法不能和原来类中的方法冲突，否则原来类中的方法就无效了。其实cocoa程序设计中同样有方法定义一个类中的方法为失效的。其实cocoa程序设计中代理（delegate）这个概念和category联系时非常紧密的，delegates在cocoa编程后面的讲解中自然就知道是什么了，这里不在赘述了。在appkit中一些控件的使用经常是系统定义了一些category但是不实现它，等到用户使用的时候让用户实现。例如tableview控件中的- (BOOL) tableView: (NSTableView *) tableView shouldSelectRow: (int) row;方法就是这样实现的。</p>
+
+<p>  下面就来介绍下enumeration的用法，enumeration就是java中常用的迭代器。只不过它比迭代器的语法更简洁。例如NSArray实现了NSEnumeration这个协议就可以用下面的语法迭代集合中的元素。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">NSArray</span> <span class="o">*</span><span class="n">array</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSArray</span> <span class="nf">arrayWithObjects</span><span class="p">:</span>
+<span class="s">@"One"</span><span class="p">,</span> <span class="s">@"Two"</span><span class="p">,</span> <span class="s">@"Three"</span><span class="p">,</span> <span class="s">@"Four"</span><span class="p">,</span> <span class="nb">nil</span><span class="p">];</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">NSString</span> <span class="o">*</span><span class="n">element</span> <span class="k">in</span> <span class="n">array</span><span class="p">)</span> 
+<span class="p">{</span>
+<span class="err">       </span> <span class="n">NSLog</span><span class="p">(</span><span class="s">@"element: %@"</span><span class="p">,</span> <span class="n">element</span><span class="p">);</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这里你不必指定集合遍历的终止条件，也不用指定下标。这种实现比迭代器用起来方便多了吧，同样NSArray遍历也可以用NSEnumeration来实现。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">NSArray</span> <span class="o">*</span><span class="n">array</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSArray</span> <span class="nf">arrayWithObjects</span><span class="p">:</span>
+<span class="s">@"One"</span><span class="p">,</span> <span class="s">@"Two"</span><span class="p">,</span> <span class="s">@"Three"</span><span class="p">,</span> <span class="s">@"Four"</span><span class="p">,</span> <span class="nb">nil</span><span class="p">];</span>
+<span class="n">NSEnumerator</span> <span class="o">*</span><span class="n">enumerator</span> <span class="o">=</span> <span class="p">[</span><span class="n">array</span> <span class="nf">reverseObjectEnumerator</span><span class="p">];</span>
+<span class="k">for</span> <span class="p">(</span><span class="n">NSString</span> <span class="o">*</span><span class="n">element</span> <span class="k">in</span> <span class="n">enumerator</span><span class="p">)</span> 
+<span class="p">{</span>
+<span class="err">        </span> <span class="k">if</span> <span class="p">([</span><span class="n">element</span> <span class="nf">isEqualToString</span><span class="p">:</span><span class="s">@"Three"</span><span class="p">])</span>
+<span class="err">       </span> <span class="err"> </span><span class="p">{</span>
+<span class="err">               </span> <span class="k">break</span><span class="p">;</span>
+<span class="err">         </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>  任何集合想要实现上面的用法，前提是要实现NSFastEnumeteration这个协议。下面我们就拿一个自己定义的集合例子来实现上面的方法。</p>
+
+<div class="language-objc highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">#import &lt;Foundation/Foundation.h&gt;
+#import &lt;vector&gt;
+</span><span class="err"> </span>
+<span class="k">@interface</span> <span class="nc">MyFastEnumerationSample</span> <span class="p">:</span> <span class="nc">NSObject</span><span class="o">&lt;</span><span class="n">NSFastEnumeration</span><span class="o">&gt;</span>
+<span class="p">{</span>
+<span class="err">   </span> <span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">NSInteger</span><span class="o">&gt;</span> <span class="n">list</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="err"> </span>
+<span class="k">-</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="nf">initWithCapacity</span><span class="p">:(</span><span class="n">NSUInteger</span><span class="p">)</span><span class="nv">numItems</span><span class="p">;</span>
+<span class="err"> </span>
+<span class="k">@end</span>
+<span class="err"> </span>
+<span class="k">@implementation</span> <span class="nc">MyFastEnumerationSample</span>
+<span class="err"> </span>
+<span class="c1">// 初始化这个list</span>
+<span class="c1">// 生成一些随机数，插入到list中</span>
+<span class="c1">// 之后让枚举类返回</span>
+<span class="k">-</span><span class="p">(</span><span class="n">id</span><span class="p">)</span><span class="nf">initWithCapacity</span><span class="p">:(</span><span class="n">NSUInteger</span><span class="p">)</span><span class="nv">numItems</span>
+<span class="p">{</span>
+<span class="err">   </span> <span class="n">self</span> <span class="o">=</span> <span class="p">[</span><span class="n">super</span> <span class="nf">init</span><span class="p">];</span>
+<span class="err">   </span> <span class="k">if</span><span class="p">(</span><span class="n">self</span> <span class="o">!=</span> <span class="nb">nil</span><span class="p">)</span>
+<span class="err">   </span> <span class="p">{</span>
+<span class="err">       </span> <span class="k">for</span><span class="p">(</span><span class="n">NSInteger</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">numItems</span><span class="p">;</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span>
+<span class="err">       </span> <span class="p">{</span>
+<span class="err">           </span> <span class="n">list</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">random</span><span class="p">());</span>
+<span class="err">       </span> <span class="p">}</span>
+<span class="err">   </span> <span class="p">}</span>
+<span class="err">   </span> <span class="k">return</span> <span class="n">self</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="err"> </span>
+<span class="c1">// 这个方法就是fastEnumeration协议中的方法，这里你要实现它</span>
+<span class="c1">// 实现这个方法，你有两种选择</span>
+<span class="c1">// 1) 使用stackbuf，它是基于array的堆栈。如果用到了这个堆栈，那么你就必需处理下一个参数len的大小。</span>
+<span class="c1">// 2) 返回你自己的array对象.如果你遍历完了这个array的所有对象，然后就返回0。例如：一个array的链表的实现需要返回每一个array，知道你遍历完所有的array。 </span>
+<span class="c1">// 无论上面那种实现方法, state-&gt;itemsPtr 必须要赋予一个合法的array(非空)。这个例子采用了方案1，使用stackbuf来存储结果。</span>
+<span class="k">-</span><span class="p">(</span><span class="n">NSUInteger</span><span class="p">)</span><span class="nf">countByEnumeratingWithState</span><span class="p">:(</span><span class="n">NSFastEnumerationState</span> <span class="o">*</span><span class="p">)</span><span class="nv">state</span> <span class="nf">objects</span><span class="p">:(</span><span class="n">id</span> <span class="o">*</span><span class="p">)</span><span class="nv">stackbuf</span> <span class="nf">count</span><span class="p">:(</span><span class="n">NSUInteger</span><span class="p">)</span><span class="nv">len</span>
+<span class="p">{</span>
+<span class="err">   </span> <span class="n">NSUInteger</span> <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="err">   </span> <span class="c1">// 下面是初始化，仅仅只会做一次。</span>
+<span class="err">   </span> <span class="c1">// 确保你从来没有设置state-&gt;state为0，或者利用了其他的方法初始化它。</span>
+<span class="err">   </span> <span class="c1">// (下面是使用state-&gt;extra中的一个值)。</span>
+<span class="err">   </span> <span class="k">if</span><span class="p">(</span><span class="n">state</span><span class="o">-&gt;</span><span class="n">state</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+<span class="err">   </span> <span class="p">{</span>
+<span class="err">       </span> <span class="c1">// 我们不会跟踪变化, 因此我们将设置state-&gt;mutationsPtr指向state-&gt;extra中的一个数值。</span>
+<span class="err">       </span> <span class="c1">// 因为这些extra的数值并没有在协议里其他额外的地方使用。</span>
+<span class="err">       </span> <span class="c1">// If your class was mutable, you may choose to use an internal variable that is updated when the class is mutated.假如你定义的类是可变的，你可能选择使用internal的变量，这个变量可以随着你的类大小的改变而改变。</span>
+<span class="err">       </span> <span class="c1">// state-&gt;mutationsPtr 不能为空。</span>
+<span class="err">       </span> <span class="n">state</span><span class="o">-&gt;</span><span class="n">mutationsPtr</span> <span class="o">=</span> <span class="o">&amp;</span><span class="n">state</span><span class="o">-&gt;</span><span class="n">extra</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+<span class="err">   </span> <span class="p">}</span>
+<span class="err">   </span> <span class="c1">//现在我们提供items，用来跟踪state-&gt;state和决定是否我们已经完成了迭代。 </span>
+<span class="err">   </span> <span class="k">if</span><span class="p">(</span><span class="n">state</span><span class="o">-&gt;</span><span class="n">state</span> <span class="o">&lt;</span> <span class="n">list</span><span class="p">.</span><span class="n">size</span><span class="p">())</span>
+<span class="err">   </span> <span class="p">{</span>
+<span class="err">       </span> <span class="c1">// 这里需要设置state-&gt;itemsPtr指向提供的buffer。</span>
+<span class="err">       </span> <span class="c1">// 如果需要不停的迭代来实现，那么就可能设置 state-&gt;itemsPtr指向一个内部的c数组对象。 </span>
+<span class="err">       </span> <span class="c1">// state-&gt;itemsPtr不能为空。 </span>
+<span class="err">       </span> <span class="n">state</span><span class="o">-&gt;</span><span class="n">itemsPtr</span> <span class="o">=</span> <span class="n">stackbuf</span><span class="p">;</span>
+<span class="err">       </span> <span class="c1">// 把我们list中提供的所有的items都填充到这个堆栈数组中。</span>
+<span class="err">       </span> <span class="c1">// 假如我们提供的items太多，这个buffer也仅仅装得下len多的东西。后面的就会丢弃掉</span>
+<span class="err">       </span> <span class="k">while</span><span class="p">((</span><span class="n">state</span><span class="o">-&gt;</span><span class="n">state</span> <span class="o">&lt;</span> <span class="n">list</span><span class="p">.</span><span class="n">size</span><span class="p">())</span> <span class="o">&amp;&amp;</span> <span class="p">(</span><span class="n">count</span> <span class="o">&lt;</span> <span class="n">len</span><span class="p">))</span>
+<span class="err">       </span> <span class="p">{</span>
+<span class="err">           </span> <span class="c1">// 这个例子在运行中生成内容。</span>
+<span class="err">           </span> <span class="c1">// 一个真正的实现仅仅会从内部的容器中copy对象。</span>
+<span class="err">           </span> <span class="n">stackbuf</span><span class="p">[</span><span class="nf">count</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">NSString</span> <span class="nf">stringWithFormat</span><span class="p">:</span><span class="s">@"Item %i = %i"</span><span class="p">,</span> <span class="n">state</span><span class="o">-&gt;</span><span class="n">state</span><span class="p">,</span> <span class="n">list</span><span class="p">[</span><span class="n">state</span><span class="o">-&gt;</span><span class="nf">state</span><span class="p">]];</span>
+<span class="err">           </span> <span class="n">state</span><span class="o">-&gt;</span><span class="n">state</span><span class="o">++</span><span class="p">;</span>
+<span class="err">           </span> <span class="n">count</span><span class="o">++</span><span class="p">;</span>
+<span class="err">       </span> <span class="p">}</span>
+<span class="err">   </span> <span class="p">}</span>
+<span class="err">   </span> <span class="k">else</span>
+<span class="err">   </span> <span class="p">{</span>
+<span class="err">       </span> <span class="c1">// 我们已经包含了所有的items，因此return 0表明已经做完了。</span>
+<span class="err">       </span> <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+<span class="err">   </span> <span class="p">}</span>
+<span class="err">   </span> <span class="k">return</span> <span class="n">count</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="err"> </span>
+<span class="k">@end</span>
+<span class="err"> </span>
+<span class="kt">int</span> <span class="nf">main</span> <span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span> <span class="k">const</span> <span class="kt">char</span> <span class="o">*</span> <span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+<span class="err">   </span> <span class="n">NSAutoreleasePool</span> <span class="o">*</span> <span class="n">pool</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSAutoreleasePool</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">init</span><span class="p">];</span>
+<span class="err"> </span>
+<span class="err">   </span> <span class="c1">// 为了演示，创建一个枚举类的实例，并且枚举里面所有的内容。</span>
+<span class="err">   </span> <span class="n">srandomdev</span><span class="p">();</span>
+<span class="err">   </span> <span class="n">MyFastEnumerationSample</span> <span class="o">*</span><span class="n">example</span> <span class="o">=</span> <span class="p">[[</span><span class="n">MyFastEnumerationSample</span> <span class="nf">alloc</span><span class="p">]</span> <span class="nf">initWithCapacity</span><span class="p">:</span><span class="mi">50</span><span class="p">];</span>
+<span class="err">   </span> <span class="k">for</span><span class="p">(</span><span class="n">id</span> <span class="n">item</span> <span class="k">in</span> <span class="n">example</span><span class="p">)</span>
+<span class="err">   </span> <span class="p">{</span>
+<span class="err">       </span> <span class="n">NSLog</span><span class="p">(</span><span class="s">@"%@"</span><span class="p">,</span> <span class="n">item</span><span class="p">);</span>
+<span class="err">   </span> <span class="p">}</span>
+<span class="err"> </span>
+<span class="err">   </span> <span class="p">[</span><span class="n">pool</span> <span class="nf">drain</span><span class="p">];</span>
+<span class="err">   </span> <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>好了，这里你的一个fastenumeration就实现了。其实NSNumeration已经实现了NSFastenumeration这个协议。所以假如有一个自己实现的容器，就可以为这个容器定义一个Numeration，它只要继承 NSNumeration，就可以方便的实现 fastenumeration。想想fastNumeration多么方便你就再也不想用什么数组遍历了。</p>
+
+<p><a href="https://blog.csdn.net/mengtnt/article/details/6035964">原文链接</a></p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>
