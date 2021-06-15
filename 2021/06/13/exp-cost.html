@@ -169,7 +169,7 @@ RUN curl <span class="nt">-sL</span> https://deb.nodesource.com/setup_14.x | bas
 
 <p>看到这里自己就有点明白了，查看了下自己写的DockerFile的脚本代码，<code class="highlighter-rouge">CMD ["nohup","npm","start"]</code>发现为了让node在后台运行，自己特意加了nohup，反而是弄巧成拙，造成Docker容器运行完就自动退出了。</p>
 
-<p>其实解决这个问题花了自己蛮久的时间，一直把Docker当成了虚拟机的概念在想这个逻辑，Docker本质上还是一个进程，只是使用了linux用户定义分组的能力，如果知道这个前提就不容易犯错了。这看起来和苹果的沙盒原有异曲同工之妙，也正是这个错误的认知，自己决定之后一定要看下Docker源码的逻辑，看一下Docker设计的方式。</p>
+<p>其实解决这个问题花了自己蛮久的时间，一直把Docker当成了虚拟机的概念在想这个逻辑，Docker本质上还是一个进程，只是使用了linux用户定义分组的能力，如果知道这个前提就不容易犯错了。这看起来和苹果的沙盒原理有异曲同工之妙，也正是这个错误的认知，自己决定之后一定要看下Docker源码的逻辑，了解下Docker设计的思路。</p>
 
 <h2 id="git配置问题">Git配置问题</h2>
 
