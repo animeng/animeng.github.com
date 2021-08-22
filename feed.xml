@@ -1,4 +1,333 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2021-06-15T11:08:43+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">经验的成本</title><link href="https://mengtnt.com/2021/06/13/exp-cost.html" rel="alternate" type="text/html" title="经验的成本" /><published>2021-06-13T08:51:35+00:00</published><updated>2021-06-13T08:51:35+00:00</updated><id>https://mengtnt.com/2021/06/13/exp-cost</id><content type="html" xml:base="https://mengtnt.com/2021/06/13/exp-cost.html">&lt;p&gt;最近想对博客的源码做自动化的CI，原本想着使用github的workflow配置，提交博客源码后让github自动编译发布博客。不过由于还要部署一些其他的内容，所以索性就想着自己写个github的webhook，当提交博客源码时，服务器运行CI工具，顺便发布下自己部署的其他服务。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2021-08-22T02:41:07+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">写代码要讲武德</title><link href="https://mengtnt.com/2021/08/09/soft-complex.html" rel="alternate" type="text/html" title="写代码要讲武德" /><published>2021-08-09T02:40:18+00:00</published><updated>2021-08-09T02:40:18+00:00</updated><id>https://mengtnt.com/2021/08/09/soft-complex</id><content type="html" xml:base="https://mengtnt.com/2021/08/09/soft-complex.html">&lt;p&gt;最近刚做完一个项目，闲了下来。想分享下关于软件复杂度的一些思考。这里先说下文章标题的由来，一个软件产品对于用户来讲，好看好用是必须的，其次就是看这个软件的性能好不好，不要老是卡和崩溃。如果满足这两点，往往这个软件口碑不会差。所以对于开发人员来讲，写代码时一定要关注产品的体验和性能。&lt;/p&gt;
+
+&lt;p&gt;对于一个软件产品就跟一个人一样。这个人长的好不好看、脑子聪不聪明确实很重要。所以很多时候我们看一个人，往往比较关注他的外表和智力。那么对比于软件开发，程序员们也是很重视代码的实现和性能，所以你可以看到大量讨论实现和算法的文章。可是这里所说的“德”就往往很容易被忽略。&lt;/p&gt;
+
+&lt;p&gt;那何为“德”，说的直接一点就是约束自己，方便别人。为什么要做这种吃力不讨好的事情哪？是因为道德放在一个长线来看，是对大家都有好处的，否则大家只做利己的行为这个社会可能会乱成一锅粥。那么对于写代码要讲武德，也就是我们在实现一个功能时，尽量让后面接手的人容易看懂，而不要仅仅是实现了功能和用了牛逼的算法优化了性能，也关注下这个“德”，就跟人一样要德智体全面发展。对于写代码来说这个“德”如何做哪？下面我们就来看软件复杂度的管理。&lt;/p&gt;
+
+&lt;h2 id=&quot;软件复杂度&quot;&gt;软件复杂度&lt;/h2&gt;
+
+&lt;p&gt;人的大脑本质上是线性的，我们很难处理多线程的东西，也就是一心很难二用。所以降低软件复杂度，本质上就是减少分支。我们经常会谈论架构，其实好的架构就是减少程序的分支，让程序尽可能朝着线性的方向发展。&lt;/p&gt;
+
+&lt;p&gt;软件复杂度在软件工程中有一个著名的判定方法McCabe环路。如果一段源码中不包含分支决策点，那么这段代码的圈复杂度为1，因为这段代码中只会有一条路径是线性的，如果这段代码包含了一个分支决策点，那么这段代码圈复杂度为2，以此类推。&lt;/p&gt;
+
+&lt;p&gt;McCabe环路有一个很简洁的公式: V(G)=e-n+2。其中e就是下图中变数，n就是节点数。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/soft-complex-1.jpg&quot; alt=&quot;图1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;可以计算出上图的软件复杂度为7-6+2=3，从图中可以看出有C1、C2、C3三个区域。下面列出软件复杂度计算的三个方法。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;流图中的区域数等于环形复杂度。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;流图G的环形复杂度V(G)=E-N+2，其中，E是流图中边的条数，N是结点数。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;流图G的环形复杂度V(G)=P+1，其中，P是流图中判定结点的数目。P为出度大于2的。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;从上面的公式中，这让我想起来看过的一本书“复杂世界的简单的法则”，所有复杂的东西其实都是由一个最简单的公式，不停的分形迭代造成的。程序的世界尤其适用，所有的复杂性基本都是由if else的分支造成的。所以减少这些环，让我们的程序变的很线性，就是降低软件复杂度的基本原则。&lt;/p&gt;
+
+&lt;p&gt;基于上面的简单法则，软件工程发展出来了各种设计模式和架构。这些年流行的函数式编程，其实本质上也是最大限度的让程序阅读起来是线性的，不要出现太多的分支。下面基于日常经常写的代码，展现下如何处理软件的复杂度。&lt;/p&gt;
+
+&lt;h2 id=&quot;如何降低软件复杂度&quot;&gt;如何降低软件复杂度&lt;/h2&gt;
+
+&lt;p&gt;下面我用伪代码来演示下，平时经常遇到的一些业务代码问题。业务代码的逻辑很简单就是一位厨师制作食物。&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Cooker&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Food&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;make&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nc&quot;&gt;Food&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;food&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Food&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;food&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; 
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Food&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nc&quot;&gt;Food&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;food&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cooker&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Cooker&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;food&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cooker&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;make&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;I get {food}&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;从上面的代码可以清晰的看出，依赖关系很简单Cooker依赖了Food这个对象。这时候产品突然要新增一个需求，说厨师制作的食物完成时，要给厨师的经验提升。如果不假思索，下面的代码实现是最直接的做法。&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Cooker&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;exp&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Food&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;make&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;nc&quot;&gt;Food&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;food&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Food&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;food&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;handle&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;food&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; 
+
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Food&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;addExp&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;exp&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; 
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Food&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nc&quot;&gt;Cooker&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;currentCooker&lt;/span&gt;
+    &lt;span class=&quot;nc&quot;&gt;Food&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;food&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Cooker&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cooker&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;currentCooker&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cooker&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;handle&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// 制作过程&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// ...&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// 制作完成&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;currentCooker&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;addExp&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cooker&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Cooker&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;food&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cooker&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;make&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;I get {food}&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;我们分析下这个需求变更后的复杂度变化。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/soft-complex-2.jpg&quot; alt=&quot;图2&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;图中可以直观的看出复杂度从1变成了2，其实多思考下这个需求，是否可以降低复杂度那？通过回调或者代理的方式就很容易的降低复杂度，代码如下:&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Cooker&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+
+    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;exp&lt;/span&gt;
+    
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Coffee&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;make&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;food&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Food&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;food&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;expCallback&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;exp&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;myCoffee&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; 
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Food&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(*&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;ExpCallback&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;expCallback&lt;/span&gt;
+
+    &lt;span class=&quot;nc&quot;&gt;Food&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;food&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;ExpCallback&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;handle&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// 制作过程&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// ...&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// 制作完成&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;expCallBack&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cooker&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Cooker&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;food&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cooker&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;make&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;I get {food}&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;上面的代码时通过回调的方式解耦，这样Food的类不再依赖Cooker了，就解除了依赖的环，降低了软件的复杂度。如果需要大量的这种回调，其实就可以新建一个类，把回调的方法抽象出来如下.&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Observer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(*&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;CallBack&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;callback&lt;/span&gt;
+
+    &lt;span class=&quot;nc&quot;&gt;Observer&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Observer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;CallBack&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;block&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;callback&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;block&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;notify&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Cooker&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+
+    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;exp&lt;/span&gt;
+    
+    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Coffee&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;make&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;observer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Observer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;food&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Food&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;observer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;callback&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;exp&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;++&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;food&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; 
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Food&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nc&quot;&gt;Observer&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;foodObserver&lt;/span&gt;
+    &lt;span class=&quot;nc&quot;&gt;Food&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;food&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Observer&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;observer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;foodObserver&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;observer&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;handle&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// 制作过程&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// ...&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// 制作完成&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;foodObserver&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;notify&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cooker&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Cooker&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;food&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cooker&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;make&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;I get {food}&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;上面的代码就是观察者模式的典型应用场景，其实不同的编程语言可以根据各自的特点实现观察者模式，例如c++常用模板类实现，而Java经常会抽象类来实现。不管如何实现本质上，都是通过抽象出通用的方法，从而使业务的依赖性降低，来减少软件的复杂度。&lt;/p&gt;
+
+&lt;h2 id=&quot;软件复杂度的原则&quot;&gt;软件复杂度的原则&lt;/h2&gt;
+
+&lt;p&gt;从上面的例子中可以看到，当我们在降低软件复杂度的过程中，就诞生了设计模式。下面就再拿设计模式中经典的策略模式举个例子，来说明下降低软件复杂度常用的一些原则。业务中根据不同的条件执行不同的行为，这种场景再平常不过了。当业务在不停的迭代时，会产生这样的需求例如:”当处理业务A时，需要处理业务B。慢慢的又增加了另一个需求处理业务B时，又要处理业务C。”然后最终的业务代码可能就如下:&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessA&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;condition&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;condition&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;){&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessB&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;condition&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;){&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessC&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;condition&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessB&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;condition&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;condition&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;){&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessC&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessC&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;condition&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;condition&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;){&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessB&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessD&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;condition&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;handler business&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nc&quot;&gt;BusinessA&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessA&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;上面这种代码就是在若干次业务迭代后，形成了这样的逻辑，我们画下这个业务的流程图如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/soft-complex-3.jpg&quot; alt=&quot;图2&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;可以看出这种业务的复杂度理解起来非常的困难。下面经过策略模式改造过的代码。&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessA&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;condition&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;handler business A&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessB&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;condition&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;handler business B&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessC&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;condition&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;handler business C&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessD&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;condition&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;handler business D&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Strategy&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;condition&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;switch&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;condition&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessA&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessB&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;hanlder&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessA&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessC&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;hanlder&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;c&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;default&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessA&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessD&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;hanlder&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;d&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;handler business&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;nc&quot;&gt;Strategy&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;strategy&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Strategy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;strategy&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;再画出上面代码的业务流程图，可以明显的看出来，采用树形的结构复杂度降低了很多。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/soft-complex-4.jpg&quot; alt=&quot;图4&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;通过上面的这个例子，可以看出减少各个模块的反向依赖，避免反向环的形成，可以有效的降低软件的复杂度。所以我们组织代码结构的时候，尽量组织为树形结构，避免环形成，尤其反向依赖环的形成。反向依赖环不仅使复杂度增加，同时很容易引起潜在的问题，因为环上任意一处有bug影响的是整个环的代码逻辑。而如果是树装结构只会影响当前树的一个分支。&lt;/p&gt;
+
+&lt;p&gt;软件架构中，经常提到的高内聚，低耦合，以及设计模式中的接口依赖原则，本质上都是更好的分层。分层的逻辑，简单的来讲就是让程序流程变成一个树形结构，更好的解耦依赖。现在大型的软件基本都是按照树状结构进行设计的，像文件系统，进程管理等等。随着现在软件复杂度的提高，各种框架和架构层不不穷，本质上万变不离其宗，用上面提到的一个简单公式概况，就是如何让V(G)=E-N+2中的V最小，复杂度降到最低。&lt;/p&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;有句俗语叫”前人种树后人乘凉”，我们写代码讲武德就是要养成这种美德。每当写下if else或者增加一个全局变量的时候，就的思考下，有没有更好的方法减少这个分支和变量。当我们在设计业务逻辑时，一旦出现了环状结构时，就的思考下，是不是分层做的不合理。所以好的代码不仅仅是算法性能一流，也应该是一眼可以看懂的代码，只有这样的代码才能持续的传承下来，才能让后人站在你的肩膀上走的更远。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近刚做完一个项目，闲了下来。想分享下关于软件复杂度的一些思考。这里先说下文章标题的由来，一个软件产品对于用户来讲，好看好用是必须的，其次就是看这个软件的性能好不好，不要老是卡和崩溃。如果满足这两点，往往这个软件口碑不会差。所以对于开发人员来讲，写代码时一定要关注产品的体验和性能。</summary></entry><entry><title type="html">经验的成本</title><link href="https://mengtnt.com/2021/06/13/exp-cost.html" rel="alternate" type="text/html" title="经验的成本" /><published>2021-06-13T08:51:35+00:00</published><updated>2021-06-13T08:51:35+00:00</updated><id>https://mengtnt.com/2021/06/13/exp-cost</id><content type="html" xml:base="https://mengtnt.com/2021/06/13/exp-cost.html">&lt;p&gt;最近想对博客的源码做自动化的CI，原本想着使用github的workflow配置，提交博客源码后让github自动编译发布博客。不过由于还要部署一些其他的内容，所以索性就想着自己写个github的webhook，当提交博客源码时，服务器运行CI工具，顺便发布下自己部署的其他服务。&lt;/p&gt;
 
 &lt;p&gt;做这个事情本身并不难，其实只要在github上把博客源码的仓库，增加一个webhook，然后服务器后台部署自己的CI工具就行了。在做这个事情之前，突然想到，自己一直从事的是客户端的开发。服务器部署的经验比较少，做这个事情大概要花多久时间哪？然后就尝试从网上看一些教程和文章，从网上一些描述来讲，做这个事情可能只需要花费1到2个小时的时间。然后在做这个事情的过程中，我就记录了解决整个问题的过程和时间。对比下花费的时间和精力。下面我就逐个描述下当时解决问题的过程。&lt;/p&gt;
 
@@ -1317,36 +1646,4 @@ node launch
 
 &lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
 
-&lt;p&gt;看完上面的文章，如果你喜欢作者的话，还望能转发下此篇文章。如果恰巧你需要移动端一些开发知识点的话，可以&lt;a href=&quot;/contact/&quot;&gt;联系作者&lt;/a&gt;。另外声明下，本人还是有全职的工作要做的，在做好自己本职工作的情况下，再来做自己爱好的知识问答的事情，就像老罗说的，纯粹交个朋友不赚钱。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">什么是知识问答—帮助人解决问题，也可以说是知乎，准确的来讲是某个特定领域专业一对一的解答，当然特定领域是我熟悉的移动端和前端的开发。如果你感兴趣的话，可以阅读完这篇博文。</summary></entry><entry><title type="html">申请域名的艰难之路</title><link href="https://mengtnt.com/2020/02/11/submit-domain.html" rel="alternate" type="text/html" title="申请域名的艰难之路" /><published>2020-02-11T06:38:28+00:00</published><updated>2020-02-11T06:38:28+00:00</updated><id>https://mengtnt.com/2020/02/11/submit-domain</id><content type="html" xml:base="https://mengtnt.com/2020/02/11/submit-domain.html">&lt;p&gt;最近想申请个的域名，部署到自己国内服务器上，方便访问自己的一些资料。本来以为是个简单的过程，可是过程还是有点崎岖的。首先说下国外申请域名的过程，打开申请域名的网站，点击购买，绑定自己的服务器ip到域名上over。接下来看下国内我从申请域名到放弃的心路历程吧。&lt;/p&gt;
-
-&lt;h2 id=&quot;初次申请域名&quot;&gt;初次申请域名&lt;/h2&gt;
-
-&lt;p&gt;拿到自己购买的域名，然后把服务器ip指向了自己的域名上，发现访问自己域名，会友好的提示你，你的域名没有备案，请去相关部门备案。我服务器用的是腾讯云，按照提示就跳转到了域名备案的地方。然后开始填写各种信息，身份证、手机号、网站的名字、网站是用来干嘛的等等各种问题，基本把你问个底朝天。之后点击提交本以为结束了，然后跳出来一个需要人脸识别，经过若干次摆拍后，总算通过了，自己当时还嘀咕着，真麻烦。却全然不知其中的奥妙。&lt;/p&gt;
-
-&lt;h2 id=&quot;一星期之后&quot;&gt;一星期之后&lt;/h2&gt;
-
-&lt;p&gt;大概过了一个星期，收到了腾讯云客服的电话，说网管局说我的人脸识别不通过。头发遮挡，建议我在白色的墙后面重新识别下。然后客服说等下会有一个管局的短信链接，进入后填写确认信息，之后会发你重新人脸识别的链接。由于腾讯云的域名申请还必须用他自家的小程序，打开了小程序后又摆拍了若干次成功后，心想着总算可以了吧，静候佳音。&lt;/p&gt;
-
-&lt;h2 id=&quot;第二个星期之后&quot;&gt;第二个星期之后&lt;/h2&gt;
-
-&lt;p&gt;又一星期过去了，同样的客户电话，当时接的时候我还在想是不是申请通过了。然后客服对我讲：”先生你好，请问你是否在腾讯云上申请了一个域名。“ 我说：”是的“，然后她说：”因为你申请域名的网站名字不符合被管局打回了。“ 我说有什么不符合的，她说因为网站的名字必须包含二个以上中文字符。我想好吧，我改还不行，什么规定都听你的。然后就又打开了发来的链接改了网站的名字。当时心情就有些不爽，想着申请域名这么麻烦。&lt;/p&gt;
-
-&lt;h2 id=&quot;第三个星期&quot;&gt;第三个星期&lt;/h2&gt;
-
-&lt;p&gt;又一个星期过去了，同样的电话，这次的问题是：”您的网站主要是做什么用的“ 我说就是记录下我个人的一些资料，或者自己的小程序部署在上面。然后客服说小程序不能部署在这个域名下，需要去单独申请小程序服务。我说好吧，那我就记录自己的资料。她问具体哪些资料，我说就像文档一样，自己的学习资料。然后客服说不能是文档性质的，文档性质管局不同意的。我说那就是博客一样的东西可以么？他说可以，又给了我一个链接，让我把网站详细的内容描述下，我就记录了个人博客。这么麻烦！填完这个有点放弃申请域名的想法了。干脆买个国外的服务器算了，可是国外服务器大家都懂的，容易出现不定时的不能访问。想着还是申请下吧。&lt;/p&gt;
-
-&lt;h2 id=&quot;第四个星期&quot;&gt;第四个星期&lt;/h2&gt;
-
-&lt;p&gt;不知道为什么管局处理一个问题要一个星期，反正快一个月时间了，突然又来了电话说我的申请被管局打回了。打回的原因是我没有提供域名证书。域名证书！！！ 当时我就惊讶了，我的域名证书他都要啊。然后我跟客服讲你们不会我域名证书的私钥都要吧？她说什么私钥她不太懂。我就问那你们要的什么？她说域名证书就是一张图片啊。我当时就惊讶了，一张图片么？我说证书怎么会是一张图片，然后客服见我一窍不通，就跟我讲你可以去我们腾讯云上面看下域名证书长的样子，在你域名申请下点击生成域名证书就看到了一张图片。然后我说好的，我去看下。就又收到一个链接，等待我上传域名证书。因为我的域名是在godaddy上买的，实在找不到此功能，然后搜索了下，国内的域名注册商果然都提供域名证书这个神秘的东西，下面可以瞻仰下这个东西长的样子。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/submit-domin-1.png&quot; alt=&quot;域名证书与&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;原来这个证书就是管局强制规定的，只有国内备案域名的时候需要，就是一个域名购买的记录，来自哪里。我终于懂了，然后发现网上有很多一键生成域名证书的方法。随便拉了一个跑了下，生成了自己的域名证书，居然还像模像样的有goaddy的盖章。我想着这下终于搞定了吧。&lt;/p&gt;
-
-&lt;h2 id=&quot;最后一次终于到来了&quot;&gt;最后一次终于到来了&lt;/h2&gt;
-
-&lt;p&gt;最后一次被拒终于到来了，接到电话我在想会不会因为我生成的域名证书太山寨了吧。结果发现终极必杀是，先生根据管局的意见，你的域名是在国外公司购买的不能在国内备案，你必须使用国内的域名商才行。我说那国外购买的就不能备案了么？他说你可以把国外域名商购买的域名转给国内域名商，我说怎么操作，她说具体你咨询你国外的域名服务商。好吧，至此我放弃申请备案了，我觉得我实在太难了，还是部署在国外服务器上吧。&lt;/p&gt;
-
-&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
-
-&lt;p&gt;其实我吐槽这么多，是想给管局一些建议，能不能把流程简化一些，可以把所有问题都合并起来告诉我么？为何要一次一次的告诉我。其实对于我来说这个域名无关紧要，无非就是国内访问快一些。可是如果是一些企业急需域名的话，遇到这么长的流程真的很影响企业的一些计划。本质上这些都是隐形成本，也希望管局能够优化这些流程。这些繁琐的流程明显在在这个更快、更高的商业时代显得有些格格不入。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近想申请个的域名，部署到自己国内服务器上，方便访问自己的一些资料。本来以为是个简单的过程，可是过程还是有点崎岖的。首先说下国外申请域名的过程，打开申请域名的网站，点击购买，绑定自己的服务器ip到域名上over。接下来看下国内我从申请域名到放弃的心路历程吧。</summary></entry></feed>
+&lt;p&gt;看完上面的文章，如果你喜欢作者的话，还望能转发下此篇文章。如果恰巧你需要移动端一些开发知识点的话，可以&lt;a href=&quot;/contact/&quot;&gt;联系作者&lt;/a&gt;。另外声明下，本人还是有全职的工作要做的，在做好自己本职工作的情况下，再来做自己爱好的知识问答的事情，就像老罗说的，纯粹交个朋友不赚钱。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">什么是知识问答—帮助人解决问题，也可以说是知乎，准确的来讲是某个特定领域专业一对一的解答，当然特定领域是我熟悉的移动端和前端的开发。如果你感兴趣的话，可以阅读完这篇博文。</summary></entry></feed>

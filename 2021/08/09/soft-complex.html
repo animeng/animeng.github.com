@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>写代码要讲武德 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2021/08/09/soft-complex.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="写代码要讲武德">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2021/08/09/soft-complex.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">写代码要讲武德</h1>
+  
+  <span class="post-meta">08月 09日, 2021</span><br>
+  
+  <span class="post-meta small">6 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>最近刚做完一个项目，闲了下来。想分享下关于软件复杂度的一些思考。这里先说下文章标题的由来，一个软件产品对于用户来讲，好看好用是必须的，其次就是看这个软件的性能好不好，不要老是卡和崩溃。如果满足这两点，往往这个软件口碑不会差。所以对于开发人员来讲，写代码时一定要关注产品的体验和性能。</p>
+
+<p>对于一个软件产品就跟一个人一样。这个人长的好不好看、脑子聪不聪明确实很重要。所以很多时候我们看一个人，往往比较关注他的外表和智力。那么对比于软件开发，程序员们也是很重视代码的实现和性能，所以你可以看到大量讨论实现和算法的文章。可是这里所说的“德”就往往很容易被忽略。</p>
+
+<p>那何为“德”，说的直接一点就是约束自己，方便别人。为什么要做这种吃力不讨好的事情哪？是因为道德放在一个长线来看，是对大家都有好处的，否则大家只做利己的行为这个社会可能会乱成一锅粥。那么对于写代码要讲武德，也就是我们在实现一个功能时，尽量让后面接手的人容易看懂，而不要仅仅是实现了功能和用了牛逼的算法优化了性能，也关注下这个“德”，就跟人一样要德智体全面发展。对于写代码来说这个“德”如何做哪？下面我们就来看软件复杂度的管理。</p>
+
+<h2 id="软件复杂度">软件复杂度</h2>
+
+<p>人的大脑本质上是线性的，我们很难处理多线程的东西，也就是一心很难二用。所以降低软件复杂度，本质上就是减少分支。我们经常会谈论架构，其实好的架构就是减少程序的分支，让程序尽可能朝着线性的方向发展。</p>
+
+<p>软件复杂度在软件工程中有一个著名的判定方法McCabe环路。如果一段源码中不包含分支决策点，那么这段代码的圈复杂度为1，因为这段代码中只会有一条路径是线性的，如果这段代码包含了一个分支决策点，那么这段代码圈复杂度为2，以此类推。</p>
+
+<p>McCabe环路有一个很简洁的公式: V(G)=e-n+2。其中e就是下图中变数，n就是节点数。</p>
+
+<p><img src="/images/soft-complex-1.jpg" alt="图1" /></p>
+
+<p>可以计算出上图的软件复杂度为7-6+2=3，从图中可以看出有C1、C2、C3三个区域。下面列出软件复杂度计算的三个方法。</p>
+
+<ol>
+  <li>
+    <p>流图中的区域数等于环形复杂度。</p>
+  </li>
+  <li>
+    <p>流图G的环形复杂度V(G)=E-N+2，其中，E是流图中边的条数，N是结点数。</p>
+  </li>
+  <li>
+    <p>流图G的环形复杂度V(G)=P+1，其中，P是流图中判定结点的数目。P为出度大于2的。</p>
+  </li>
+</ol>
+
+<p>从上面的公式中，这让我想起来看过的一本书“复杂世界的简单的法则”，所有复杂的东西其实都是由一个最简单的公式，不停的分形迭代造成的。程序的世界尤其适用，所有的复杂性基本都是由if else的分支造成的。所以减少这些环，让我们的程序变的很线性，就是降低软件复杂度的基本原则。</p>
+
+<p>基于上面的简单法则，软件工程发展出来了各种设计模式和架构。这些年流行的函数式编程，其实本质上也是最大限度的让程序阅读起来是线性的，不要出现太多的分支。下面基于日常经常写的代码，展现下如何处理软件的复杂度。</p>
+
+<h2 id="如何降低软件复杂度">如何降低软件复杂度</h2>
+
+<p>下面我用伪代码来演示下，平时经常遇到的一些业务代码问题。业务代码的逻辑很简单就是一位厨师制作食物。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">class</span> <span class="nc">Cooker</span> <span class="o">{</span>
+    <span class="kd">public</span> <span class="nc">Food</span> <span class="n">make</span> <span class="o">{</span>
+        <span class="nc">Food</span> <span class="n">food</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Food</span><span class="o">();</span>
+        <span class="k">return</span> <span class="n">food</span>
+    <span class="o">}</span> 
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Food</span> <span class="o">{</span>
+    <span class="nc">Food</span> <span class="nf">food</span><span class="o">()</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">self</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kt">void</span> <span class="nf">main</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">let</span> <span class="n">cooker</span> <span class="o">=</span> <span class="nc">Cooker</span><span class="o">()</span>
+    <span class="n">let</span> <span class="n">food</span> <span class="o">=</span> <span class="n">cooker</span><span class="o">.</span><span class="na">make</span><span class="o">()</span>
+
+    <span class="n">print</span><span class="o">(</span><span class="s">"I get {food}"</span><span class="o">)</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>从上面的代码可以清晰的看出，依赖关系很简单Cooker依赖了Food这个对象。这时候产品突然要新增一个需求，说厨师制作的食物完成时，要给厨师的经验提升。如果不假思索，下面的代码实现是最直接的做法。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">class</span> <span class="nc">Cooker</span> <span class="o">{</span>
+    <span class="kt">int</span> <span class="n">exp</span>
+    <span class="kd">public</span> <span class="nc">Food</span> <span class="n">make</span> <span class="o">{</span>
+        <span class="nc">Food</span> <span class="n">food</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Food</span><span class="o">();</span>
+        <span class="n">food</span><span class="o">.</span><span class="na">handle</span><span class="o">()</span>
+        <span class="k">return</span> <span class="n">food</span>
+    <span class="o">}</span> 
+
+    <span class="kd">public</span> <span class="nc">Food</span> <span class="n">addExp</span> <span class="o">{</span>
+        <span class="n">exp</span> <span class="o">++</span>
+    <span class="o">}</span> 
+<span class="o">}</span>
+
+<span class="kd">class</span> <span class="nc">Food</span> <span class="o">{</span>
+    <span class="nc">Cooker</span> <span class="n">currentCooker</span>
+    <span class="nc">Food</span> <span class="nf">food</span><span class="o">(</span><span class="nc">Cooker</span> <span class="n">cooker</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">currentCooker</span> <span class="o">=</span> <span class="n">cooker</span>
+        <span class="k">return</span> <span class="n">self</span>
+    <span class="o">}</span>
+
+    <span class="kt">void</span> <span class="nf">handle</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// 制作过程</span>
+        <span class="c1">// ...</span>
+        <span class="c1">// 制作完成</span>
+        <span class="n">currentCooker</span><span class="o">.</span><span class="na">addExp</span><span class="o">()</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kt">void</span> <span class="nf">main</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">let</span> <span class="n">cooker</span> <span class="o">=</span> <span class="nc">Cooker</span><span class="o">()</span>
+    <span class="n">let</span> <span class="n">food</span> <span class="o">=</span> <span class="n">cooker</span><span class="o">.</span><span class="na">make</span><span class="o">()</span>
+
+    <span class="n">print</span><span class="o">(</span><span class="s">"I get {food}"</span><span class="o">)</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>我们分析下这个需求变更后的复杂度变化。</p>
+
+<p><img src="/images/soft-complex-2.jpg" alt="图2" /></p>
+
+<p>图中可以直观的看出复杂度从1变成了2，其实多思考下这个需求，是否可以降低复杂度那？通过回调或者代理的方式就很容易的降低复杂度，代码如下:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="nc">Class</span> <span class="nc">Cooker</span> <span class="o">{</span>
+
+    <span class="kt">int</span> <span class="n">exp</span>
+    
+    <span class="kd">public</span> <span class="nc">Coffee</span> <span class="n">make</span> <span class="o">{</span>
+        <span class="n">let</span> <span class="n">food</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Food</span><span class="o">();</span>
+        <span class="n">food</span><span class="o">.</span><span class="na">expCallback</span> <span class="o">=</span> <span class="o">()</span> <span class="o">{</span>
+            <span class="n">exp</span> <span class="o">++</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">myCoffee</span>
+    <span class="o">}</span> 
+<span class="o">}</span>
+
+<span class="nc">Class</span> <span class="nc">Food</span> <span class="o">{</span>
+    <span class="kt">void</span> <span class="o">(*</span><span class="nc">ExpCallback</span><span class="o">)(</span><span class="kt">void</span><span class="o">)</span> <span class="n">expCallback</span>
+
+    <span class="nc">Food</span> <span class="nf">food</span><span class="o">(</span><span class="nc">ExpCallback</span> <span class="n">callback</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span> <span class="n">self</span>
+    <span class="o">}</span>
+
+    <span class="kt">void</span> <span class="nf">handle</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// 制作过程</span>
+        <span class="c1">// ...</span>
+        <span class="c1">// 制作完成</span>
+        <span class="n">expCallBack</span><span class="o">()</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kt">void</span> <span class="nf">main</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">let</span> <span class="n">cooker</span> <span class="o">=</span> <span class="nc">Cooker</span><span class="o">()</span>
+    <span class="n">let</span> <span class="n">food</span> <span class="o">=</span> <span class="n">cooker</span><span class="o">.</span><span class="na">make</span><span class="o">()</span>
+
+    <span class="n">print</span><span class="o">(</span><span class="s">"I get {food}"</span><span class="o">)</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>上面的代码时通过回调的方式解耦，这样Food的类不再依赖Cooker了，就解除了依赖的环，降低了软件的复杂度。如果需要大量的这种回调，其实就可以新建一个类，把回调的方法抽象出来如下.</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="nc">Class</span> <span class="nc">Observer</span> <span class="o">{</span>
+    <span class="kt">void</span> <span class="o">(*</span><span class="nc">CallBack</span><span class="o">)(</span><span class="kt">void</span><span class="o">)</span> <span class="n">callback</span>
+
+    <span class="nc">Observer</span> <span class="nf">Observer</span><span class="o">(</span><span class="nc">CallBack</span> <span class="n">block</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">callback</span> <span class="o">=</span> <span class="n">block</span>
+        <span class="k">return</span> <span class="n">self</span>
+    <span class="o">}</span>
+
+    <span class="kd">public</span> <span class="nf">notify</span><span class="o">()</span> <span class="o">{</span>
+        <span class="n">callback</span><span class="o">()</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="nc">Class</span> <span class="nc">Cooker</span> <span class="o">{</span>
+
+    <span class="kt">int</span> <span class="n">exp</span>
+    
+    <span class="kd">public</span> <span class="nc">Coffee</span> <span class="n">make</span> <span class="o">{</span>
+        <span class="n">let</span> <span class="n">observer</span> <span class="o">=</span> <span class="nc">Observer</span><span class="o">();</span>
+        <span class="n">let</span> <span class="n">food</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">Food</span><span class="o">();</span>
+        <span class="n">observer</span><span class="o">.</span><span class="na">callback</span> <span class="o">=</span> <span class="o">()</span> <span class="o">{</span>
+            <span class="n">exp</span> <span class="o">++</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">food</span>
+    <span class="o">}</span> 
+<span class="o">}</span>
+
+<span class="nc">Class</span> <span class="nc">Food</span> <span class="o">{</span>
+    <span class="nc">Observer</span> <span class="n">foodObserver</span>
+    <span class="nc">Food</span> <span class="nf">food</span><span class="o">(</span><span class="nc">Observer</span> <span class="n">observer</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">foodObserver</span> <span class="o">=</span> <span class="n">observer</span>
+        <span class="k">return</span> <span class="n">self</span>
+    <span class="o">}</span>
+
+    <span class="kt">void</span> <span class="nf">handle</span><span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// 制作过程</span>
+        <span class="c1">// ...</span>
+        <span class="c1">// 制作完成</span>
+        <span class="n">foodObserver</span><span class="o">.</span><span class="na">notify</span><span class="o">()</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="kt">void</span> <span class="nf">main</span><span class="o">()</span> <span class="o">{</span>
+    <span class="n">let</span> <span class="n">cooker</span> <span class="o">=</span> <span class="nc">Cooker</span><span class="o">()</span>
+    <span class="n">let</span> <span class="n">food</span> <span class="o">=</span> <span class="n">cooker</span><span class="o">.</span><span class="na">make</span><span class="o">()</span>
+
+    <span class="n">print</span><span class="o">(</span><span class="s">"I get {food}"</span><span class="o">)</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>上面的代码就是观察者模式的典型应用场景，其实不同的编程语言可以根据各自的特点实现观察者模式，例如c++常用模板类实现，而Java经常会抽象类来实现。不管如何实现本质上，都是通过抽象出通用的方法，从而使业务的依赖性降低，来减少软件的复杂度。</p>
+
+<h2 id="软件复杂度的原则">软件复杂度的原则</h2>
+
+<p>从上面的例子中可以看到，当我们在降低软件复杂度的过程中，就诞生了设计模式。下面就再拿设计模式中经典的策略模式举个例子，来说明下降低软件复杂度常用的一些原则。业务中根据不同的条件执行不同的行为，这种场景再平常不过了。当业务在不停的迭代时，会产生这样的需求例如:”当处理业务A时，需要处理业务B。慢慢的又增加了另一个需求处理业务B时，又要处理业务C。”然后最终的业务代码可能就如下:</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Class</span> <span class="nc">BusinessA</span> <span class="o">{</span>
+    <span class="n">handler</span><span class="o">(</span><span class="kt">int</span> <span class="n">condition</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">condition</span> <span class="o">==</span> <span class="mi">1</span><span class="o">){</span>
+            <span class="n">let</span> <span class="n">b</span> <span class="o">=</span> <span class="nc">BusinessB</span><span class="o">()</span>
+            <span class="n">b</span><span class="o">.</span><span class="na">handler</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="k">if</span><span class="o">(</span><span class="n">condition</span> <span class="o">==</span> <span class="mi">2</span><span class="o">){</span>
+            <span class="n">let</span> <span class="n">c</span> <span class="o">=</span> <span class="nc">BusinessC</span><span class="o">()</span>
+            <span class="n">c</span><span class="o">.</span><span class="na">handler</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">let</span> <span class="n">d</span> <span class="o">=</span> <span class="nc">BusinessD</span><span class="o">()</span>
+            <span class="n">d</span><span class="o">.</span><span class="na">handler</span><span class="o">(</span><span class="n">condition</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="nc">Class</span> <span class="nc">BusinessB</span> <span class="o">{</span>
+    <span class="n">handler</span><span class="o">(</span><span class="kt">int</span> <span class="n">condition</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">condition</span> <span class="o">==</span> <span class="mi">1</span><span class="o">){</span>
+            <span class="n">let</span> <span class="n">c</span> <span class="o">=</span> <span class="nc">BusinessC</span><span class="o">()</span>
+            <span class="n">c</span><span class="o">.</span><span class="na">handler</span><span class="o">(</span><span class="mi">1</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">let</span> <span class="n">d</span> <span class="o">=</span> <span class="nc">BusinessD</span><span class="o">()</span>
+            <span class="n">d</span><span class="o">.</span><span class="na">handler</span><span class="o">(</span><span class="mi">3</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="nc">Class</span> <span class="nc">BusinessC</span> <span class="o">{</span>
+    <span class="n">handler</span><span class="o">(</span><span class="kt">int</span> <span class="n">condition</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">condition</span> <span class="o">==</span> <span class="mi">2</span><span class="o">){</span>
+            <span class="n">let</span> <span class="n">b</span> <span class="o">=</span> <span class="nc">BusinessB</span><span class="o">()</span>
+            <span class="n">b</span><span class="o">.</span><span class="na">handler</span><span class="o">(</span><span class="mi">2</span><span class="o">);</span>
+        <span class="o">}</span> <span class="k">else</span> <span class="o">{</span>
+            <span class="n">let</span> <span class="n">d</span> <span class="o">=</span> <span class="nc">BusinessD</span><span class="o">()</span>
+            <span class="n">d</span><span class="o">.</span><span class="na">handler</span><span class="o">(</span><span class="mi">3</span><span class="o">);</span>
+        <span class="o">}</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="nc">Class</span> <span class="nc">BusinessD</span> <span class="o">{</span>
+    <span class="n">handler</span><span class="o">(</span><span class="kt">int</span> <span class="n">condition</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">print</span><span class="o">(</span><span class="s">"handler business"</span><span class="o">)</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="n">main</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nc">BusinessA</span> <span class="n">a</span> <span class="o">=</span> <span class="nc">BusinessA</span><span class="o">()</span>
+    <span class="n">a</span><span class="o">.</span><span class="na">handler</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>上面这种代码就是在若干次业务迭代后，形成了这样的逻辑，我们画下这个业务的流程图如下：</p>
+
+<p><img src="/images/soft-complex-3.jpg" alt="图2" /></p>
+
+<p>可以看出这种业务的复杂度理解起来非常的困难。下面经过策略模式改造过的代码。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Class</span> <span class="nc">BusinessA</span> <span class="o">{</span>
+    <span class="n">handler</span><span class="o">(</span><span class="kt">int</span> <span class="n">condition</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">print</span><span class="o">(</span><span class="s">"handler business A"</span><span class="o">)</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="nc">Class</span> <span class="nc">BusinessB</span> <span class="o">{</span>
+    <span class="n">handler</span><span class="o">(</span><span class="kt">int</span> <span class="n">condition</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">print</span><span class="o">(</span><span class="s">"handler business B"</span><span class="o">)</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="nc">Class</span> <span class="nc">BusinessC</span> <span class="o">{</span>
+    <span class="n">handler</span><span class="o">(</span><span class="kt">int</span> <span class="n">condition</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">print</span><span class="o">(</span><span class="s">"handler business C"</span><span class="o">)</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="nc">Class</span> <span class="nc">BusinessD</span> <span class="o">{</span>
+    <span class="n">handler</span><span class="o">(</span><span class="kt">int</span> <span class="n">condition</span><span class="o">)</span> <span class="o">{</span>
+        <span class="n">print</span><span class="o">(</span><span class="s">"handler business D"</span><span class="o">)</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="nc">Class</span> <span class="nc">Strategy</span> <span class="o">{</span>
+    <span class="n">handler</span><span class="o">(</span><span class="kt">int</span> <span class="n">condition</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">switch</span> <span class="n">condition</span>
+        <span class="k">case</span> <span class="mi">1</span><span class="o">:</span> <span class="o">{</span>
+            <span class="n">let</span> <span class="n">a</span> <span class="o">=</span> <span class="nc">BusinessA</span><span class="o">()</span>
+            <span class="n">let</span> <span class="n">b</span> <span class="o">=</span> <span class="nc">BusinessB</span><span class="o">()</span>
+            <span class="n">a</span><span class="o">.</span><span class="na">hanlder</span><span class="o">()</span>
+            <span class="n">b</span><span class="o">.</span><span class="na">handler</span><span class="o">()</span>
+        <span class="o">}</span>
+        <span class="k">case</span> <span class="mi">2</span><span class="o">:</span> <span class="o">{</span>
+            <span class="n">let</span> <span class="n">a</span> <span class="o">=</span> <span class="nc">BusinessA</span><span class="o">()</span>
+            <span class="n">let</span> <span class="n">c</span> <span class="o">=</span> <span class="nc">BusinessC</span><span class="o">()</span>
+            <span class="n">a</span><span class="o">.</span><span class="na">hanlder</span><span class="o">()</span>
+            <span class="n">c</span><span class="o">.</span><span class="na">handler</span><span class="o">()</span>
+        <span class="o">}</span>
+        <span class="k">default</span><span class="o">:</span> <span class="o">{</span>
+            <span class="n">let</span> <span class="n">a</span> <span class="o">=</span> <span class="nc">BusinessA</span><span class="o">()</span>
+            <span class="n">let</span> <span class="n">d</span> <span class="o">=</span> <span class="nc">BusinessD</span><span class="o">()</span>
+            <span class="n">a</span><span class="o">.</span><span class="na">hanlder</span><span class="o">()</span>
+            <span class="n">d</span><span class="o">.</span><span class="na">handler</span><span class="o">()</span>
+        <span class="o">}</span>
+        <span class="n">print</span><span class="o">(</span><span class="s">"handler business"</span><span class="o">)</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+<span class="n">main</span><span class="o">()</span> <span class="o">{</span>
+    <span class="nc">Strategy</span> <span class="n">strategy</span> <span class="o">=</span> <span class="nc">Strategy</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+    <span class="n">strategy</span><span class="o">.</span><span class="na">handler</span><span class="o">(</span><span class="mi">1</span><span class="o">)</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>再画出上面代码的业务流程图，可以明显的看出来，采用树形的结构复杂度降低了很多。</p>
+
+<p><img src="/images/soft-complex-4.jpg" alt="图4" /></p>
+
+<p>通过上面的这个例子，可以看出减少各个模块的反向依赖，避免反向环的形成，可以有效的降低软件的复杂度。所以我们组织代码结构的时候，尽量组织为树形结构，避免环形成，尤其反向依赖环的形成。反向依赖环不仅使复杂度增加，同时很容易引起潜在的问题，因为环上任意一处有bug影响的是整个环的代码逻辑。而如果是树装结构只会影响当前树的一个分支。</p>
+
+<p>软件架构中，经常提到的高内聚，低耦合，以及设计模式中的接口依赖原则，本质上都是更好的分层。分层的逻辑，简单的来讲就是让程序流程变成一个树形结构，更好的解耦依赖。现在大型的软件基本都是按照树状结构进行设计的，像文件系统，进程管理等等。随着现在软件复杂度的提高，各种框架和架构层不不穷，本质上万变不离其宗，用上面提到的一个简单公式概况，就是如何让V(G)=E-N+2中的V最小，复杂度降到最低。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>有句俗语叫”前人种树后人乘凉”，我们写代码讲武德就是要养成这种美德。每当写下if else或者增加一个全局变量的时候，就的思考下，有没有更好的方法减少这个分支和变量。当我们在设计业务逻辑时，一旦出现了环状结构时，就的思考下，是不是分层做的不合理。所以好的代码不仅仅是算法性能一流，也应该是一眼可以看懂的代码，只有这样的代码才能持续的传承下来，才能让后人站在你的肩膀上走的更远。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>
