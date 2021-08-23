@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2021-08-22T02:41:07+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">写代码要讲武德</title><link href="https://mengtnt.com/2021/08/09/soft-complex.html" rel="alternate" type="text/html" title="写代码要讲武德" /><published>2021-08-09T02:40:18+00:00</published><updated>2021-08-09T02:40:18+00:00</updated><id>https://mengtnt.com/2021/08/09/soft-complex</id><content type="html" xml:base="https://mengtnt.com/2021/08/09/soft-complex.html">&lt;p&gt;最近刚做完一个项目，闲了下来。想分享下关于软件复杂度的一些思考。这里先说下文章标题的由来，一个软件产品对于用户来讲，好看好用是必须的，其次就是看这个软件的性能好不好，不要老是卡和崩溃。如果满足这两点，往往这个软件口碑不会差。所以对于开发人员来讲，写代码时一定要关注产品的体验和性能。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2021-08-23T06:06:10+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">写代码要讲武德</title><link href="https://mengtnt.com/2021/08/09/soft-complex.html" rel="alternate" type="text/html" title="写代码要讲武德" /><published>2021-08-09T02:40:18+00:00</published><updated>2021-08-09T02:40:18+00:00</updated><id>https://mengtnt.com/2021/08/09/soft-complex</id><content type="html" xml:base="https://mengtnt.com/2021/08/09/soft-complex.html">&lt;p&gt;最近刚做完一个项目，闲了下来。想分享下关于软件复杂度的一些思考。这里先说下文章标题的由来，一个软件产品对于用户来讲，好看好用是必须的，其次就是看这个软件的性能好不好，不要老是卡和崩溃。如果满足这两点，往往这个软件口碑不会差。所以对于开发人员来讲，写代码时一定要关注产品的体验和性能。&lt;/p&gt;
 
 &lt;p&gt;对于一个软件产品就跟一个人一样。这个人长的好不好看、脑子聪不聪明确实很重要。所以很多时候我们看一个人，往往比较关注他的外表和智力。那么对比于软件开发，程序员们也是很重视代码的实现和性能，所以你可以看到大量讨论实现和算法的文章。可是这里所说的“德”就往往很容易被忽略。&lt;/p&gt;
 
-&lt;p&gt;那何为“德”，说的直接一点就是约束自己，方便别人。为什么要做这种吃力不讨好的事情哪？是因为道德放在一个长线来看，是对大家都有好处的，否则大家只做利己的行为这个社会可能会乱成一锅粥。那么对于写代码要讲武德，也就是我们在实现一个功能时，尽量让后面接手的人容易看懂，而不要仅仅是实现了功能和用了牛逼的算法优化了性能，也关注下这个“德”，就跟人一样要德智体全面发展。对于写代码来说这个“德”如何做哪？下面我们就来看软件复杂度的管理。&lt;/p&gt;
+&lt;p&gt;那何为“德”，说的直接一点就是约束自己，方便别人。为什么要做这种吃力不讨好的事情呢？是因为道德放在一个长线来看，是对大家都有好处的，否则大家只做利己的行为这个社会可能会乱成一锅粥。那么对于写代码要讲武德，也就是我们在实现一个功能时，尽量让后面接手的人容易看懂，而不要仅仅是实现了功能和用了牛逼的算法优化了性能，也关注下这个“德”，就跟人一样要德智体全面发展。对于写代码来说这个“德”如何做呢？下面我们就来看软件复杂度的管理。&lt;/p&gt;
 
 &lt;h2 id=&quot;软件复杂度&quot;&gt;软件复杂度&lt;/h2&gt;
 
@@ -28,7 +28,7 @@
   &lt;/li&gt;
 &lt;/ol&gt;
 
-&lt;p&gt;从上面的公式中，这让我想起来看过的一本书“复杂世界的简单的法则”，所有复杂的东西其实都是由一个最简单的公式，不停的分形迭代造成的。程序的世界尤其适用，所有的复杂性基本都是由if else的分支造成的。所以减少这些环，让我们的程序变的很线性，就是降低软件复杂度的基本原则。&lt;/p&gt;
+&lt;p&gt;从上面的公式中，这让我想起来看过的一本书《重构——复杂世界的简单的法则》，所有复杂的东西其实都是由一个最简单的公式，不停的分形迭代造成的。程序的世界尤其适用，所有的复杂性基本都是由if else的分支造成的。所以减少这些环，让我们的程序变的很线性，就是降低软件复杂度的基本原则。&lt;/p&gt;
 
 &lt;p&gt;基于上面的简单法则，软件工程发展出来了各种设计模式和架构。这些年流行的函数式编程，其实本质上也是最大限度的让程序阅读起来是线性的，不要出现太多的分支。下面基于日常经常写的代码，展现下如何处理软件的复杂度。&lt;/p&gt;
 
@@ -201,7 +201,7 @@
 
 &lt;h2 id=&quot;软件复杂度的原则&quot;&gt;软件复杂度的原则&lt;/h2&gt;
 
-&lt;p&gt;从上面的例子中可以看到，当我们在降低软件复杂度的过程中，就诞生了设计模式。下面就再拿设计模式中经典的策略模式举个例子，来说明下降低软件复杂度常用的一些原则。业务中根据不同的条件执行不同的行为，这种场景再平常不过了。当业务在不停的迭代时，会产生这样的需求例如:”当处理业务A时，需要处理业务B。慢慢的又增加了另一个需求处理业务B时，又要处理业务C。”然后最终的业务代码可能就如下:&lt;/p&gt;
+&lt;p&gt;从上面的例子中可以看到，当我们在降低软件复杂度的过程中，就诞生了设计模式。下面就再拿设计模式中经典的策略模式举个例子，来说明一下降低软件复杂度常用的一些原则。业务中根据不同的条件执行不同的行为，这种场景再平常不过了。当业务在不停的迭代时，会产生这样的需求例如:”当处理业务A时，需要处理业务B。慢慢的又增加了另一个需求处理业务B时，又要处理业务C。”然后最终的业务代码可能就如下:&lt;/p&gt;
 
 &lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;BusinessA&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
     &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;condition&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
@@ -321,13 +321,13 @@
 
 &lt;p&gt;&lt;img src=&quot;/images/soft-complex-4.jpg&quot; alt=&quot;图4&quot; /&gt;&lt;/p&gt;
 
-&lt;p&gt;通过上面的这个例子，可以看出减少各个模块的反向依赖，避免反向环的形成，可以有效的降低软件的复杂度。所以我们组织代码结构的时候，尽量组织为树形结构，避免环形成，尤其反向依赖环的形成。反向依赖环不仅使复杂度增加，同时很容易引起潜在的问题，因为环上任意一处有bug影响的是整个环的代码逻辑。而如果是树装结构只会影响当前树的一个分支。&lt;/p&gt;
+&lt;p&gt;通过上面的这个例子，可以看出减少各个模块的反向依赖，避免反向环的形成，可以有效的降低软件的复杂度。所以我们组织代码结构的时候，尽量组织为树形结构，避免环形成，尤其反向依赖环的形成。反向依赖环不仅使复杂度增加，同时很容易引起潜在的问题，因为环上任意一处有bug影响的是整个环的代码逻辑。而如果是树形结构只会影响当前树的一个分支。&lt;/p&gt;
 
-&lt;p&gt;软件架构中，经常提到的高内聚，低耦合，以及设计模式中的接口依赖原则，本质上都是更好的分层。分层的逻辑，简单的来讲就是让程序流程变成一个树形结构，更好的解耦依赖。现在大型的软件基本都是按照树状结构进行设计的，像文件系统，进程管理等等。随着现在软件复杂度的提高，各种框架和架构层不不穷，本质上万变不离其宗，用上面提到的一个简单公式概况，就是如何让V(G)=E-N+2中的V最小，复杂度降到最低。&lt;/p&gt;
+&lt;p&gt;软件架构中，经常提到的高内聚，低耦合，以及设计模式中的接口依赖原则，本质上都是更好的分层。分层的逻辑，简单的来讲就是让程序流程变成一个树形结构，更好的解耦依赖。现在大型的软件基本都是按照树形结构进行设计的，像文件系统，进程管理等等。随着现在软件复杂度的提高，各种框架和架构层出不穷，但本质上万变不离其宗，用上面提到的一个简单公式概况，就是如何让V(G)=E-N+2中的V最小，复杂度降到最低。&lt;/p&gt;
 
 &lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
 
-&lt;p&gt;有句俗语叫”前人种树后人乘凉”，我们写代码讲武德就是要养成这种美德。每当写下if else或者增加一个全局变量的时候，就的思考下，有没有更好的方法减少这个分支和变量。当我们在设计业务逻辑时，一旦出现了环状结构时，就的思考下，是不是分层做的不合理。所以好的代码不仅仅是算法性能一流，也应该是一眼可以看懂的代码，只有这样的代码才能持续的传承下来，才能让后人站在你的肩膀上走的更远。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近刚做完一个项目，闲了下来。想分享下关于软件复杂度的一些思考。这里先说下文章标题的由来，一个软件产品对于用户来讲，好看好用是必须的，其次就是看这个软件的性能好不好，不要老是卡和崩溃。如果满足这两点，往往这个软件口碑不会差。所以对于开发人员来讲，写代码时一定要关注产品的体验和性能。</summary></entry><entry><title type="html">经验的成本</title><link href="https://mengtnt.com/2021/06/13/exp-cost.html" rel="alternate" type="text/html" title="经验的成本" /><published>2021-06-13T08:51:35+00:00</published><updated>2021-06-13T08:51:35+00:00</updated><id>https://mengtnt.com/2021/06/13/exp-cost</id><content type="html" xml:base="https://mengtnt.com/2021/06/13/exp-cost.html">&lt;p&gt;最近想对博客的源码做自动化的CI，原本想着使用github的workflow配置，提交博客源码后让github自动编译发布博客。不过由于还要部署一些其他的内容，所以索性就想着自己写个github的webhook，当提交博客源码时，服务器运行CI工具，顺便发布下自己部署的其他服务。&lt;/p&gt;
+&lt;p&gt;有句俗语叫”前人种树后人乘凉”，我们写代码讲武德就是要养成这种美德。每当写下if else或者增加一个全局变量的时候，就得思考下，有没有更好的方法减少这个分支和变量。当我们在设计业务逻辑，一旦出现了环状结构时，就得思考下，是不是分层做的不合理。所以好的代码不仅仅是算法性能一流，也应该是一眼可以看懂的代码，只有这样的代码才能持续的传承下来，才能让后人站在你的肩膀上走的更远。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近刚做完一个项目，闲了下来。想分享下关于软件复杂度的一些思考。这里先说下文章标题的由来，一个软件产品对于用户来讲，好看好用是必须的，其次就是看这个软件的性能好不好，不要老是卡和崩溃。如果满足这两点，往往这个软件口碑不会差。所以对于开发人员来讲，写代码时一定要关注产品的体验和性能。</summary></entry><entry><title type="html">经验的成本</title><link href="https://mengtnt.com/2021/06/13/exp-cost.html" rel="alternate" type="text/html" title="经验的成本" /><published>2021-06-13T08:51:35+00:00</published><updated>2021-06-13T08:51:35+00:00</updated><id>https://mengtnt.com/2021/06/13/exp-cost</id><content type="html" xml:base="https://mengtnt.com/2021/06/13/exp-cost.html">&lt;p&gt;最近想对博客的源码做自动化的CI，原本想着使用github的workflow配置，提交博客源码后让github自动编译发布博客。不过由于还要部署一些其他的内容，所以索性就想着自己写个github的webhook，当提交博客源码时，服务器运行CI工具，顺便发布下自己部署的其他服务。&lt;/p&gt;
 
 &lt;p&gt;做这个事情本身并不难，其实只要在github上把博客源码的仓库，增加一个webhook，然后服务器后台部署自己的CI工具就行了。在做这个事情之前，突然想到，自己一直从事的是客户端的开发。服务器部署的经验比较少，做这个事情大概要花多久时间哪？然后就尝试从网上看一些教程和文章，从网上一些描述来讲，做这个事情可能只需要花费1到2个小时的时间。然后在做这个事情的过程中，我就记录了解决整个问题的过程和时间。对比下花费的时间和精力。下面我就逐个描述下当时解决问题的过程。&lt;/p&gt;
 
