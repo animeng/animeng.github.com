@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2021-10-11T04:18:13+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">如何写一个状态机</title><link href="https://mengtnt.com/2021/10/01/state-machine.html" rel="alternate" type="text/html" title="如何写一个状态机" /><published>2021-10-01T12:10:23+00:00</published><updated>2021-10-01T12:10:23+00:00</updated><id>https://mengtnt.com/2021/10/01/state-machine</id><content type="html" xml:base="https://mengtnt.com/2021/10/01/state-machine.html">&lt;p&gt;状态机是软件工程中很常见的一种架构。它是记录事物发展阶段的一个常用手段。首先来介绍下状态机的几个概念。(我们拿管理员登陆后台用户的状态作为例子描述这些概念)&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2021-10-11T09:42:44+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">如何写一个状态机</title><link href="https://mengtnt.com/2021/10/01/state-machine.html" rel="alternate" type="text/html" title="如何写一个状态机" /><published>2021-10-01T12:10:23+00:00</published><updated>2021-10-01T12:10:23+00:00</updated><id>https://mengtnt.com/2021/10/01/state-machine</id><content type="html" xml:base="https://mengtnt.com/2021/10/01/state-machine.html">&lt;p&gt;状态机是软件工程中很常见的一种架构。它是记录事物发展阶段的一个常用手段。首先来介绍下状态机的几个概念。(我们拿“管理员登陆后台”作为例子描述这些概念)&lt;/p&gt;
 
 &lt;ol&gt;
-  &lt;li&gt;State —— 状态机一般要包含两个以上状态。对于管理员登陆，这里有两个状态：”登录状态和未登录状态“。&lt;/li&gt;
+  &lt;li&gt;State —— 状态机一般要包含两个以上状态。对于管理员登陆，这里有两个状态：“登录状态和未登录状态”。&lt;/li&gt;
   &lt;li&gt;Event —— 事件就是执行某个操作的触发条件或者口令。对于上面的例子，“点击登录按钮”就是一个事件。&lt;/li&gt;
   &lt;li&gt;Action —— 事件发生以后要执行动作。例如事件是“点击登录按钮”，动作是“登陆中”。编程的时候，一个 Action 一般就对应一个函数。&lt;/li&gt;
   &lt;li&gt;Transition —— 也就是从一个状态变化为另一个状态。例如“登陆成功”就是一个变换。&lt;/li&gt;
@@ -43,7 +43,7 @@
 
 &lt;p&gt;Event相当于命题的条件，因为条件往往是用来做推导过程的，并不需求保存在状态机中，所以如果涉及到Event这种变量不要用对外可见的变量。在状态机中，需要存储的往往是推导的结论，表示State的变量会是对外可见的变量。所以在写状态机时，要注意区分哪些是Event用到的变量,哪些是State用到的，便于变量的定义。&lt;/p&gt;
 
-&lt;p&gt;对于管理员登陆的例子，”用户点击登陆按钮“这个Event，这个是状态机触发的条件，从这个条件命题中，我们可以分离出来一个属性变量(User)和一个方法(clickLoginButton)。下面就根据Event规则定义这些条件。&lt;/p&gt;
+&lt;p&gt;对于管理员登陆的例子，“用户点击登陆按钮”这个Event，这个是状态机触发的条件，从这个条件命题中，我们可以分离出来一个属性变量(User)和一个方法(clickLoginButton)。下面就根据Event规则定义这些条件。&lt;/p&gt;
 
 &lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
 &lt;span class=&quot;kd&quot;&gt;enum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
@@ -73,7 +73,7 @@
 
 &lt;p&gt;Action就是我们推导的过程了。Action大多是无副作用的函数。何为无副作用的函数，简单的讲就是不会操作任何全局变量的函数，因为Action仅仅是计算的过程，还没有涉及到最终的结果命题的生成。另外由于状态机往往是对某一个事物时间周期内的计算，所以Action尽量用函数闭合的操作。什么是闭合操作，就是函数输入的数据类型和输出的数据类型尽量保证一直，这样在命题的推导过程中，就避免了类型的转换。&lt;/p&gt;
 
-&lt;p&gt;对于上面的例子，”登陆行为“这个Action如何合理的表示，首先我们拿到了状态机的触发条件，同时要操作的Event的条件数据是UserInfo。根据上面的原则就很容易定义Action的操作。&lt;/p&gt;
+&lt;p&gt;对于上面的例子，“登陆行为”这个Action如何合理的表示，首先我们拿到了状态机的触发条件，同时要操作的Event的条件数据是UserInfo。根据上面的原则就很容易定义Action的操作。&lt;/p&gt;
 
 &lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
 &lt;span class=&quot;kd&quot;&gt;enum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
@@ -117,7 +117,7 @@
 
 &lt;p&gt;Transition是和Action相反的，是有副作用的函数，因为Transition就是生成我们需要推导的命题，所以必然会操作全局的State。在定义有副作用的函数时，我们尤其要小心，尽量用最小化原则，避免一些其他变量的关联操作。这里还有个原则在生产最终的State时，可能会有很多中间状态，中间状态尤其不能对外开放，一定是在内部使用，否则状态机很容易在计算的过程中，中间状态被外部改掉，造成状态机错乱。&lt;/p&gt;
 
-&lt;p&gt;我们再来看管理员登陆的例子，用户在登陆过程中可能会产生那些有副作用的函数和中间状态。显而易见户登陆成功后的操作函数应该是会改变loginstate。另外在登录过程中，为了防止频繁的请求，对正在登录的重复请求做拦截，这个就相当于产生了一个中间状态，使用这个中间状态尤其要小心，因为这会造成我们原本没有副作用的action的函数，产生了副作用。&lt;/p&gt;
+&lt;p&gt;我们再来看管理员登陆的例子，用户在登陆过程中可能会产生那些有副作用的函数和中间状态。显而易见户登陆成功后的操作函数应该是会改变loginstate。另外在登录过程中，为了防止频繁的请求，对正在登录的重复请求做拦截，这个就相当于产生了一个中间状态，使用这个中间状态尤其要小心，因为这会造成我们原本没有副作用的Action的函数，产生了副作用。&lt;/p&gt;
 
 &lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
 &lt;span class=&quot;kd&quot;&gt;enum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
@@ -172,9 +172,9 @@
 
 &lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
 
-&lt;p&gt;从上面分析状态机的原则过程中，可以看出来任何的数据结构和算法其实都是逻辑推导的过程，还是文章开头表示的这个公式P1(Condition) —&amp;gt; P2，所以本质上首先要确定哪些是已知的命题，哪些是条件，哪些是结论，从而形成我们的推导过程。&lt;/p&gt;
+&lt;p&gt;从上面分析状态机的过程中，可以看出来任何的数据结构和算法其实都是逻辑推导的过程，还是文章开头表示的这个公式P1(Condition) —&amp;gt; P2，所以本质上首先要确定哪些是已知的命题，哪些是条件，哪些是结论，从而形成我们的推导过程。&lt;/p&gt;
 
-&lt;p&gt;状态机描述起来其实是一个很简单的数据结构和算法，在推导的过程中，我们引入了程序设计中常用的原则，控制了推导过程的边界，本质上是让状态机推导代码更加内聚，不要暴露过多的细节给外部环境，这样的状态机才能更加稳定的运行。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">状态机是软件工程中很常见的一种架构。它是记录事物发展阶段的一个常用手段。首先来介绍下状态机的几个概念。(我们拿管理员登陆后台用户的状态作为例子描述这些概念)</summary></entry><entry><title type="html">写代码要讲武德</title><link href="https://mengtnt.com/2021/08/09/soft-complex.html" rel="alternate" type="text/html" title="写代码要讲武德" /><published>2021-08-09T02:40:18+00:00</published><updated>2021-08-09T02:40:18+00:00</updated><id>https://mengtnt.com/2021/08/09/soft-complex</id><content type="html" xml:base="https://mengtnt.com/2021/08/09/soft-complex.html">&lt;p&gt;最近刚做完一个项目，闲了下来。想分享下关于软件复杂度的一些思考。这里先说下文章标题的由来，一个软件产品对于用户来讲，好看好用是必须的，其次就是看这个软件的性能好不好，不要老是卡和崩溃。如果满足这两点，往往这个软件口碑不会差。所以对于开发人员来讲，写代码时一定要关注产品的体验和性能。&lt;/p&gt;
+&lt;p&gt;状态机描述起来其实是一个很简单的数据结构和算法，在推导的过程中，我们引入了程序设计中常用的原则，控制了推导过程的边界，本质上是让状态机推导代码更加内聚，不要暴露过多的细节给外部环境，这样的状态机才能更加稳定的运行。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">状态机是软件工程中很常见的一种架构。它是记录事物发展阶段的一个常用手段。首先来介绍下状态机的几个概念。(我们拿“管理员登陆后台”作为例子描述这些概念)</summary></entry><entry><title type="html">写代码要讲武德</title><link href="https://mengtnt.com/2021/08/09/soft-complex.html" rel="alternate" type="text/html" title="写代码要讲武德" /><published>2021-08-09T02:40:18+00:00</published><updated>2021-08-09T02:40:18+00:00</updated><id>https://mengtnt.com/2021/08/09/soft-complex</id><content type="html" xml:base="https://mengtnt.com/2021/08/09/soft-complex.html">&lt;p&gt;最近刚做完一个项目，闲了下来。想分享下关于软件复杂度的一些思考。这里先说下文章标题的由来，一个软件产品对于用户来讲，好看好用是必须的，其次就是看这个软件的性能好不好，不要老是卡和崩溃。如果满足这两点，往往这个软件口碑不会差。所以对于开发人员来讲，写代码时一定要关注产品的体验和性能。&lt;/p&gt;
 
 &lt;p&gt;对于一个软件产品就跟一个人一样。这个人长的好不好看、脑子聪不聪明确实很重要。所以很多时候我们看一个人，往往比较关注他的外表和智力。那么对比于软件开发，程序员们也是很重视代码的实现和性能，所以你可以看到大量讨论实现和算法的文章。可是这里所说的“德”就往往很容易被忽略。&lt;/p&gt;
 
