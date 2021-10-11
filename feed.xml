@@ -1,4 +1,180 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2021-08-23T06:06:10+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">写代码要讲武德</title><link href="https://mengtnt.com/2021/08/09/soft-complex.html" rel="alternate" type="text/html" title="写代码要讲武德" /><published>2021-08-09T02:40:18+00:00</published><updated>2021-08-09T02:40:18+00:00</updated><id>https://mengtnt.com/2021/08/09/soft-complex</id><content type="html" xml:base="https://mengtnt.com/2021/08/09/soft-complex.html">&lt;p&gt;最近刚做完一个项目，闲了下来。想分享下关于软件复杂度的一些思考。这里先说下文章标题的由来，一个软件产品对于用户来讲，好看好用是必须的，其次就是看这个软件的性能好不好，不要老是卡和崩溃。如果满足这两点，往往这个软件口碑不会差。所以对于开发人员来讲，写代码时一定要关注产品的体验和性能。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2021-10-11T04:18:13+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">如何写一个状态机</title><link href="https://mengtnt.com/2021/10/01/state-machine.html" rel="alternate" type="text/html" title="如何写一个状态机" /><published>2021-10-01T12:10:23+00:00</published><updated>2021-10-01T12:10:23+00:00</updated><id>https://mengtnt.com/2021/10/01/state-machine</id><content type="html" xml:base="https://mengtnt.com/2021/10/01/state-machine.html">&lt;p&gt;状态机是软件工程中很常见的一种架构。它是记录事物发展阶段的一个常用手段。首先来介绍下状态机的几个概念。(我们拿管理员登陆后台用户的状态作为例子描述这些概念)&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;State —— 状态机一般要包含两个以上状态。对于管理员登陆，这里有两个状态：”登录状态和未登录状态“。&lt;/li&gt;
+  &lt;li&gt;Event —— 事件就是执行某个操作的触发条件或者口令。对于上面的例子，“点击登录按钮”就是一个事件。&lt;/li&gt;
+  &lt;li&gt;Action —— 事件发生以后要执行动作。例如事件是“点击登录按钮”，动作是“登陆中”。编程的时候，一个 Action 一般就对应一个函数。&lt;/li&gt;
+  &lt;li&gt;Transition —— 也就是从一个状态变化为另一个状态。例如“登陆成功”就是一个变换。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;一个典型的状态机转换过程如下图:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/state-machine-1.jpg&quot; alt=&quot;img1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;上面简单介绍了状态机的概念，那么在不同的业务领域如何定义这些状态机的概念呢？&lt;/p&gt;
+
+&lt;h2 id=&quot;如何定义状态机的概念&quot;&gt;如何定义状态机的概念&lt;/h2&gt;
+
+&lt;p&gt;在定义状态的过程中，其实就是一个抽象概念的过程。如果了解过逻辑学的都知道，现实生活中我们描述的事物其实都可以抽象为命题。命题本质上就是状态机的State，Event就是命题的条件，Action本质上就是通过命题和条件的推导过程。而Transition就是命题推导完成的结论。所以状态机变化的过程本质上就是一个命题的证明过程。P1(Condition) —&amp;gt; P2&lt;/p&gt;
+
+&lt;p&gt;所以当我们拿到业务的时候，首先要分离出哪些是已知的命题，哪些是条件。而我们就是要通过这些已知命题和条件，推导出结论的过程。&lt;/p&gt;
+
+&lt;p&gt;在定义完状态机的概念后，我们下面看下这些概念的使用原则。&lt;/p&gt;
+
+&lt;h2 id=&quot;state使用规则&quot;&gt;State使用规则&lt;/h2&gt;
+
+&lt;p&gt;State至少会有两种，一种是默认的状态，一种是输出的状态，默认的状态相当于已知的命题，输出的状态相当于要推导的结论。所以很重要的一点是在定义State这种数据类型的时候，要选择对外不可变的类型，一旦出现可变类型的状态说明状态机的推导过程有一定缺陷。&lt;/p&gt;
+
+&lt;p&gt;对于管理员登陆的例子，输出的是登陆和未登录的状态。我们可以这样定义状态。&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;kd&quot;&gt;enum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;unLogin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;login&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;LoginState&lt;/span&gt;
+
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;userLoginState&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;LoginState&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;loginstate&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// state&lt;/span&gt;
+
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;event的规则&quot;&gt;Event的规则&lt;/h2&gt;
+
+&lt;p&gt;Event相当于命题的条件，因为条件往往是用来做推导过程的，并不需求保存在状态机中，所以如果涉及到Event这种变量不要用对外可见的变量。在状态机中，需要存储的往往是推导的结论，表示State的变量会是对外可见的变量。所以在写状态机时，要注意区分哪些是Event用到的变量,哪些是State用到的，便于变量的定义。&lt;/p&gt;
+
+&lt;p&gt;对于管理员登陆的例子，”用户点击登陆按钮“这个Event，这个是状态机触发的条件，从这个条件命题中，我们可以分离出来一个属性变量(User)和一个方法(clickLoginButton)。下面就根据Event规则定义这些条件。&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;kd&quot;&gt;enum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;unLogin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;login&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;LoginState&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;// Event条件使用的变量，尽量不要做对外暴露&lt;/span&gt;
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;UserInfo&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;password&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;userLoginState&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;LoginState&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;loginstate&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// state&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// 状态机的触发事件，往往是需要外界来调用的，这里用一个函数来表示，有时候可以用一个变量来表示。&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;clickLoginButton&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// event check and read data&lt;/span&gt;
+        &lt;span class=&quot;nc&quot;&gt;UserInfo&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;user&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;sc&quot;&gt;','&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;passwork&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;action的规则&quot;&gt;Action的规则&lt;/h2&gt;
+
+&lt;p&gt;Action就是我们推导的过程了。Action大多是无副作用的函数。何为无副作用的函数，简单的讲就是不会操作任何全局变量的函数，因为Action仅仅是计算的过程，还没有涉及到最终的结果命题的生成。另外由于状态机往往是对某一个事物时间周期内的计算，所以Action尽量用函数闭合的操作。什么是闭合操作，就是函数输入的数据类型和输出的数据类型尽量保证一直，这样在命题的推导过程中，就避免了类型的转换。&lt;/p&gt;
+
+&lt;p&gt;对于上面的例子，”登陆行为“这个Action如何合理的表示，首先我们拿到了状态机的触发条件，同时要操作的Event的条件数据是UserInfo。根据上面的原则就很容易定义Action的操作。&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;kd&quot;&gt;enum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;unLogin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;login&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;LoginState&lt;/span&gt;
+
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;UserInfo&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;password&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;userLoginState&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;LoginState&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;loginstate&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// state&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;clickLoginButton&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// event check and read data&lt;/span&gt;
+        &lt;span class=&quot;nc&quot;&gt;UserInfo&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;user&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;sc&quot;&gt;','&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;passwork&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+
+        &lt;span class=&quot;c1&quot;&gt;// action&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;login&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;login&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;UserInfo&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// some request&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;loginRequest&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;){&lt;/span&gt;
+            
+        &lt;span class=&quot;o&quot;&gt;})&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// 这个就相当于做了闭合操作，使用的函数参数和返回的参数一致，这里要注意的一点user尽量不可变的变量进行传递防止中间状态出现。&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;loginRequest&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;UserInfo&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;//request&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;transition的规则&quot;&gt;Transition的规则&lt;/h2&gt;
+
+&lt;p&gt;Transition是和Action相反的，是有副作用的函数，因为Transition就是生成我们需要推导的命题，所以必然会操作全局的State。在定义有副作用的函数时，我们尤其要小心，尽量用最小化原则，避免一些其他变量的关联操作。这里还有个原则在生产最终的State时，可能会有很多中间状态，中间状态尤其不能对外开放，一定是在内部使用，否则状态机很容易在计算的过程中，中间状态被外部改掉，造成状态机错乱。&lt;/p&gt;
+
+&lt;p&gt;我们再来看管理员登陆的例子，用户在登陆过程中可能会产生那些有副作用的函数和中间状态。显而易见户登陆成功后的操作函数应该是会改变loginstate。另外在登录过程中，为了防止频繁的请求，对正在登录的重复请求做拦截，这个就相当于产生了一个中间状态，使用这个中间状态尤其要小心，因为这会造成我们原本没有副作用的action的函数，产生了副作用。&lt;/p&gt;
+
+&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;kd&quot;&gt;enum&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;unLogin&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;login&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;LoginState&lt;/span&gt;
+
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;UserInfo&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;String&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;password&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;span class=&quot;nc&quot;&gt;Class&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;userLoginState&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;final&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;LoginState&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;loginstate&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// state&lt;/span&gt;
+
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;BOOL&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;isLogining&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// 中间状态，不要对外暴露只是内部使用&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;clickLoginButton&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// event check and read data&lt;/span&gt;
+        &lt;span class=&quot;nc&quot;&gt;UserInfo&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;user&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;sc&quot;&gt;','&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;passwork&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+
+        &lt;span class=&quot;c1&quot;&gt;// action&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;login&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;login&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;UserInfo&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;islogining&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;islogining&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;YES&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// some request&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;loginRequest&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;){&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;islogining&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;no&quot;&gt;NO&lt;/span&gt;
+            &lt;span class=&quot;nf&quot;&gt;transitionState&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;success&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+        &lt;span class=&quot;o&quot;&gt;})&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// 这个就相当于做了闭合操作，使用的函数参数和返回的参数一致，这里要注意的一点user尽量不可变的变量进行传递防止中间状态出现。&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;loginRequest&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;UserInfo&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;//request&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;callback&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;user&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+    &lt;span class=&quot;c1&quot;&gt;// 有副作用的函数，尽量用最小化原则，所以islogining这种中间状态不要写到这个函数里。&lt;/span&gt;
+    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;transitionState&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;no&quot;&gt;BOOL&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;isSuccess&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// Transition&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;loginstate&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;isSuccess&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;?&lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;login:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;unlogin&lt;/span&gt;
+    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;从上面分析状态机的原则过程中，可以看出来任何的数据结构和算法其实都是逻辑推导的过程，还是文章开头表示的这个公式P1(Condition) —&amp;gt; P2，所以本质上首先要确定哪些是已知的命题，哪些是条件，哪些是结论，从而形成我们的推导过程。&lt;/p&gt;
+
+&lt;p&gt;状态机描述起来其实是一个很简单的数据结构和算法，在推导的过程中，我们引入了程序设计中常用的原则，控制了推导过程的边界，本质上是让状态机推导代码更加内聚，不要暴露过多的细节给外部环境，这样的状态机才能更加稳定的运行。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">状态机是软件工程中很常见的一种架构。它是记录事物发展阶段的一个常用手段。首先来介绍下状态机的几个概念。(我们拿管理员登陆后台用户的状态作为例子描述这些概念)</summary></entry><entry><title type="html">写代码要讲武德</title><link href="https://mengtnt.com/2021/08/09/soft-complex.html" rel="alternate" type="text/html" title="写代码要讲武德" /><published>2021-08-09T02:40:18+00:00</published><updated>2021-08-09T02:40:18+00:00</updated><id>https://mengtnt.com/2021/08/09/soft-complex</id><content type="html" xml:base="https://mengtnt.com/2021/08/09/soft-complex.html">&lt;p&gt;最近刚做完一个项目，闲了下来。想分享下关于软件复杂度的一些思考。这里先说下文章标题的由来，一个软件产品对于用户来讲，好看好用是必须的，其次就是看这个软件的性能好不好，不要老是卡和崩溃。如果满足这两点，往往这个软件口碑不会差。所以对于开发人员来讲，写代码时一定要关注产品的体验和性能。&lt;/p&gt;
 
 &lt;p&gt;对于一个软件产品就跟一个人一样。这个人长的好不好看、脑子聪不聪明确实很重要。所以很多时候我们看一个人，往往比较关注他的外表和智力。那么对比于软件开发，程序员们也是很重视代码的实现和性能，所以你可以看到大量讨论实现和算法的文章。可是这里所说的“德”就往往很容易被忽略。&lt;/p&gt;
 
@@ -1499,151 +1675,4 @@ node launch
 
 &lt;ul&gt;
   &lt;li&gt;&lt;a href=&quot;https://github.com/swan-team&quot;&gt;百度智能小程序&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;</content><author><name>mengtnt</name></author><summary type="html">前端时间有朋友咨询如何实现一个小程序的框架，可以方便的集成到自己的应用中，方便之后前端更新UI。之前自己曾经调研过小程序的技术原理，这里分享这篇博客目的是对小程序移动端的方案进行一些实践。下面就分享下小程序移动端的实践。首先看下小程序整体的一张架构图。</summary></entry><entry><title type="html">知识问答</title><link href="https://mengtnt.com/2020/04/10/new-idear.html" rel="alternate" type="text/html" title="知识问答" /><published>2020-04-10T02:17:22+00:00</published><updated>2020-04-10T02:17:22+00:00</updated><id>https://mengtnt.com/2020/04/10/new-idear</id><content type="html" xml:base="https://mengtnt.com/2020/04/10/new-idear.html">&lt;p&gt;什么是知识问答—帮助人解决问题，也可以说是知乎，准确的来讲是某个特定领域专业一对一的解答，当然特定领域是我熟悉的移动端和前端的开发。如果你感兴趣的话，可以阅读完这篇博文。&lt;/p&gt;
-
-&lt;h2 id=&quot;为何产生这个想法&quot;&gt;为何产生这个想法&lt;/h2&gt;
-
-&lt;p&gt;如果一个人在一个领域积累了10几年，那么他掌握这个领域的知识如何才能传承给下面的人那。就像牛顿所说的他的成就是站在巨人的肩膀人造就的。当然老师的职业也就应运而生，但是老师是一个基础知识的传承，那么相对专业的领域那，有职业培训。但是这些都是集中式的，有没有可以利用的分散的时间来解决一些人刚入行时遇到的问题，加速行业的成长哪？其实在IT领域做的很好，就是有大量的博客和教程分享。但是这些碎片式的检索信息对于初学者还是有难度，如果有一个经验比较丰富的人能言传身教，肯定可以加速这个学习的过程。这就是自己产生了这个想法知识问答。&lt;/p&gt;
-
-&lt;h2 id=&quot;互利互助的商业社会&quot;&gt;互利互助的商业社会&lt;/h2&gt;
-
-&lt;p&gt;最近加班比较多，在忙完一天工作时，有时候自己在想，我到底喜欢干的是事情是什么，其实自己一直有想当老师的愿望，但是老师其实有一定门槛，不仅仅是教师资格证，在学历、知名度都有一定的要求，在满足这些要求的过程中，有可能你就失去了这个爱好的信心。不过现在得益于互联网互利互助的商业模式，人人都可以成为老师。“老师”这个title可能给人的感觉一定要知识渊博，可以解决各种问题，我认为反而不是，老师的本质上就是帮助一些人解决当下遇到的一个小问题，被帮助的人可能需要花费很久的成本才能完成的事情，通过老师的指点，学生如果用更短的时间解决，就提升了效率，可以让学生完成更多有意义的事情，当然老师从中获取回报也是理所应当的。&lt;/p&gt;
-
-&lt;h2 id=&quot;我能做什么&quot;&gt;我能做什么&lt;/h2&gt;
-
-&lt;p&gt;上学的时候自己成绩一直比较好的，也非常喜欢帮同学解答问题，每次帮助一个同学解决了一个问题就特别有成就感。可能这就是人的性格，我记得高中的时候，和一个同学聊天，他说为啥别人问你问题，你总花费时间帮他们解决哪？他说我可没那时间，并且解决这个问题对我也没什么好处，并且问来问去好烦。之后工作中一直有朋友问自己问题，自己也很乐意帮他们解决。其实这里并不是说不帮助别人就是人品不行，这只是个人喜好问题，可能有些人特别爱好专研问题，感觉这种有成就感，而我就是感觉帮助别人解决了一个小问题就很有成就感，各有千秋，所以本质上就是兴趣使然，也并无道德高尚的区分。其实也是为什么自己一直以来渴望的职业是当老师，当然自己从事的工作和理想职业是否能匹配，也是各种因素导致的结果。&lt;/p&gt;
-
-&lt;p&gt;之前我和一些朋友做工具软件，他特别爱好创造产品，总是有突发的想法，他想出来的工具确实可以帮助一些人解决问题，不管是效率工具，还是平时用的拍摄工具，这样既满足了自己的爱好，也可以帮助了别人。但是他的职业确是一名设计师，我也很好奇为啥他不是产品经理。可能凡是总有机缘巧合吧，但是也不能阻止我们探索自己的兴趣爱好。&lt;/p&gt;
-
-&lt;p&gt;所以我的优势是什么？就是我的兴趣，也是因为科技的发展，互联网给任何一个人当老师的机会，你就是那些想进入这个领域的人的老师，这点大家可以去知乎中看看比比皆是。另外教育机构是不是可以代替这种问答的方式哪？不能完全替代，教育机构的老师虽然能帮学生系统的学习一个领域，可是并不能帮助每个学生解决单点的小问题，因为教育机构的培训总是有时长限制的，培训结束了，你只能求助于其他方式。那么像我这类人，反而是可以利用碎片时间，帮助一些已经准备进入这个领域的人，遇到的一些问题。这里延伸下这个话题，其实这本质上是教育培训的长尾市场，任何行业都有长尾市场，也就是任何行业的主要行为都是为了满足大多人的需求，而不能细节到满足所有人的需求。所以我这种行为是不同于长期的职业培训和系统的线上教程。&lt;/p&gt;
-
-&lt;h2 id=&quot;这是一种付费的问答&quot;&gt;这是一种付费的问答&lt;/h2&gt;
-
-&lt;p&gt;其实最开始自己帮助人从而不收费的。之前都是朋友介绍。但是自己经历了很多次这样的事情，就是朋友介绍的朋友说帮忙解决个程序的问题，然后解决了，对面就转账了100或者200的红包作为感谢，其实自己一般都不好意思收，做好事不留名，雷锋嘛😹。之前我也咨询过一个医生问题，完了之后给红包不要，其实现在想想为何不收费哪？现在创造的商业社会就是一个互利互助的社会，只是金钱是实现互利互助的一个工具而已。人类在商业社会还不发达的年代，大多是通过人际关系来实现互助互利的，不过这种效率显然不如商业社会靠谱。因为金钱的数字化明确了你帮了别人之后，你需要帮助的时候就立马可以用金钱去求助，而不会因为没有这方面的人际关系找不到帮助。其实这种好处是远远大于通过人际关系维护来的靠谱。不过对于比较熟悉的朋友，关系大于金钱的情况也是存在的。毕竟人这种动物也是很难捉摸的，有理智的一面，也有感性的一面，收朋友的钱自然面子和思想上过不去。&lt;/p&gt;
-
-&lt;p&gt;可能会有人问你有什么资格收取别人的钱，你的这些能力值这么多钱么？其实并不是说我知道某个知识点就比别人强，只是当下可以帮到人，所以很多人有一个误解，如果你赚钱，你必须要很努力，耗费了你很大精力才能做出来的东西给别人才能拿到钱。其实当今社会金钱真的是代表一个东西的真实价值么？是一个人努力花费时间的价值么？这个在经济学领域中是不成立了，更多的代表一种供需关系，也就是别人是不是需要这个东西，如果当下能帮到别人，可能就是一句话就点破了这个问题，这句话花费了我很多精力么？可能不需要精力，但是他难道没有价值么？当然有，帮助了别人提升效率，别人可能因此产出了更有价值的东西帮助了另一个人。反而有些人辛辛苦苦加班搞出来的东西，拿到市场没人使用，或者本身就是过剩的东西，本质上这反而是一种浪费，因为你的努力反倒是没帮助任何一个人，没给这个社会带来任何产出，也就是没有价值的。&lt;/p&gt;
-
-&lt;h2 id=&quot;个人经历&quot;&gt;个人经历&lt;/h2&gt;
-
-&lt;p&gt;居然帮人回答下问题就要收费，那说说自己牛逼的经历吧，那就让你失望了我没有什么牛逼的经历可以拿出来，做这个事情的初衷只是想在满足自己爱好的同时，可以有一些回报而已。那么简单的介绍下自己还是必要的，不然别人怎么知道你能解决问题哪？&lt;/p&gt;
-
-&lt;p&gt;自己从事移动端开发有10多年了，做的移动端的技术还是蛮多的。从0到1一款产品—“视频一对一聊天Tiki”。这个产品是和原来在淘宝工作的小伙伴一起搞的创业项目，从2014年到2019年5年时间，虽然没有十分的成功，但是也经历了一个产品从无到有，从日活几十个人到日活几十万人的技术迭代。至于一些大的产品技术如何运作，目前正在职网易云音乐团队，可以说是十分成熟的团队，DAU过千万的产品。在技术团队中，虽然不是核心角色，但是成熟团队技术方面的架构自己也基本了解到了。&lt;/p&gt;
-
-&lt;p&gt;对于自己爱好的老师职业自己当然也尝试过，自己曾经在业余的时间，在一个兴趣小组中，和一帮小伙伴翻译过一本ios coreAnimation的专业书籍，也做过腾讯Next课堂的Flutter入门开发的兼职讲师，发布过一些视频教程。对于站在初学者角度看问题这些方面，还是有了解一些基本常识。以上的这些经历也让自己有了一点勇气，可以从事这个知识问答这个事情。&lt;/p&gt;
-
-&lt;h2 id=&quot;我可以处理的问题&quot;&gt;我可以处理的问题&lt;/h2&gt;
-
-&lt;p&gt;这里我声明下，我很清楚我在问答中的技术定位，我只能帮你解决我能解决的问题，我并不是什么技术大牛。不过对于那些大牛，底层挖掘很深的人，一定适合帮人解答问题么？我认为不一定。因为大佬考虑问题的角度很多初学者可能根本get不到这个点，我遇到很多优秀的人，他们在帮人解决问题时，往往从自己的角度出发，而没有从一个初学者的姿态去考虑问题，这样初学者听的云里雾里，甚至搞不清楚话语中的很多专业术语，而对于演讲者来讲他认为已经表达的很清楚。而对于有些人往往是这样的，完全站在初学者角度来讲，所以讲东西总是很啰嗦，那些大牛会觉得这么简单不要讲了。所以这两种方式并不是说谁对谁错，而是适合那些人听，这点很关键。所以我往往看一些在线教程，有些很简答，感觉完全没必要听，但是确实有很多观众，对于一些初学者就很乐意观看，这点其实就不难理解。如果从另一个不同的视角出发，从中能帮助一些人何乐而不为哪？&lt;/p&gt;
-
-&lt;p&gt;下面我就拿之前一些朋友问过我的问题&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;提问者: 我集成了YYWebImage播放webp动画，但是一直报错说不支持 webp协议&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;我: 因为YYWebImage支持wepb要依赖一些其他库&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;div class=&quot;language-ruby highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;    &lt;span class=&quot;n&quot;&gt;pod&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'YYWebImage'&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;pod&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'YYImage/WebP'&lt;/span&gt; 
-    &lt;span class=&quot;n&quot;&gt;pod&lt;/span&gt; &lt;span class=&quot;s1&quot;&gt;'libwebp'&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;比如这种问题对于一些初学者，确实可以通过搜索库的用法来解决，但是如果有一个人的指点的话，就可以很快解决问题，并更能提高效率。&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;提问者: 萌哥我想问一下，如果别人git上创了一个项目，你要参与进去，除了clone 到本地然后创建分支进行操作这种， 还有“在自己的github上创建一个repository然后与别人的repo创立联系”的方式吗&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;我: fork&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;提问者: 对啊&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;这个问题看似很简单，但是第一次用Github的人你认为简单么？&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;提问者: 下面这个代码，遍历的顺序不应该是result在后面么？&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt; &lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;genFuncWithReturn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;yield&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;a&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;yield&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;b&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;s1&quot;&gt;The result&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;logReturned&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;genObj&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kd&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;yield&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;genObj&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;p&quot;&gt;[...&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;logReturned&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;genFuncWithReturn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())]&lt;/span&gt;
-
-&lt;span class=&quot;c1&quot;&gt;// The Result&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;// 值为['a','b']&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;我: es6这个语法我不太熟，我先去看下&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;过了10分钟之后&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;我: https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/yield*&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;我: 你看下下面的代码。&lt;code class=&quot;highlighter-rouge&quot;&gt;function*&lt;/code&gt; 相当于这个函数是异步的，然后可以通过&lt;code class=&quot;highlighter-rouge&quot;&gt;yield&lt;/code&gt;关键字控制异步函数的执行顺序，你刚才的那个例子如果把result变量去掉，就是yield语法，控制异步函数的顺序执行，这里其实是协程的概念。由于用了yield*表达式，会立即返回函数的结果然后给result赋值，这样result先打印出来了。然后再通过&lt;code class=&quot;highlighter-rouge&quot;&gt;yield&lt;/code&gt;关键字，控制异步函数按照顺序执行结果。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;div class=&quot;language-javascript highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;g4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;yield&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-  &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;foo&lt;/span&gt;&lt;span class=&quot;dl&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-&lt;span class=&quot;kd&quot;&gt;function&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;g5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;yield&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;g4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;span class=&quot;kd&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;iterator&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nx&quot;&gt;g5&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;iterator&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// { value: 1, done: false }&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;iterator&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// { value: 2, done: false }&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;iterator&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// { value: 3, done: false }&lt;/span&gt;
-&lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;iterator&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;next&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;());&lt;/span&gt; &lt;span class=&quot;c1&quot;&gt;// { value: undefined, done: true }, &lt;/span&gt;
-                              &lt;span class=&quot;c1&quot;&gt;// 此时 g4() 返回了 { value: &quot;foo&quot;, done: true }&lt;/span&gt;
-
-&lt;span class=&quot;nx&quot;&gt;console&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;log&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nx&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;          &lt;span class=&quot;c1&quot;&gt;// &quot;foo&quot;&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;提问者: 懂了，其实跟网上说的也没有差别 怎么你一点我就明白了呢😂&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;这就是我经常遇到一些提问者的困惑，就是网上明明有很多资料可以查看，为啥不如别人直接一句话来的直接明了哪？其实本质上就是信息的收敛问题，因为你不知道网上资料哪个知识点是真正解决你的问题的，就不能集中注意力在一个点上，容易分散注意力，问题就不容易解决，如果别人帮你点名了你应该集中在哪里，这时你就很容懂了。&lt;/p&gt;
-
-&lt;p&gt;这里我还想表达下，如果你在一个领域积累了很久，你会发现学习起来新东西会很快。很多人说年龄大，学东西就不行了。只是针对于全新的东西。就像孩子还是一张白纸，学新东西当然比年纪大的人快，因为年纪大的人脑子里有太多的条件约束了。但是如果针对某个你积累了很久的领域，再学这个领域的新内容，肯定比其他人快。比如Flutter开发，自己前前后后用了一周时间，基本就可以搭建一个简单应用的框架，然后一个月时间就和朋友一起开发了一款上架Appstore的应用，并且还得到了苹果的推荐。&lt;/p&gt;
-
-&lt;p&gt;当然我经常会遇到一些，我无法处理的问题，例如&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;提问者: 用webrtc帮我实现个视频聊天的功能吧。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;我：额，抱歉无能为力，你还是找个外包帮你开发吧。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;所以我能做的，是帮你解决一些遇到的一些困惑和难点，至于一些系统性的学习，还是求助于一些专业的教育机构吧。&lt;/p&gt;
-
-&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
-
-&lt;p&gt;看完上面的文章，如果你喜欢作者的话，还望能转发下此篇文章。如果恰巧你需要移动端一些开发知识点的话，可以&lt;a href=&quot;/contact/&quot;&gt;联系作者&lt;/a&gt;。另外声明下，本人还是有全职的工作要做的，在做好自己本职工作的情况下，再来做自己爱好的知识问答的事情，就像老罗说的，纯粹交个朋友不赚钱。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">什么是知识问答—帮助人解决问题，也可以说是知乎，准确的来讲是某个特定领域专业一对一的解答，当然特定领域是我熟悉的移动端和前端的开发。如果你感兴趣的话，可以阅读完这篇博文。</summary></entry></feed>
+&lt;/ul&gt;</content><author><name>mengtnt</name></author><summary type="html">前端时间有朋友咨询如何实现一个小程序的框架，可以方便的集成到自己的应用中，方便之后前端更新UI。之前自己曾经调研过小程序的技术原理，这里分享这篇博客目的是对小程序移动端的方案进行一些实践。下面就分享下小程序移动端的实践。首先看下小程序整体的一张架构图。</summary></entry></feed>

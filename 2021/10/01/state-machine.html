@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>如何写一个状态机 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2021/10/01/state-machine.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="如何写一个状态机">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2021/10/01/state-machine.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">如何写一个状态机</h1>
+  
+  <span class="post-meta">10月 01日, 2021</span><br>
+  
+  <span class="post-meta small">3 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>状态机是软件工程中很常见的一种架构。它是记录事物发展阶段的一个常用手段。首先来介绍下状态机的几个概念。(我们拿管理员登陆后台用户的状态作为例子描述这些概念)</p>
+
+<ol>
+  <li>State —— 状态机一般要包含两个以上状态。对于管理员登陆，这里有两个状态：”登录状态和未登录状态“。</li>
+  <li>Event —— 事件就是执行某个操作的触发条件或者口令。对于上面的例子，“点击登录按钮”就是一个事件。</li>
+  <li>Action —— 事件发生以后要执行动作。例如事件是“点击登录按钮”，动作是“登陆中”。编程的时候，一个 Action 一般就对应一个函数。</li>
+  <li>Transition —— 也就是从一个状态变化为另一个状态。例如“登陆成功”就是一个变换。</li>
+</ol>
+
+<p>一个典型的状态机转换过程如下图:</p>
+
+<p><img src="/images/state-machine-1.jpg" alt="img1" /></p>
+
+<p>上面简单介绍了状态机的概念，那么在不同的业务领域如何定义这些状态机的概念呢？</p>
+
+<h2 id="如何定义状态机的概念">如何定义状态机的概念</h2>
+
+<p>在定义状态的过程中，其实就是一个抽象概念的过程。如果了解过逻辑学的都知道，现实生活中我们描述的事物其实都可以抽象为命题。命题本质上就是状态机的State，Event就是命题的条件，Action本质上就是通过命题和条件的推导过程。而Transition就是命题推导完成的结论。所以状态机变化的过程本质上就是一个命题的证明过程。P1(Condition) —&gt; P2</p>
+
+<p>所以当我们拿到业务的时候，首先要分离出哪些是已知的命题，哪些是条件。而我们就是要通过这些已知命题和条件，推导出结论的过程。</p>
+
+<p>在定义完状态机的概念后，我们下面看下这些概念的使用原则。</p>
+
+<h2 id="state使用规则">State使用规则</h2>
+
+<p>State至少会有两种，一种是默认的状态，一种是输出的状态，默认的状态相当于已知的命题，输出的状态相当于要推导的结论。所以很重要的一点是在定义State这种数据类型的时候，要选择对外不可变的类型，一旦出现可变类型的状态说明状态机的推导过程有一定缺陷。</p>
+
+<p>对于管理员登陆的例子，输出的是登陆和未登录的状态。我们可以这样定义状态。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">enum</span> <span class="o">{</span>
+    <span class="n">unLogin</span><span class="o">,</span>
+    <span class="n">login</span>
+<span class="o">}</span> <span class="nc">LoginState</span>
+
+<span class="nc">Class</span> <span class="n">userLoginState</span> <span class="o">{</span>
+    <span class="kd">final</span> <span class="nc">LoginState</span> <span class="n">loginstate</span> <span class="c1">// state</span>
+
+<span class="o">}</span>
+</code></pre></div></div>
+
+<h2 id="event的规则">Event的规则</h2>
+
+<p>Event相当于命题的条件，因为条件往往是用来做推导过程的，并不需求保存在状态机中，所以如果涉及到Event这种变量不要用对外可见的变量。在状态机中，需要存储的往往是推导的结论，表示State的变量会是对外可见的变量。所以在写状态机时，要注意区分哪些是Event用到的变量,哪些是State用到的，便于变量的定义。</p>
+
+<p>对于管理员登陆的例子，”用户点击登陆按钮“这个Event，这个是状态机触发的条件，从这个条件命题中，我们可以分离出来一个属性变量(User)和一个方法(clickLoginButton)。下面就根据Event规则定义这些条件。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">enum</span> <span class="o">{</span>
+    <span class="n">unLogin</span><span class="o">,</span>
+    <span class="n">login</span>
+<span class="o">}</span> <span class="nc">LoginState</span>
+
+<span class="c1">// Event条件使用的变量，尽量不要做对外暴露</span>
+<span class="nc">Class</span> <span class="nc">UserInfo</span> <span class="o">{</span>
+    <span class="kd">final</span> <span class="nc">String</span> <span class="n">name</span>
+    <span class="kd">final</span> <span class="nc">String</span> <span class="n">password</span>
+<span class="o">}</span>
+
+<span class="nc">Class</span> <span class="n">userLoginState</span> <span class="o">{</span>
+    <span class="kd">final</span> <span class="nc">LoginState</span> <span class="n">loginstate</span> <span class="c1">// state</span>
+
+    <span class="c1">// 状态机的触发事件，往往是需要外界来调用的，这里用一个函数来表示，有时候可以用一个变量来表示。</span>
+    <span class="n">clickLoginButton</span> <span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// event check and read data</span>
+        <span class="nc">UserInfo</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="n">user</span><span class="o">(</span><span class="err">'</span><span class="n">name</span><span class="sc">','</span><span class="n">passwork</span><span class="err">'</span><span class="o">)</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<h2 id="action的规则">Action的规则</h2>
+
+<p>Action就是我们推导的过程了。Action大多是无副作用的函数。何为无副作用的函数，简单的讲就是不会操作任何全局变量的函数，因为Action仅仅是计算的过程，还没有涉及到最终的结果命题的生成。另外由于状态机往往是对某一个事物时间周期内的计算，所以Action尽量用函数闭合的操作。什么是闭合操作，就是函数输入的数据类型和输出的数据类型尽量保证一直，这样在命题的推导过程中，就避免了类型的转换。</p>
+
+<p>对于上面的例子，”登陆行为“这个Action如何合理的表示，首先我们拿到了状态机的触发条件，同时要操作的Event的条件数据是UserInfo。根据上面的原则就很容易定义Action的操作。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">enum</span> <span class="o">{</span>
+    <span class="n">unLogin</span><span class="o">,</span>
+    <span class="n">login</span>
+<span class="o">}</span> <span class="nc">LoginState</span>
+
+<span class="nc">Class</span> <span class="nc">UserInfo</span> <span class="o">{</span>
+    <span class="kd">final</span> <span class="nc">String</span> <span class="n">name</span>
+    <span class="kd">final</span> <span class="nc">String</span> <span class="n">password</span>
+<span class="o">}</span>
+
+<span class="nc">Class</span> <span class="n">userLoginState</span> <span class="o">{</span>
+    <span class="kd">final</span> <span class="nc">LoginState</span> <span class="n">loginstate</span> <span class="c1">// state</span>
+
+    <span class="n">clickLoginButton</span> <span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// event check and read data</span>
+        <span class="nc">UserInfo</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="n">user</span><span class="o">(</span><span class="err">'</span><span class="n">name</span><span class="sc">','</span><span class="n">passwork</span><span class="err">'</span><span class="o">)</span>
+
+        <span class="c1">// action</span>
+        <span class="n">login</span><span class="o">(</span><span class="n">user</span><span class="o">)</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="nf">login</span><span class="o">(</span><span class="nc">UserInfo</span> <span class="n">user</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// some request</span>
+        <span class="n">loginRequest</span><span class="o">(</span><span class="n">user</span><span class="o">,</span><span class="n">function</span><span class="o">(</span><span class="n">user</span><span class="o">){</span>
+            
+        <span class="o">})</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 这个就相当于做了闭合操作，使用的函数参数和返回的参数一致，这里要注意的一点user尽量不可变的变量进行传递防止中间状态出现。</span>
+    <span class="kd">private</span> <span class="nf">loginRequest</span><span class="o">(</span><span class="nc">UserInfo</span> <span class="n">user</span><span class="o">,</span><span class="n">callback</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//request</span>
+        <span class="n">callback</span><span class="o">(</span><span class="n">user</span><span class="o">)</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<h2 id="transition的规则">Transition的规则</h2>
+
+<p>Transition是和Action相反的，是有副作用的函数，因为Transition就是生成我们需要推导的命题，所以必然会操作全局的State。在定义有副作用的函数时，我们尤其要小心，尽量用最小化原则，避免一些其他变量的关联操作。这里还有个原则在生产最终的State时，可能会有很多中间状态，中间状态尤其不能对外开放，一定是在内部使用，否则状态机很容易在计算的过程中，中间状态被外部改掉，造成状态机错乱。</p>
+
+<p>我们再来看管理员登陆的例子，用户在登陆过程中可能会产生那些有副作用的函数和中间状态。显而易见户登陆成功后的操作函数应该是会改变loginstate。另外在登录过程中，为了防止频繁的请求，对正在登录的重复请求做拦截，这个就相当于产生了一个中间状态，使用这个中间状态尤其要小心，因为这会造成我们原本没有副作用的action的函数，产生了副作用。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">enum</span> <span class="o">{</span>
+    <span class="n">unLogin</span><span class="o">,</span>
+    <span class="n">login</span>
+<span class="o">}</span> <span class="nc">LoginState</span>
+
+<span class="nc">Class</span> <span class="nc">UserInfo</span> <span class="o">{</span>
+    <span class="kd">final</span> <span class="nc">String</span> <span class="n">name</span>
+    <span class="kd">final</span> <span class="nc">String</span> <span class="n">password</span>
+<span class="o">}</span>
+
+<span class="nc">Class</span> <span class="n">userLoginState</span> <span class="o">{</span>
+    <span class="kd">final</span> <span class="nc">LoginState</span> <span class="n">loginstate</span> <span class="c1">// state</span>
+
+    <span class="kd">private</span> <span class="no">BOOL</span> <span class="n">isLogining</span> <span class="c1">// 中间状态，不要对外暴露只是内部使用</span>
+
+    <span class="n">clickLoginButton</span> <span class="o">()</span> <span class="o">{</span>
+        <span class="c1">// event check and read data</span>
+        <span class="nc">UserInfo</span> <span class="n">user</span> <span class="o">=</span> <span class="k">new</span> <span class="n">user</span><span class="o">(</span><span class="err">'</span><span class="n">name</span><span class="sc">','</span><span class="n">passwork</span><span class="err">'</span><span class="o">)</span>
+
+        <span class="c1">// action</span>
+        <span class="n">login</span><span class="o">(</span><span class="n">user</span><span class="o">)</span>
+    <span class="o">}</span>
+
+    <span class="kd">private</span> <span class="nf">login</span><span class="o">(</span><span class="nc">UserInfo</span> <span class="n">user</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">if</span> <span class="o">(</span><span class="n">self</span><span class="o">.</span><span class="na">islogining</span><span class="o">)</span> <span class="o">{</span>
+            <span class="k">return</span><span class="o">;</span>
+        <span class="o">}</span>
+        <span class="n">self</span><span class="o">.</span><span class="na">islogining</span> <span class="o">=</span> <span class="no">YES</span>
+        <span class="c1">// some request</span>
+        <span class="n">loginRequest</span><span class="o">(</span><span class="n">user</span><span class="o">,</span><span class="n">function</span><span class="o">(</span><span class="n">user</span><span class="o">){</span>
+            <span class="n">self</span><span class="o">.</span><span class="na">islogining</span> <span class="o">=</span> <span class="no">NO</span>
+            <span class="nf">transitionState</span><span class="o">(</span><span class="n">success</span><span class="o">)</span>
+        <span class="o">})</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 这个就相当于做了闭合操作，使用的函数参数和返回的参数一致，这里要注意的一点user尽量不可变的变量进行传递防止中间状态出现。</span>
+    <span class="kd">private</span> <span class="nf">loginRequest</span><span class="o">(</span><span class="nc">UserInfo</span> <span class="n">user</span><span class="o">,</span><span class="n">callback</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">//request</span>
+        <span class="n">callback</span><span class="o">(</span><span class="n">user</span><span class="o">)</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 有副作用的函数，尽量用最小化原则，所以islogining这种中间状态不要写到这个函数里。</span>
+    <span class="kd">private</span> <span class="nf">transitionState</span><span class="o">(</span><span class="no">BOOL</span> <span class="n">isSuccess</span><span class="o">)</span> <span class="o">{</span>
+        <span class="c1">// Transition</span>
+        <span class="n">self</span><span class="o">.</span><span class="na">loginstate</span> <span class="o">=</span> <span class="n">isSuccess</span><span class="o">?</span><span class="nl">login:</span><span class="n">unlogin</span>
+    <span class="o">}</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<h2 id="总结">总结</h2>
+
+<p>从上面分析状态机的原则过程中，可以看出来任何的数据结构和算法其实都是逻辑推导的过程，还是文章开头表示的这个公式P1(Condition) —&gt; P2，所以本质上首先要确定哪些是已知的命题，哪些是条件，哪些是结论，从而形成我们的推导过程。</p>
+
+<p>状态机描述起来其实是一个很简单的数据结构和算法，在推导的过程中，我们引入了程序设计中常用的原则，控制了推导过程的边界，本质上是让状态机推导代码更加内聚，不要暴露过多的细节给外部环境，这样的状态机才能更加稳定的运行。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>
