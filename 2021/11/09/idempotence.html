@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>异常和错误处理 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2021/11/09/idempotence.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="异常和错误处理">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2021/11/09/idempotence.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">异常和错误处理</h1>
+  
+  <span class="post-meta">11月 09日, 2021</span><br>
+  
+  <span class="post-meta small">4 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>异常和错误，咋一看往往都会以为是一个事情。我这里首先要定义下本文异常和错误的概念，以便于可以区分通用的概念。在程序运行中如果发生了问题，但是这个问题如果通过增加相应的程序逻辑可以恢复的叫做异常。如果因为程序逻辑问题引起的不可恢复的异常叫错误，也就是通常所说的程序的BUG。</p>
+
+<p>定义好了这两个概念后，可能会有疑问为什么要这样定义，异常和错误在我们通用理解的意义上是一个同义词，没有本质的区别。其实在程序设计的发展过程中，最开始这两个概念也是没什么区别的，但是随着软件设计越来越复杂慢慢衍生出来这两个概念。</p>
+
+<h2 id="异常的演变">异常的演变</h2>
+
+<p>首先看下比较早期的C语言。<code class="highlighter-rouge"> Assert </code>这个关键字在C语言中很常见，本质上是处理程序设计的错误的，一旦出现断言执行，函数提供者是没有能力恢复这个问题的，需要调用方检查问题，后面如果程序继续运行下去，可能发生不可预知的问题。</p>
+
+<p>一旦执行到<code class="highlighter-rouge"> Assert </code>，说明函数的调用方的程序是有bug的，没有正确的使用函数，显然是符合我们上面定义的错误概念。</p>
+
+<p>再来说下异常，那么在C语言中
+如何处理异常的情况？在调用C函数的时候，如果可能发生异常，往往使用函数返回值表示如下。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="n">bool</span> <span class="nf">createMap</span><span class="p">(</span><span class="kt">int</span> <span class="n">num</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// 返回值表示成功或者失败</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">num</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+        <span class="p">...</span>
+        <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>调用者看到这种类型的API，往往需要增加<code class="highlighter-rouge"> if-else </code>的判断，来让程序正确的执行，其实这就是早期的异常处理的方式。现在很多语言也是用这种方式来处理的。但是缺点也很明显，程序中需要写大量的<code class="highlighter-rouge"> if-else </code>语句，不利于代码的阅读和维护。</p>
+
+<h2 id="异常的定义">异常的定义</h2>
+
+<p>为了保证程序的健壮性，同时保证代码书写的便捷性。很多高级语言开始定义了异常的概念，例如C++是很早就在语法中定义了exception。</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">try</span> <span class="p">{</span>
+   <span class="c1">// protected code</span>
+   <span class="n">createMap</span><span class="p">();</span>
+   <span class="n">userMap</span><span class="p">();</span>
+   <span class="n">releaseMap</span><span class="p">();</span>
+<span class="p">}</span> <span class="k">catch</span><span class="p">(</span> <span class="n">ExceptionName</span> <span class="n">e</span> <span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// code to handle ExceptionName exception</span>
+  <span class="n">handlerExcepiton</span><span class="p">();</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>这样try模块中，所有可能异常的函数都可以一行代码调用，不用像C语言这样写大量的<code class="highlighter-rouge"> if-else </code>处理。这对于代码的阅读性自然很好，但是同样存在一个问题就是性能。为什么大量使用异常处理代码会引起性能问题哪？</p>
+
+<p>这个就涉及到异常实现的逻辑了。函数中为了捕获异常，需要额外的开辟一些空间给异常对象使用。同时异常一旦发生需要中断函数的调用堆栈，指向异常处理函数。这个过程被称为堆栈展开。</p>
+
+<blockquote>
+  <p>当我们调用某些函数时，它将地址存储到调用堆栈中，从函数返回后，需要弹出该地址以开始其剩余的工作。堆栈展开是一个在运行时删除函数调用堆栈条目的过程。要删除堆栈元素，我们可以使用异常。 如果内部函数引发异常，则将删除堆栈的所有条目，并返回到主调用程序函数。</p>
+</blockquote>
+
+<p>并且不仅上面说的这个开销，因为异常出现的函数，可能在比较早的调用函数中出现的，但是很晚才开始使用catch捕获。这时候就需要把异常数据层层传递给需要处理的函数。所以从上面来看异常这个处理过程，对比一个<code class="highlighter-rouge"> if else </code>简单的语句，必然是很消耗性能的。对于C++这种性能要求比较高的程序语言，异常这个性能问题一直被诟病。所以C++在使用异常的时候有很多约束，也造成了异常处理在C++语法中，很难广泛的使用。下面列下微软对C++异常处理使用的建议：</p>
+
+<ul>
+  <li>
+    <p>使用断言来检查绝不应发生的错误。 使用异常来检查可能出现的错误，例如，公共函数参数的输入验证中的错误。 有关详细信息，请参阅 异常与断言 部分。</p>
+  </li>
+  <li>
+    <p>当处理错误的代码与通过一个或多个干预函数调用检测到错误的代码分离时，使用异常。 当处理错误的代码与检测到错误的代码紧密耦合时，考虑是否使用错误代码而不是在性能关键循环中。</p>
+  </li>
+  <li>
+    <p>对于可能引发或传播异常的每个函数，请提供以下三种异常保证之一：强保障、基本保证或 nothrow (noexcept) 保证。 有关详细信息，请参阅 如何：设计异常安全性。</p>
+  </li>
+  <li>
+    <p>按值引发异常，按引用来捕获异常。 不要捕获无法处理的内容。</p>
+  </li>
+  <li>
+    <p>不要使用 c + + 11 中已弃用的异常规范。 有关详细信息，请参阅异常规范和 noexcept 部分。</p>
+  </li>
+  <li>
+    <p>应用时使用标准库异常类型。 从 exception 类层次结构派生自定义异常类型。</p>
+  </li>
+  <li>
+    <p>不允许对析构函数或内存释放函数进行转义。</p>
+  </li>
+</ul>
+
+<p>并且C++是兼容C语言的，所以C++里有些库是用C实现的，如果引入异常的语法，是需要兼容很多C的库。可以看出来异常在C++中使用的难处了。下面引用下C++创始人施特劳斯的原话，大家可以看下异常处理的难言之隐。</p>
+
+<blockquote>
+  <p>对于异常处理的性能问题，其实是一个很有争议的问题，有人觉得异常处理是多做了一些工作，肯定对性能是有影响的。但是也有人觉得异常处理的影响，和增加一个 if-else 属于同种量级，对性能的影响其实微乎其微，是在可以接受的范围内的。强大的错误处理对于任何编程语言都很有挑战性。 尽管异常提供了多个支持良好错误处理的功能，但它们无法为你完成所有工作。 若要实现异常机制的优点，请在设计代码时记住异常。</p>
+</blockquote>
+
+<h2 id="异常的晋级">异常的晋级</h2>
+
+<p>虽然通用的异常处理对于性能有一定消耗，但是它的优点还是很诱人的，尤其对于不依赖C语言的新的高级语言，没有了兼容性的负担，好处更是大于缺点。下面列出来对于很多高级语言，需要异常处理语法的理由。</p>
+
+<ul>
+  <li>
+    <p>代码的阅读更顺利。</p>
+  </li>
+  <li>
+    <p>如果不用通用的异常处理，构造函数初始化必须要开发者处理。</p>
+  </li>
+  <li>
+    <p>可以在运行时，减少错误崩溃的发生。</p>
+  </li>
+  <li>
+    <p>没有通用异常处理，API需要写大量的处理函数返回值的逻辑，如果是异步的需要大量的callback。</p>
+  </li>
+  <li>
+    <p>没有兼容C语言的负担。</p>
+  </li>
+</ul>
+
+<p>基于上面的优点像java，C#，swift这些强类型语言都有异常处理语法，其中java算是比较早的完善了异常处理的语法。但是各个语言异常处理的逻辑还是有细微的差别，这里拿java和swift语言对比下各自的异常处理。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">try</span> <span class="o">{</span>
+    <span class="kt">int</span><span class="o">[]</span> <span class="n">array</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">int</span><span class="o">[]</span> <span class="o">{</span> <span class="mi">1</span><span class="o">,</span> <span class="mi">2</span><span class="o">,</span> <span class="mi">3</span> <span class="o">};</span> 
+    <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">array</span><span class="o">[</span><span class="mi">3</span><span class="o">]);</span>
+<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+    <span class="n">e</span><span class="o">.</span><span class="na">printStackTrace</span><span class="o">();</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>在java中如果执行这段代码会打印出<code class="highlighter-rouge"> ArrayIndexOutOfBoundsException </code>异常，异常可以被捕获不会崩溃。下面看下swift同样想捕获数组越界的异常。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">let</span> <span class="nv">arrayList</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">do</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="n">arrayList</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="s">"Array out of bounds"</span><span class="p">)</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>编译时会抛出来 ` ‘catch’ block is unreachable because no errors are thrown in ‘do’ block ` 这个警告，本质上编译器是不处理这个异常的。然而运行时，会崩溃抛出<code class="highlighter-rouge"> Fatal error: Index out of range </code>。</p>
+
+<p>因为swift语言的设计理念认为数组越界是程序编写的逻辑错误，一旦出现就无法恢复程序正常的逻辑，所以理所应该崩溃。而java语言是认为这个异常如果程序捕获了就代表有能力处理，相对来讲java的异常定义的范围更广泛，而swift相对比较苛刻。</p>
+
+<p>从上面的对比可以看出，java语言设计更倾向于程序的开发便捷性和安全性，可以适当牺牲性能的开销。而swift语言相对来讲对性能要求还是比较苛刻的。还有一个明显的例子java中，如果一个函数做了如下的异常定义。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">createMap</span><span class="o">(</span><span class="kt">int</span> <span class="n">x</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span>
+<span class="o">{</span>
+    <span class="k">if</span><span class="o">(</span><span class="n">x</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">)</span> <span class="k">throw</span> <span class="k">new</span> <span class="nc">Exception</span><span class="o">(</span><span class="s">"Map must be greater than zero"</span><span class="o">);</span>
+    <span class="k">else</span><span class="o">...</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>函数调用者必须使用如下的方式处理，否则编译会报错。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">try</span> <span class="o">{</span>
+    <span class="n">createMap</span><span class="o">();</span>
+<span class="o">}</span> <span class="k">catch</span> <span class="o">(</span><span class="nc">Exception</span> <span class="n">e</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="n">e</span><span class="o">);</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>本质上java语言设计者认为，如果函数抛出了异常，那么代表着调用者有能力去恢复这个异常，这保证了程序的健壮性。但是swift设计虽然和java这点类似，如果函数抛异常不处理会编译错误。但是可以使用<code class="highlighter-rouge"> try! </code> 这个便捷的语法忽略异常，这就代表swift还是要考虑异常性能的开销。一旦使用了<code class="highlighter-rouge"> try! </code>出了异常程序就要崩溃，这会对程序员的代码质量进行严格考验。</p>
+
+<p>最后想说下Rust语言异常处理的逻辑，和大多数<code class="highlighter-rouge"> try-catch </code>设计方式还是不一样的，下面是官方的解释:</p>
+
+<blockquote>
+  <p>Rust 有一套独特的处理异常情况的机制，它并不像其它语言中的 try 机制那样简单。首先，程序中一般会出现两种错误：可恢复错误和不可恢复错误。可恢复错误的典型案例是文件访问错误，如果访问一个文件失败，有可能是因为它正在被占用，是正常的，我们可以通过等待来解决。但还有一种错误是由编程中无法解决的逻辑错误导致的，例如访问数组末尾以外的位置。大多数编程语言不区分这两种错误，并用 Exception （异常）类来表示错误。在 Rust 中没有 Exception。对于可恢复错误用 Result&lt;T, E&gt; 类来处理，对于不可恢复错误使用 panic! 宏来处理。</p>
+</blockquote>
+
+<p>所以rust语言对异常处理感觉更符合异常定义的本质，只是对于开发者来讲可能会麻烦些，不能无脑的写<code class="highlighter-rouge"> try-catch </code>了，写之前要分清楚异常和错误这个概念了。不过这样也会让你的程序的安全性、健壮性、性能开销，这几个方面更加优秀。</p>
+
+<h2 id="异常的使用">异常的使用</h2>
+
+<p>所以我们在写代码的时候，尤其是写对外使用的API时，一定要先搞清楚这个API的使用过程中可能产生的异常和错误。这里我列出来几个日常设计的点。</p>
+
+<h3 id="1-函数的入参要做合理的检测如果不符合的参数及时用异常处理">1. 函数的入参要做合理的检测，如果不符合的参数及时用异常处理</h3>
+
+<p>因为接口设设计时，往往对数据的要求是宽进严出，以方便其他程序将输出作为输入，说白了就是“把复杂留给自己，把简单留给别人”。但是哪些参数是需要处理为异常的？这里拿个简单的例子。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kt">void</span> <span class="nf">answerCall</span><span class="p">(</span><span class="n">Person</span> <span class="n">person</span><span class="p">)</span> <span class="p">{</span>
+
+    <span class="c1">// 如果接收的对象不符合函数的定义，抛出错误。</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">person</span> <span class="n">isNot</span> <span class="n">Person</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">Assert</span><span class="p">(</span><span class="s">"error"</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">person</span><span class="p">.</span><span class="n">iscomming</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">return</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// 处理接听的状态</span>
+    <span class="p">...</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>可以看出来上面的接听电话的逻辑，首先如果接收的参数不符合函数的定义那肯定是调用方的bug，应该抛出错误。不过现在很多编程语言基本都会做类型检测，如果不符合就会编译出错或者警告，所以这种防御不太会写。</p>
+
+<p>再看第二个条件判断，就是如果接听的电话不是正在来电的用户，那说明这个参数也是有问题的，需要告诉调用者这个异常。所以如果在这里<code class="highlighter-rouge"> return </code>就显得不是很合理，因为这个异常其实被隐藏了，上层感知不到就无法排查错误。如果按照C的异常的常用写法就需要给answerCall增加一个是否成功的返回值。如果是java等高级语言只要如下写。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kt">void</span> <span class="nf">answerCall</span><span class="o">(</span><span class="nc">Person</span> <span class="n">person</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span><span class="o">{</span>
+
+    <span class="k">if</span> <span class="o">(!</span><span class="n">person</span><span class="o">.</span><span class="na">iscomming</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">Exception</span><span class="o">();</span>
+        <span class="k">return</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 处理接听的状态</span>
+    <span class="o">...</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<h3 id="2-api设计不增加无用的输出尽量做成事务的操作">2. API设计不增加无用的输出，尽量做成事务的操作。</h3>
+
+<p>这个原则说白了，就是为了保证出现异常后所有的状态恢复成以前的状态。</p>
+
+<p>我们继续看上面的例子。接听的参数检测成功后，进入接听状态，首先改变接听者本地的状态，然后请求网络，最后接听成功。假如说上层的API连续调用两次，为了防止频繁做网络请求做了下面的防御编程。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kt">void</span> <span class="nf">answerCall</span><span class="o">(</span><span class="nc">Person</span> <span class="n">person</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span><span class="o">{</span>
+
+    <span class="k">if</span> <span class="o">(!</span><span class="n">person</span><span class="o">.</span><span class="na">iscomming</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">Exception</span><span class="o">();</span>
+        <span class="k">return</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 处理接听的状态</span>
+    <span class="o">...</span>
+    <span class="n">changeStatus</span><span class="o">();</span>
+    <span class="c1">// 如果已经正在接听就返回，防止多次请求。</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">self</span><span class="o">.</span><span class="na">isAnsering</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span><span class="o">;</span>
+    <span class="o">}</span>
+    <span class="n">requestAccept</span><span class="o">();</span>
+    <span class="n">reportAccept</span><span class="o">();</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>这种方式其实就违背了刚才说的，不要增加无用的输出原则。因为changeStatus()被调用了两次，一旦有地方监听这个状态变化可能就造成未知的问题。这时候最好的选择，就是和参数拦截一样在最开始的位置就抛出异常。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kt">void</span> <span class="nf">answerCall</span><span class="o">(</span><span class="nc">Person</span> <span class="n">person</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span><span class="o">{</span>
+
+    <span class="k">if</span> <span class="o">(!</span><span class="n">person</span><span class="o">.</span><span class="na">iscomming</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">Exception</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 如果已经正在接听就返回，防止多次请求。</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">self</span><span class="o">.</span><span class="na">isAnsering</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">Exception</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 处理接听的状态</span>
+    <span class="n">changeStatus</span><span class="o">();</span>
+    <span class="n">requestAccept</span><span class="o">();</span>
+    <span class="n">reportAccept</span><span class="o">();</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>其实函数的幂等性要求，本质上就是对多次输入这种异常处理的过程。在处理这个异常的时候，如果接收方可以处理这种异常，比如上面的例子可以写成这样子。</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kt">void</span> <span class="nf">answerCall</span><span class="o">(</span><span class="nc">Person</span> <span class="n">person</span><span class="o">)</span> <span class="kd">throws</span> <span class="nc">Exception</span><span class="o">{</span>
+
+    <span class="k">if</span> <span class="o">(!</span><span class="n">person</span><span class="o">.</span><span class="na">iscomming</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">throw</span> <span class="k">new</span> <span class="nf">Exception</span><span class="o">();</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 如果已经正在接听就返回，防止多次请求。</span>
+    <span class="k">if</span> <span class="o">(</span><span class="n">self</span><span class="o">.</span><span class="na">isAnsering</span><span class="o">)</span> <span class="o">{</span>
+        <span class="k">return</span><span class="o">;</span>
+    <span class="o">}</span>
+
+    <span class="c1">// 处理接听的状态</span>
+    <span class="n">changeStatus</span><span class="o">();</span>
+    <span class="n">requestAccept</span><span class="o">();</span>
+    <span class="n">reportAccept</span><span class="o">();</span>
+<span class="o">}</span>
+
+</code></pre></div></div>
+
+<p>这种写法代表接收方，处理了这种错误，不需要调用方关心，并且保证每次调用都返回同样的结果。否则如果程序由于一些特殊状态的原因，无法应用幂等性原理就及时抛出异常。告诉上层的调用者出了问题，让上层调用者来恢复这个操作。</p>
+
+<h3 id="3-记住错误是让程序以最低成本恢复正常的一种方式如果你定义的api有严格的状态维护让程序及时的崩溃比抛出异常更容易发现问题">3. 记住错误是让程序以最低成本恢复正常的一种方式。如果你定义的API有严格的状态维护，让程序及时的崩溃比抛出异常更容易发现问题</h3>
+
+<p>断言是一种出现严重错误才会使用的方式，一旦使用断言就代表调用方的程序一定是出了bug，不正常的逻辑，并且接收方无法处理这种情况，需要及时的终止程序以便于调用方修改此处的bug。</p>
+
+<p>不过现在很多软件为了用户体验，减少闪退的次数，往往断言在release版本中会移除掉。带来的后果是出问题的代码被隐藏了，一些奇怪的问题就很难及时发现。所以经常有开发者在争论断言是否应该使用在release版本。</p>
+
+<p>据说NASA和很多银行系统的软件，断言都会在release版本中，因为这些系统对安全性要求极高，一旦出了bug需要立即终止，否则可能造成不可估量的灾难。而对于安全性要求不高的系统，为了获得更高的用户体验往往release版本会移除断言。不过孰对孰错怕是永远没有完美的答案。</p>
+
+<h2 id="总结">总结</h2>
+
+<p>上面讲解了这么多，那我们实际编码中，如何对异常处理哪？是否需要写大量的<code class="highlighter-rouge"> if-else </code>或 <code class="highlighter-rouge">try-catch</code>语句哪？其实本质上来讲，按照下面的判断原则来做就可以了。</p>
+
+<ol>
+  <li>
+    <p>首要要看产生的问是因为调用者不正确的使用API造成的么？如果是就用断言拦截。</p>
+  </li>
+  <li>
+    <p>如果调用一个API，某些异常无法避免(比如很多IO设备的读取，很可能因为硬件不可用的问题造成。这种往往无法避免)这个时候遵循的原则就是,看是否应该让调用者来感知这个异常，并有能力恢复这个问题，如果是就果断抛出异常。</p>
+  </li>
+  <li>
+    <p>如果异常，函数本身可以处理，那么就处理掉，不用再抛给上层。比如接口幂等性的设计，就是处理这种异常。</p>
+  </li>
+</ol>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>
