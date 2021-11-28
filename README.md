@@ -48,4 +48,4 @@ octopress deploy
 
 ## docker使用
 
-通过启动docker容易，可以使用webhook功能，提交代码后自动做CI集成生成blog文章。
+通过启动docker可以使用webhook功能，提交代码后自动做CI集成生成blog文章。
