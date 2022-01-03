@@ -24,6 +24,7 @@ RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -\
   && npm install \
   && mkdir /root/.ssh \
   && cp -r ./gitconfig/* /root/.ssh/ \
+  && chmod 600 ~/.ssh/github_rsa && \
   && git config --global user.email "animeng68@gmail.com" \
   && git config --global user.name "mengtnt"
 #暴露给主机的端口号
