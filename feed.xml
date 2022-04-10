@@ -1,4 +1,85 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2022-01-03T05:51:17+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">云原生的思考</title><link href="https://mengtnt.com/2022/01/01/thinkcncf.html" rel="alternate" type="text/html" title="云原生的思考" /><published>2022-01-01T07:00:04+00:00</published><updated>2022-01-01T07:00:04+00:00</updated><id>https://mengtnt.com/2022/01/01/thinkcncf</id><content type="html" xml:base="https://mengtnt.com/2022/01/01/thinkcncf.html">&lt;p&gt;2022年即将到来之际，收到腾讯云服务器友好的提醒：“尊敬的用户，你xxxx云服务器资源将于2021.12.30号到期，到期后将在一天后停止服务，停服后数据为你保留7天，逾期未续费资源将被释放”。我想着企业都不容易，毕竟年底了续个费吧。一打开续费页面，续费的话一年将近2000RMB，虽然自己知道续费肯定会贵一些，但是着实还是震惊了下。毕竟当时买的腾讯云服务器3年也就300多块钱。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2022-04-10T10:24:48+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">readLinux</title><link href="https://mengtnt.com/2022/03/16/readlinux.html" rel="alternate" type="text/html" title="readLinux" /><published>2022-03-16T07:05:06+00:00</published><updated>2022-03-16T07:05:06+00:00</updated><id>https://mengtnt.com/2022/03/16/readlinux</id><content type="html" xml:base="https://mengtnt.com/2022/03/16/readlinux.html">&lt;p&gt;最近在读《深入理解LINUX内核这本书》让我想起来大学时代的《深入理解计算机系统》、《编译原理》、《操作系统》这几本红宝书。这种类型的书，由于设计的技术细节过于庞大，所以想读一遍了解其中的原理不太可能，在我看来读一遍这种类型的书，最多也就能理解其中10%的内容。现在已经工作了10多年，重新看了下看能不能再多懂10%。&lt;/p&gt;
+
+&lt;p&gt;言归正传，本篇博客自己想记录下对书中一些原理的理解，感受下linux系统的巧妙之处。再来可以借鉴下linux很多的设计思想，也可以应用到平时工作中业务逻辑的设计。当然博客篇幅有限，仅仅记录下操作系统核心业务的某些思想以供借鉴。&lt;/p&gt;
+
+&lt;p&gt;说到操作系统核心业务，主要是进程和内存管理了，本质是就是抽象硬件cpu和存储系统的使用。所以下面的几点内容都是从进程管理和内存管理的章节中选取的知识点。&lt;/p&gt;
+
+&lt;h2 id=&quot;内存管理&quot;&gt;内存管理&lt;/h2&gt;
+
+&lt;p&gt;假如没有操作系统，程序如何操作内存。那就要管理每一个内存地址的读取和存储了，对于不同的硬件基地址以及内存排布都各不相同，所以使用不同的硬件就要写一套不同的内存管理方法。操作系统本质上就是对内存这个硬件增加了一个抽象，上层程序只需要使用虚拟地址来访问就可以，底层如何分配物理地址交给操作系统来做。&lt;/p&gt;
+
+&lt;p&gt;由于操作系统抽象了一层虚拟内存，用户程序仅仅操作虚拟地址，那么虚拟地址如何转换成物理地址哪？这里就要从程序装载的过程说起了。如果程序不是运行在虚拟机上，本质上操作系统装载的都是机器码。写过汇编代码的都知道，在定义程序代码时，需要定义代码段(CS)、数据段(DS)、堆栈段(SS)，并且代码里面写的 &lt;code class=&quot;highlighter-rouge&quot;&gt;mov 0x8049509 exa &lt;/code&gt; 这里的地址都是线性地址。操作系统通过程序段定义段的起始地址，再转换出程序所需要的虚拟地址。可以看下图所示。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/readLinux-logic-1.jpg&quot; alt=&quot;图1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;上图中最终的线性地址就是平时我们说的虚拟地址。其实Linux中逻辑地址等于虚拟地址。因为Linux所有的段（用户代码段、用户数据段、内核代码段、内核数据段）的线性地址都是从 0x00000000 开始，线性地址=0x00000000+逻辑地址(偏移量)，也就是说逻辑地址等于虚拟地址了。像windows系统就会在加载程序时，就会存在这个过程，Linux舍弃这一步的目的是为了高效，Linux会把所有的地址映射都放到我们下面要说的页表中。&lt;/p&gt;
+
+&lt;p&gt;在写汇编代码时，会发现程序中所有操作的内存都是连续的，这样很方便我们管理内存的读取。那操作系统如何把程序中所有连续的虚拟地址，映射到物理地址中。这个过程就需要用到页表。页表
+ 是分配物理内存的最小单元，有4K，16K等等，系统每次申请地址时，都是按照页的单元来了。这样可以保证硬件的最高效运作。&lt;/p&gt;
+
+&lt;p&gt;这里可能就有人疑问了，如果每个虚拟地址都要从页表中查找的话，存储页表是不是很浪费空间。如果是4K的页面，1G点内存，岂不是就要 $1024/4 = 256M$。所以就产生了多级页面，多加几个目录不就可以了么？如下图:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/readLinux-page-2.jpg&quot; alt=&quot;图2&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;上图就是Linux操作系统中常用的三级页表，1G内存也仅仅只需要4M的页表就可以完成寻址，提高寻址速度的同时，也大大节省了空间。&lt;/p&gt;
+
+&lt;p&gt;上面只是简单的介绍了linux的分页系统，为了提高分页效率有很多种分页算法，这里限于篇幅也不再介绍。在看到这的时候，想到了平时在做业务时，遇到平台统一性问题上时，就可以借鉴下操作系统如何通过增加一层抽象来对内存管理，从而磨平了平台的差异。在解决业务效率的时候，也可以通过分表的思想提高访问的速度。&lt;/p&gt;
+
+&lt;h2 id=&quot;进程管理&quot;&gt;进程管理&lt;/h2&gt;
+
+&lt;p&gt;进程是操作系统系统基本的执行单元。在Linux操作系统中，有一个概念叫轻量级进程(lwp)。咋一看这不就是进程，其实不然。为啥linux不按照操作系统的概念，老老实实的做一个进程的管理哪？我理解的本质上是为了更好的重用，进程其实是一个很复杂的概念，包含了cpu调度以及需要管理各种调度的资源。而lwp其实仅仅抽象了cpu的调度过程，主要包含了cpu中寄存器上下文切换的过程和一些必须的资源管理。&lt;/p&gt;
+
+&lt;p&gt;在Linux的top和ps命令中，默认看到最多的是pid (process ID)，也许你也能看到lwp (thread ID)和tgid (thread group ID for the thread group leader)等等。所以本质上linux的进程是有lwp和一些共享资源组合而成的，并且lwp还可以作为内核的线程。另外这里我想说PThread其实是用户进程，通过一些库函数模拟线程的并发执行的效果，生效范围其实不在系统级别，不是lwp的级别。所以对于不同的操作系统来讲，进程和线程的实现方式并不相同，但是他们理念都大同小异，都是对cpu的调度和资源的管理。&lt;/p&gt;
+
+&lt;p&gt;下面我们来看下进程管理的一个核心函数，进程切换。下面我列下书中介绍的进程切换的核心代码如下:&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;cp&quot;&gt;#define switch_to(prev, next, last)                 \
+do {                                    \
+    prepare_switch_to(next);                    \
+                                    \
+    ((last) = __switch_to_asm((prev), (next)));         \
+} while (0)
+&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;里面专门介绍了为何A，B进程切换需要三个参数，last参数的作用。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/readLinux-switch-3.jpg&quot; alt=&quot;图2&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;假定3个进程A、B和C在系统上运行。在某个时间点，内核决定从进程A切换到进程B，然后从进程B切换到进程C，接下来再从进程C切换回进程A。在每个switch_to调用之前，next和prev指针位于各进程的内核栈上，prev指向当前运行的进程，而next指向将要运行的下一个进程。为执行从prev到next的切换，switch_to的前两个参数足够了。对进程A来说，prev指向进程A而next指向进程B。&lt;/p&gt;
+
+&lt;p&gt;在进程A被选中再次执行时，会出现一个问题，控制权返回至switch_to之后的点，如果栈准确地恢复到切换之前的状态，那么prev和next仍然指向切换之前的值，即next=B，而prev=A。在这种情况下，内核无法知道实际上在进程A之前运行的进程是C。&lt;/p&gt;
+
+&lt;p&gt;从上面的描述可以看出，switch_to这个函数非常特殊，在从C进程切回到A进程时，在切换的上半部分是在进程C中运行的，而下半部分是在进程A中运行的，所以A进程需要读取第三个参数last才能知道是从C切换过来的。&lt;/p&gt;
+
+&lt;p&gt;linux为了提高进程切换的效率，才使用这种如此不好理解的方式。其实如果我们能引入一个进程管理的进程就会更加的清晰，但是效率自然也就牺牲了。我引用下一个网友对此问题的看法。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;linux中没有专门的调度管理线程虽然咋一看很不美观，但是它毕竟不是微内核结构，大内核的 优点就是高效，直接让需要切换的进程自己调用切换代码另外别的进程就绪后告诉正运行的进程有切换需要然后着手调度，这种方式肯定最高效，如果设置了调度管 理线程，需要调度时还要通知这个管理器，很多切换很低效，但是却很美观。这一点上，linux中的调度是和谐自发的抢占式协作，而带有调度管理器的内核对 于调度则是强行的管制。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;所以我们平时在做一些业务时，为了提升效率，往往会采用一些很诡异(trick)的手段，虽然目的达到了，但是牺牲了代码的可读性。这也是linux设计哲学的权衡，因为效率被看做linux系统的最高优先级。&lt;/p&gt;
+
+&lt;h2 id=&quot;中断&quot;&gt;中断&lt;/h2&gt;
+
+&lt;p&gt;在内核的进程切换时，我们提到过上下文切换。其实中断本质上也是一种上下文切换。但是中断处理和进程切换有一个明显的差异: 由中断处理执行的代码并不是一个进程，我们常常用内核控制路径(kernel control path)来代表中断发生时，正在执行的程序。可以说中断处理的程序比lwp还要轻量级。&lt;/p&gt;
+
+&lt;p&gt;中断在cpu中经常发生，所以中断的效率异常重要。下图展示了中断请求发生时，数据处理的过程。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/readLinux-int-4.jpg&quot; alt=&quot;图2&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;从上图中可以看出，分为上下两个部分。上部被称为硬中断处理，只有一些比较紧急的功能，它往往只是简单地读取寄存器中的中断状态并清除中断标志后就进行“登记中断”的工作。“登记中断”意味着将底半部处理程序挂到后续的执行队列中去。下半部分是真正处理中断请求的程序逻辑。linux下半部分处理有软中断、tasklet、工作队列。这里不过多介绍。&lt;/p&gt;
+
+&lt;p&gt;结合我们平时写代码时，用到的定时器。操作系统处理的过程是，根据cpu发出的时钟中断，达到用户设置定时器时间，就发生一个软中断，等待用户程序处理，但是何时处理，就跟整个系统的吞吐能力有关系了。所以平时的定时器中断，运行到处理程序时，时间并不是100%准确的。&lt;/p&gt;
+
+&lt;p&gt;从中可以看出，为了系统的可用性和吞吐能力，中断的设计就非常的巧妙，既解决了同时可以响应多个外设输入的问题，又解决了响应慢的问题。所以我们在处理一些业务的时候，不妨把业务的操作更加细分，就可以达到并发执行的效果，提高了业务的效率和吞吐率。&lt;/p&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;linux是实现了操作系统这个复杂的业务的一种系统，我们平时做的业务可能远远没有这么复杂，也不会要求如此高的效率，但是从linux的设计实践中，我们可以借鉴很多的理念和方法来提高我们业务的效率。如果再做10年的业务，回头看这本书，可能会有另外的感悟。&lt;/p&gt;
+
+&lt;p&gt;在感叹到linux的精妙设计的同时。也会感受到其中的复杂，到现在很多设计理念我还是一知半解，可能大多数人都要花上很多年才能读懂这本书。可是linux随着时间的发展，仍然在不定的迭代和进步。所以人类的知识体系只会越来越复杂，那么人类的进化速度是否可以赶上知识复杂演变的速度哪？之前记得读过一篇文章讲到，人类可能会因为构建过于复杂的世界而崩溃，因为没有一个人可以理解，所处系统的运行机制。这个哲学问题也留给大家来思考了。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近在读《深入理解LINUX内核这本书》让我想起来大学时代的《深入理解计算机系统》、《编译原理》、《操作系统》这几本红宝书。这种类型的书，由于设计的技术细节过于庞大，所以想读一遍了解其中的原理不太可能，在我看来读一遍这种类型的书，最多也就能理解其中10%的内容。现在已经工作了10多年，重新看了下看能不能再多懂10%。</summary></entry><entry><title type="html">云原生的思考</title><link href="https://mengtnt.com/2022/01/01/thinkcncf.html" rel="alternate" type="text/html" title="云原生的思考" /><published>2022-01-01T07:00:04+00:00</published><updated>2022-01-01T07:00:04+00:00</updated><id>https://mengtnt.com/2022/01/01/thinkcncf</id><content type="html" xml:base="https://mengtnt.com/2022/01/01/thinkcncf.html">&lt;p&gt;2022年即将到来之际，收到腾讯云服务器友好的提醒：“尊敬的用户，你xxxx云服务器资源将于2021.12.30号到期，到期后将在一天后停止服务，停服后数据为你保留7天，逾期未续费资源将被释放”。我想着企业都不容易，毕竟年底了续个费吧。一打开续费页面，续费的话一年将近2000RMB，虽然自己知道续费肯定会贵一些，但是着实还是震惊了下。毕竟当时买的腾讯云服务器3年也就300多块钱。&lt;/p&gt;
 
 &lt;h2 id=&quot;续费之路&quot;&gt;续费之路&lt;/h2&gt;
 
@@ -1512,104 +1593,4 @@ CMD &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;
 
 &lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
 
-&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;SimpleCoreData&lt;/code&gt; 完整的实现，已经放在了GitHub上&lt;a href=&quot;https://github.com/animeng/SimpleCoreData&quot;&gt;链接地址&lt;/a&gt;。这个是自己对Swift语言面向协议编程的一个实践，还有很多不完善的地方,抛砖引玉，希望大家多多给些意见。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">面向协议编程是Swift语言的一个很大的特点，wwdc中有一节经典的Session面向协议编程对Swift这个语法特性做了详细的分析。下面分享的内容主要是利用Swift面向协议编程特性，封装CoreData数据库的API。至于为何要选择CoreData数据库也是因为Coredata很多API其实对于初学者非常不友好，也是想通过Swift语言的一些优秀特性来简化API的操作，也特意为此起了一个名字叫SimpleCoredata。</summary></entry><entry><title type="html">程序员的自我修养读后感</title><link href="https://mengtnt.com/2020/07/13/book_thoughts.html" rel="alternate" type="text/html" title="程序员的自我修养读后感" /><published>2020-07-13T04:46:00+00:00</published><updated>2020-07-13T04:46:00+00:00</updated><id>https://mengtnt.com/2020/07/13/book_thoughts</id><content type="html" xml:base="https://mengtnt.com/2020/07/13/book_thoughts.html">&lt;p&gt;最近又换了工作，从一个很佛系的公司换到了一个&lt;code class=&quot;highlighter-rouge&quot;&gt;Ambition&lt;/code&gt;的公司。自己也是考虑了很久，担心能不能适应接下来的环境。最后我还是选择了改变，因为在自己的职业生涯里，再大的阻力也抵不过自己的好奇心。在换工作的空档期有些时间，重温了下&lt;code class=&quot;highlighter-rouge&quot;&gt;程序员的自我修养-链接、装载与库&lt;/code&gt;。这本书自己刚毕业那会有看过，当时主要是冲着潘爱民老师的名声来的，毕竟大学他的&lt;code class=&quot;highlighter-rouge&quot;&gt;数据结构&lt;/code&gt;是人人皆知。现在再重新看完这本书，更是深刻感觉到不管掌握了多少新技术，其实都是从这些基础的计算机知识衍生出来的，所以也很推荐给大家看下。下面就自己这些年学习过的一些新技术结合这本书中的观点，分析下底层的一些原理。&lt;/p&gt;
-
-&lt;h2 id=&quot;变量和函数的符号化&quot;&gt;变量和函数的符号化&lt;/h2&gt;
-
-&lt;p&gt;书中讲过一个例子c++在引用c语言的库时，由于c++语言会对变量和函数在符号化的时候加入一些辨识符号。所以在c++语言引用c语言的接口时，一定要增加&lt;code class=&quot;highlighter-rouge&quot;&gt;extern c&lt;/code&gt;来声明。表示此处是c语言的变量和接口，在编译器符号化时，不要使用c++的规则，这样在link的时候，才能从c语言库中找到正确的变量和函数的符号。自己曾经在学习swift语言，看到swift语言调用oc语言时需要增加&lt;code class=&quot;highlighter-rouge&quot;&gt;@objc&lt;/code&gt;标志，就想到swift对变量和函数符号化的规则和oc一定是有区别，才需要这种调用规则。而oc在调用c语言时，就完全不用增加任何编译选项，就说明oc的符号化，是和c语言一样的，我们可以打开一个oc的静态库，观察下里面的函数的符号化就会发现其实和c语言一模一样。但是oc在调用c++语言时，就需要改变文件类型为mm，目的就是要告诉编译器，编译时要注意需要用c++规则进行符号化。所以不管什么新语言，想要桥接另一个语言库时，在编译link的时候，符号化一定要适配不同语言，不管java的jni，以及最近很火的flutter框架中dart语言的ffi，都是同样的道理。&lt;/p&gt;
-
-&lt;h2 id=&quot;并发和锁&quot;&gt;并发和锁&lt;/h2&gt;
-
-&lt;p&gt;这个是任何软件开发都要了解的技术。以前在学习多线程中，&lt;code class=&quot;highlighter-rouge&quot;&gt;互斥量&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;临界区&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;条件变量&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;读写锁&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;乐观锁&lt;/code&gt;、&lt;code class=&quot;highlighter-rouge&quot;&gt;悲观锁&lt;/code&gt; 这些各种概念充斥其中，刚开始接触真的摸不到头脑。其实如果了解最底层的设计原则，再来看这些感念，你会觉得这些都是是基于&lt;code class=&quot;highlighter-rouge&quot;&gt;原子性操作&lt;/code&gt;的不同概念罢了。多线程是可以让程序的汇编指令乱序的执行，如果需要顺序执行某个事情就需要锁。在讲解锁的时候，一般都会说到一个概念原子性，什么是原子性。结合汇编代码，本质上就是一个汇编指令就是具有原子性，也就是说所有的程序指令都是一个个汇编指令组合起来的，指令的最小单元就是一条汇编指令。也就好像是世界万物最小的单元是原子，原子是不能再分割了(虽说现在原子还能分割)，然后就用了原子性来表明这种特性。通过这本书提到的原子性，正好分析下CAS的概念，定义如下:&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;比较并交换(compare and swap, CAS)，是原子操作的一种，可用于在多线程编程中实现不被打断的数据交换操作，从而避免多线程同时改写某一数据时由于执行顺序不确定性以及中断的不可预知性产生的数据不一致问题。该操作通过将内存中的值与指定数据进行比较，当数值一样时将内存中的数据替换为新的值。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;其实CAS操作是依赖一条很重要的汇编指令&lt;code class=&quot;highlighter-rouge&quot;&gt;cmpxchg &lt;/code&gt;&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;CMPXCHG r/m,r 将累加器AL/AX/EAX/RAX中的值与首操作数（目的操作数）比较，如果相等，第2操作数（源操作数）的值装载到首操作数，zf置1。如果不等，首操作数的值装载到AL/AX/EAX/RAX并将zf清0&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;这个汇编指令是原子性的，就可以利用这条指令实现&lt;code class=&quot;highlighter-rouge&quot;&gt;乐观锁&lt;/code&gt;,乐观锁就不用阻塞其他线程的指令执行，而是利用cas操作不停的检测共享变量中的数据是否改变，来决定是否执行操作。所以比其他的锁性能要高很多。书中在介绍锁时，引入的汇编指令的原子操作解释，其实就更好的让大家理解各种锁的概念。因为很多不同的语言平台都有一些自己定义的锁，其实万变不离其宗。例如BSD中OSSpinLock锁，其实就是上面所说的乐观锁的概念，在不停的检测共享变量的改变，所以叫做自旋锁。明白了锁基本的设计原理，不管遇到什么概念都可以理解了。&lt;/p&gt;
-
-&lt;h2 id=&quot;内存映射&quot;&gt;内存映射&lt;/h2&gt;
-
-&lt;p&gt;在做日志系统的时候，很多人都知道&lt;code class=&quot;highlighter-rouge&quot;&gt;mmap&lt;/code&gt;内存映射可以保证日志文件实时回写到磁盘上，保证不丢失。至于为什么要用这种方式来做，如果看过这本书&lt;code class=&quot;highlighter-rouge&quot;&gt;内存装载过程&lt;/code&gt;章节，就很容易理解。这里先来说下虚拟内存地址，什么是虚拟内存地址，本质上是可执行程序对内部的变量和函数都有一个内存地址分配。在程序还未运行时，还不能完全确定这些数据所装载的真实物理内存位置，所以叫做虚拟内存地址。在程序准备执行时，加载的过程中，就会把这些虚拟内存地址映射到真实的内存空间地址中。这个过程是操作系统自动完成的。&lt;/p&gt;
-
-&lt;p&gt;下面就详细解释下我们使用的&lt;code class=&quot;highlighter-rouge&quot;&gt;mmap&lt;/code&gt;，其实在很多操作系统，都会把内存做分页的，也就是真实的物理地址，不会是一连片的，都是分布在不同的页中。有一个概念就要页交换技术，就是把经常不用的内存页交换到磁盘上，等需要的时候再交换回来，这样可以把空闲的内存给优先级更高的应用使用。然后我们程序中使用的&lt;code class=&quot;highlighter-rouge&quot;&gt;mmap&lt;/code&gt;，本质上就是利用这种特性，告诉操作系统这块内存可以映射到磁盘上，这样就节省了内存空间，又可以方便内容保存。&lt;/p&gt;
-
-&lt;p&gt;所以我们写下的&lt;code class=&quot;highlighter-rouge&quot;&gt;mmap&lt;/code&gt;这句代码，本质上是利用了操作系统的这种页交换技术特性，把程序的内存地址映射到存储的磁盘上，这样就保证程序退出时，操作系统可以把这块内存交换到磁盘上，从而保证了日志不会在内存中丢失。&lt;/p&gt;
-
-&lt;p&gt;这里再多说一下，大多数操作系统包含MacOS都是支持内存交换机制，但是在iOS系统并不支持，其实很多移动设备都不支持内存交换机制。移动设备上的大容量存储器通常是闪存（Flash），它的读写速度远远小于电脑所使用的硬盘，这就导致了在移动设备就算使用内存交换机制，也并不能提升性能。所以&lt;code class=&quot;highlighter-rouge&quot;&gt;mmap&lt;/code&gt;在移动端使用可以节省内存和防止数据丢失，但是却牺牲了数据的访问速度。&lt;/p&gt;
-
-&lt;h2 id=&quot;栈中的函数&quot;&gt;栈中的函数&lt;/h2&gt;
-
-&lt;p&gt;每个进程和线程在执行函数时，想必很多人都知道是放在栈中的，这样可以方便实现函数的递归调用。下面举个例子&lt;/p&gt;
-
-&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;n&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;16&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;38&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;53&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;这个函数在加载时在栈中的内存布局如下&lt;/p&gt;
-
-&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;top&lt;/span&gt;          &lt;span class=&quot;err&quot;&gt;栈顶&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;低地址&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;ret&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;address&lt;/span&gt;  &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;
-&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;            &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
-&lt;span class=&quot;mi&quot;&gt;16&lt;/span&gt;           &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
-&lt;span class=&quot;mi&quot;&gt;38&lt;/span&gt;           &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
-&lt;span class=&quot;mi&quot;&gt;53&lt;/span&gt;           &lt;span class=&quot;o&quot;&gt;|&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;这里我想说的是常见的&lt;code class=&quot;highlighter-rouge&quot;&gt;printf&lt;/code&gt;不定参数是如何实现的？因为&lt;code class=&quot;highlighter-rouge&quot;&gt;printf&lt;/code&gt;的参数不仅数量不确定，而且类型也不定，所以&lt;code class=&quot;highlighter-rouge&quot;&gt;printf&lt;/code&gt;需要在格式化字符串中注明参数的类型，要这样调用&lt;code class=&quot;highlighter-rouge&quot;&gt;printf('this is %d',num)&lt;/code&gt;。这样函数参数才能知道自己在栈中占用多少空间，如果一旦将类型描述错误了，就会出现函数内存排列出问题，造成在函数调用时，获取的值发生改变。除了上面一点，栈中函数参数一般是从右向左排列的，好处就是方便计算格式化的第一个字符串参数的值。下面利用书中的一个例子解释。&lt;/p&gt;
-
-&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;#include &amp;lt;stdio.h&amp;gt;
-&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; 
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;printf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;%f%d%c&lt;/span&gt;&lt;span class=&quot;se&quot;&gt;\n&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;166&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;sc&quot;&gt;'a'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;在这个程序里,printf的第一个输出参数是一个int（4个字节），而我们告诉printf它是一个double（8字节以上），因此printf的输出会错误，由于printf在读取double的时候实际造成了越界，因此后面几个参数的输出也会失败。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;在学习很多弱类型语言中，编译器都有一个很重要的能力&lt;code class=&quot;highlighter-rouge&quot;&gt;类型推断&lt;/code&gt;。如果函数的参数类型没有确定，其实是无法真正装载运行的，需要利用语言类型的推断功能，在编译链接时确定了参数类型后，才能真正的加载运行。所以你在学习一门新的弱类型语言时，你就理解为什么函数的参数需要类型推断确定类型后才能运行。&lt;/p&gt;
-
-&lt;h2 id=&quot;系统调用&quot;&gt;系统调用&lt;/h2&gt;
-
-&lt;p&gt;下面我拿一个很简单代码来描述下系统调用的过程&lt;/p&gt;
-
-&lt;div class=&quot;language-c++ highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;cp&quot;&gt;#include &amp;lt;iostream&amp;gt;
-&lt;/span&gt; 
-&lt;span class=&quot;k&quot;&gt;using&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;namespace&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;std&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
- 
-&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;main&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-   &lt;span class=&quot;kt&quot;&gt;char&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;50&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
- 
-   &lt;span class=&quot;n&quot;&gt;cout&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;请输入：&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-   &lt;span class=&quot;n&quot;&gt;cin&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-   &lt;span class=&quot;n&quot;&gt;cout&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;你的输入是： &quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;endl&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
- 
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;在操作系统中，程序运行时本身没有权利访问系统资源的，因为系统资源有限，有可能被很多程序同时访问。因此需要系统加以保护，阻止应用程序直接访问，例如上面的键盘输入和输出，其实是IO操作。当程序调用&lt;code class=&quot;highlighter-rouge&quot;&gt;cin &amp;gt;&amp;gt; name&lt;/code&gt;时，首先会向操作系统申请一个中断，然后操作系统根据应用的权限判断是否有操作IO的权限，如果有，就会从用户模式切换到内核模式，然后操作系统会把这个操作注册在中断向量表中。cpu就会暂停当前执行的代码，根据中断的中断号，在中断向量表中找到对应的中断处理程序，上面也就是键盘输入程序，调用它。中断处理程序执行完成后，cpu会继续执行之前的代码，完成内核模式切换到用户模式。&lt;/p&gt;
-
-&lt;p&gt;这里要说下在实际执行中断向量函数之前，cpu首先还要进行函数栈的切换，用户态和内核态使用的是不同的函数栈，两者负责各自的函数调用，互不干扰。此外，寄存器SS的值还应该指向当前栈所在的内存页里面。下面引用书中描述的用户栈如何切换为内核栈然后再切换回来的过程。&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;保存当前的ESP(堆栈栈顶指针)、SS(堆栈段寄存器)的值到内核的栈中。&lt;/li&gt;
-  &lt;li&gt;然后ESP、SS的值设置为内核栈的相应的值。&lt;/li&gt;
-  &lt;li&gt;恢复原来的ESP、SS的值切换到用户态。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;所以在程序崩溃的时候，会发现应用程序需要切换到内核态然后判断出错，再给应用程序发送崩溃指令，然后切换到用户态后接收到崩溃指令，这时崩溃的堆栈信息就是在此时抛出的，最后程序再崩溃。&lt;/p&gt;
-
-&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
-
-&lt;p&gt;过了几年，重新回顾下一本书，最大的收获是，结合这几年新获得的一些能力和书中的一些理论做一些对比，会有一种豁然开朗的感觉。其实一本好书的意义就在于不管经历了多少年，里面的道理总是可以拿来反复验证的。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近又换了工作，从一个很佛系的公司换到了一个Ambition的公司。自己也是考虑了很久，担心能不能适应接下来的环境。最后我还是选择了改变，因为在自己的职业生涯里，再大的阻力也抵不过自己的好奇心。在换工作的空档期有些时间，重温了下程序员的自我修养-链接、装载与库。这本书自己刚毕业那会有看过，当时主要是冲着潘爱民老师的名声来的，毕竟大学他的数据结构是人人皆知。现在再重新看完这本书，更是深刻感觉到不管掌握了多少新技术，其实都是从这些基础的计算机知识衍生出来的，所以也很推荐给大家看下。下面就自己这些年学习过的一些新技术结合这本书中的观点，分析下底层的一些原理。</summary></entry></feed>
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;SimpleCoreData&lt;/code&gt; 完整的实现，已经放在了GitHub上&lt;a href=&quot;https://github.com/animeng/SimpleCoreData&quot;&gt;链接地址&lt;/a&gt;。这个是自己对Swift语言面向协议编程的一个实践，还有很多不完善的地方,抛砖引玉，希望大家多多给些意见。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">面向协议编程是Swift语言的一个很大的特点，wwdc中有一节经典的Session面向协议编程对Swift这个语法特性做了详细的分析。下面分享的内容主要是利用Swift面向协议编程特性，封装CoreData数据库的API。至于为何要选择CoreData数据库也是因为Coredata很多API其实对于初学者非常不友好，也是想通过Swift语言的一些优秀特性来简化API的操作，也特意为此起了一个名字叫SimpleCoredata。</summary></entry></feed>
