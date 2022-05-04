@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Swift概述 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2022/05/04/swift-roadmap.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Swift概述">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2022/05/04/swift-roadmap.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">Swift概述</h1>
+  
+  <span class="post-meta">05月 04日, 2022</span><br>
+  
+  <span class="post-meta small">12 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>随着越来越多的应用在使用 Swift 语言开发iOS，学习 Swift 语言也很有必要。这个博客不是详细的 Swift 的教程，主要是为了 Swift 初学者，尤其之前使用 OC 开发 iOS 应用的人员，在转入 Swift 这门语言时，应该了解的一些基础知识，为方便进一步的学习做一些铺垫。</p>
+
+<h2 id="1-swift语言的发展">1 Swift语言的发展</h2>
+
+<p><img src="/images/revolution-1.jpg" alt="Swift revolution" /></p>
+
+<ul>
+  <li>
+    <p>Swift2.2 时推出的 Playground 可以让初学者方便的练习语法，并且 Playground 的注释支持 Markdown 语法，写注释非常方便。</p>
+  </li>
+  <li>
+    <p>ABI 稳定是很多大厂选择使用Swift语言开发项目的主要原因。因为之前 Swift 版本不兼容，Swift3.0 编译的Framework 在 Swift4.0 中都没法使用，必须修改 Framework 的源码，重新打包，对于有很多Framework依赖的大型App来讲这就是灾难。</p>
+  </li>
+  <li>
+    <p>Swift5.5 支持异步语法 <code class="highlighter-rouge">async/await/actor</code> 在编写异步的代码时，会更加的优雅，避免回调地狱。</p>
+  </li>
+</ul>
+
+<h2 id="2-swift工程化">2 Swift工程化</h2>
+
+<p>如果是重新开发的新的 App 使用 Swift的话，没有什么技术债，工程化比较简单，甚至可以用 Swift Package Manager 官方的包管理工具。但是如果在之前用 OC 开发的应用基础上使用 Swift 的话工程化要做的东西还是挺多。</p>
+
+<h3 id="21-module工程化">2.1 Module工程化</h3>
+
+<p>什么是Module化，说白了就是编译器的一种引用方式，很多语言 JavaScript python 等等都是支持 Module化的。OC 语言是继承了 C 的头文件引用方式，在引用一个 xxx.h 文件时，编译器会重新编译 xxx.h 文件的所有语法。这样方式相当于把语法的复杂性暴露给了开发者。下面列举下使用头文件引用的弊端</p>
+
+<ol>
+  <li>
+    <p>编译时间会大大增加，因为每个 xxx.h 文件都要重新编译。</p>
+  </li>
+  <li>
+    <p>头文件，在编译时，可能会造成大量的符号冲突，所以不得不用 <code class="highlighter-rouge">#ifDef</code> 宏语法来避免，可读性很差。</p>
+  </li>
+  <li>
+    <p>头文件引用把各种语言的语法暴露出来，比如 C++ 引用 C 语言的时候，不得写各种兼容语法 <code class="highlighter-rouge">extern C</code>。如果能使用 Module 的方式，统一引用的接口，就可以避免这种问题。</p>
+  </li>
+</ol>
+
+<p>所以苹果在2012 年的时候在LLVM编译器规范中提出了Module化的引用方式。<a href="https://clang.llvm.org/docs/Modules.html">Clang Module</a></p>
+
+<p>OC 语言已经支持了 Clang Module 的引用方式，但是需要开发者在编译项目的时候选择支持 Module 化。（2020年的C++20版本也支持了Clang Module）</p>
+
+<p>由于Swift 工程 Framework 模块的引用强制使用 Module 化，所以所有的 OC 的Framework必须都要支持。</p>
+
+<h3 id="22-module化的问题">2.2 Module化的问题</h3>
+
+<p>苹果在 Module 化时，也提过Module的缺点。</p>
+
+<ol>
+  <li>
+    <p>没有很好的版本控制，很多语言基本都有版本控制工具，但是对于 C、C++ 一直没有很好的版本控制工具。</p>
+  </li>
+  <li>
+    <p>没有 namespace 的概念，例如相同的class或者struct，在不同的 Module下会有符号冲突。Swift 版本控制一直做的不好，直到 5.1 ABI稳定后，算是临时解决了版本控制的问题。</p>
+  </li>
+  <li>
+    <p>Module化依旧会有符号冲突问题，像 C++ C# 语言使用了命名空间，只要是来自不同的命名空间，都不会冲突。为了解决这个问题 Swift的命名空间基于module而不是显式指明 Namespace，每个Module代表了Swift中的一个命名空间，也就是说，同一个Framework 里的类型名称还是不能相同。</p>
+  </li>
+</ol>
+
+<h3 id="23-引用c和c的问题">2.3 引用C和C++的问题</h3>
+
+<p>由于 Swift 语言完全独立的语法，不像 OC 是基于C语言的基础上开发的。所以 Swift 在引用 C和C++时，需要走 OC 桥接才行，类似于 Java 调用 C++ 代码需要走 JNI 一样。</p>
+
+<h2 id="3-swift-语法">3 Swift 语法</h2>
+
+<p>Swift 由于是开源的，每个语法的由来也都是有文档可查的。有兴趣的可以看下 Swift 所有基础类型的Meta定义 <a href="https://github.com/apple/swift/blob/main/docs/ABI/TypeMetadata.rst">TypeMetaData</a>和
+<a href="https://docs.swift.org/swift-book/ReferenceManual/AboutTheLanguageReference.html">Swift 语法设计手册</a>。</p>
+
+<p>下面主要介绍下 Swift 语言的一些重要特点。以及和 OC 语法的不同之处。平时开发中可能会经常遇到。<a href="https://docs.swift.org/swift-book/">Swift 语法官方教程</a></p>
+
+<h3 id="31-optional-语法">3.1 Optional 语法</h3>
+
+<p>包装类型，所有的类型(包含基础类型 Int、Float 等等)我们先看苹果的定义。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">enum</span> <span class="kt">Optional</span><span class="o">&lt;</span><span class="kt">Wrapped</span><span class="o">&gt;</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="k">none</span>
+    <span class="k">case</span> <span class="nf">some</span><span class="p">(</span><span class="kt">Wrapped</span><span class="p">)</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>在 OC 中我们往往认为 int float 这种基础类型不像NSString一样应该没有 nil 的概念。但是在 swift 里面所有的类型都有nil的概念。看下这个写法 <code class="highlighter-rouge">var int test = 0</code> 和 ` var int test? = nil<code class="highlighter-rouge"> 是完全不同的。其中有 </code>?<code class="highlighter-rouge"> 结尾的表示的变量  </code>test`是 Optional类型，也就是可以做unWrapped的操作,如何拆包那？往往如下面的写法。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">var</span> <span class="nv">test</span> <span class="p">:</span> <span class="kt">Int</span><span class="p">?</span>
+
+<span class="n">test</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">if</span> <span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="n">test</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>为了验证Optional类型的变量和non-optional的区别，我们可以这些尝试下。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">var</span> <span class="nv">test</span> <span class="p">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">0</span>
+
+<span class="k">if</span> <span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="n">test</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>编译器就会报如下错误。 <code class="highlighter-rouge">error: initializer for conditional binding must have Optional type, not 'Int'
+if let result = test {</code> 。</p>
+
+<p>这个语法对swift的安全性尤其重要，OC 中经常需要添加一些安全的气垫类对nil做检测，swift 只要定义一个变量为 Optional的话，你就知道这个变量是否可能为空，访问时需要如上面的写法就可以了。当然解包也有一些便捷的语法糖如下写法：</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">var</span> <span class="nv">test</span> <span class="p">:</span> <span class="kt">Int</span><span class="p">?</span>
+<span class="n">test</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">result</span> <span class="p">??</span> <span class="mi">0</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<p>所以变量定义为Optional的时候，在使用时已经要解包使用，这样就避免了空指针的问题。Swift 为了兼容一些便捷的语法，定义了一种强制解包的操作 <code class="highlighter-rouge">!</code>，表示解包的变量一定不为nil，上面的例子也可以这样写:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">var</span> <span class="nv">test</span> <span class="p">:</span> <span class="kt">Int</span><span class="p">?</span>
+<span class="n">test</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">test</span><span class="o">!</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>用 <code class="highlighter-rouge">!</code> 语法尤其小心，当<code class="highlighter-rouge">test=0</code> 这行代码被注释时，就会崩溃。</p>
+
+<h3 id="32-struct的使用">3.2 struct的使用</h3>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">struct</span> <span class="kt">Person</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span>
+    <span class="k">mutating</span> <span class="kd">func</span> <span class="nf">changeName</span><span class="p">(</span><span class="nv">new</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="k">new</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>上面就是一个简单的 struct 定义，struct 所有的赋值都是copy的。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code> 
+ <span class="k">let</span> <span class="nv">joe</span> <span class="o">=</span> <span class="kt">Person</span><span class="p">(</span><span class="s">"joe"</span><span class="p">)</span>
+
+ <span class="k">let</span> <span class="nv">joeCopy</span> <span class="o">=</span> <span class="n">joe</span>
+
+</code></pre></div></div>
+
+<p>并且一旦定义 struct 中的变量为常量，就无法改变变量的值，如果需要改变就要用下面的写法。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+ <span class="kd">struct</span> <span class="kt">Person</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span>
+    <span class="k">mutating</span> <span class="kd">func</span> <span class="nf">changeName</span><span class="p">(</span><span class="nv">new</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="k">new</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">var</span> <span class="nv">joe</span> <span class="o">=</span> <span class="kt">Person</span><span class="p">(</span><span class="nv">name</span><span class="p">:</span> <span class="s">"joe"</span><span class="p">)</span>
+<span class="n">joe</span><span class="o">.</span><span class="nf">changeName</span><span class="p">(</span><span class="nv">new</span><span class="p">:</span> <span class="s">"allen"</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<p>Swift 中常见的基本的类型 Int Float 等等都是struct的。struct设计主要是存储数据使用，数据一旦被创建之后，就很少被修改，我们只是需要使用这些对象的值就行。而 class 一般表示的在一定的生命周期内，数据状态不停的改变。这点就是选择struct和class的基本原则。</p>
+
+<h3 id="33-枚举的使用">3.3 枚举的使用</h3>
+
+<p>Swift 枚举非常强大，功能堪比类的功能。下面介绍下枚举的写法。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">enum</span> <span class="kt">Direct</span><span class="p">:</span><span class="kt">String</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="n">up</span> <span class="o">=</span> <span class="s">"up"</span>
+    <span class="k">case</span> <span class="n">down</span> <span class="o">=</span> <span class="s">"down"</span>
+    <span class="k">case</span> <span class="n">left</span> <span class="o">=</span> <span class="s">"left"</span>
+    <span class="k">case</span> <span class="n">right</span> <span class="o">=</span> <span class="s">"right"</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>枚举在 Swift 中本质上是和struct、class 齐平的一种数据结构，我们也可以自定义枚举如下。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">struct</span> <span class="kt">Person</span><span class="p">:</span><span class="kt">Equatable</span><span class="p">,</span><span class="kt">ExpressibleByStringLiteral</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">title</span> <span class="p">:</span><span class="kt">String</span>
+    <span class="k">let</span> <span class="nv">level</span> <span class="p">:</span><span class="kt">Int</span>
+    
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="o">==</span> <span class="p">(</span><span class="nv">lhs</span><span class="p">:</span> <span class="kt">Person</span><span class="p">,</span> <span class="nv">rhs</span><span class="p">:</span> <span class="kt">Person</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span> <span class="p">{</span>
+    <span class="nf">return</span> <span class="p">(</span><span class="n">lhs</span><span class="o">.</span><span class="n">title</span> <span class="o">==</span> <span class="n">rhs</span><span class="o">.</span><span class="n">title</span> <span class="o">&amp;&amp;</span> <span class="n">lhs</span><span class="o">.</span><span class="n">level</span> <span class="o">==</span> <span class="n">rhs</span><span class="o">.</span><span class="n">level</span><span class="p">)</span>
+    <span class="p">}</span>
+        
+    <span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="n">stringLiteral</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="nv">components</span> <span class="o">=</span> <span class="n">value</span><span class="o">.</span><span class="nf">components</span><span class="p">(</span><span class="nv">separatedBy</span><span class="p">:</span> <span class="s">","</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">components</span><span class="o">.</span><span class="n">count</span> <span class="o">==</span> <span class="mi">2</span> <span class="p">{</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="n">components</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="kt">Int</span><span class="p">(</span><span class="n">components</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="p">??</span> <span class="mi">0</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">title</span> <span class="o">=</span> <span class="s">"primary"</span>
+            <span class="k">self</span><span class="o">.</span><span class="n">level</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+    
+    <span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="n">unicodeScalarLiteral</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">stringLiteral</span><span class="p">:</span> <span class="n">value</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="kd">public</span> <span class="nf">init</span><span class="p">(</span><span class="n">extendedGraphemeClusterLiteral</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="nf">init</span><span class="p">(</span><span class="nv">stringLiteral</span><span class="p">:</span> <span class="n">value</span><span class="p">)</span>
+    <span class="p">}</span>
+    
+<span class="p">}</span>
+<span class="kd">enum</span> <span class="kt">Engineer</span><span class="p">:</span><span class="kt">Person</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="n">primary</span> <span class="o">=</span> <span class="s">"primary,0"</span>
+    <span class="k">case</span> <span class="n">junior</span> <span class="o">=</span> <span class="s">"junior,1"</span>
+    <span class="k">case</span> <span class="n">senior</span> <span class="o">=</span> <span class="s">"senior,2"</span>
+    <span class="k">case</span> <span class="n">professor</span> <span class="o">=</span> <span class="s">"professor,3"</span>
+<span class="p">}</span>
+
+<span class="k">let</span> <span class="nv">joe</span> <span class="o">=</span> <span class="kt">Engineer</span><span class="o">.</span><span class="n">junior</span>
+
+<span class="nf">print</span><span class="p">(</span><span class="n">joe</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<p>讲到枚举类型，就不得不说 Swift 的模式匹配这个特点，什么是模式匹配，就是使用一种通用的模式，来解构数据中相应类型的具体值。听起来有点抽象。举个例子，正则表达式匹配，就是模式匹配的一种，他是匹配定义好的字符串的模式，解构出字符串中符合模式的值，如果无法匹配就代表解构失败。根据<a href="https://docs.swift.org/swift-book/ReferenceManual/Patterns.html">Swift的模式匹配的文档</a>中的讲解，模式匹配包含下面几种。</p>
+
+<ul>
+  <li>通配符模式</li>
+  <li>标识符模式</li>
+  <li>值绑定模式</li>
+  <li>元组模式</li>
+  <li>枚举匹配模式</li>
+  <li>可选模式</li>
+  <li>类型转换模式</li>
+  <li>表达式模式</li>
+</ul>
+
+<p>这几种模式匹配中，我们这里重点拿枚举匹配模式介绍，其他的本质上原理是一样的。枚举匹配是当编译器识别 case 关键字时，会解构 case 后面的变量和表达式，来匹配变量的具体值，如果成功就返回YES，否则就返回NO。所以模式匹配可以表示如下。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">func</span> <span class="o">~=&lt;</span><span class="kt">T</span><span class="o">&gt;</span><span class="p">(</span><span class="nv">pattern</span><span class="p">:</span> <span class="kt">T</span> <span class="o">-&gt;</span> <span class="kt">Bool</span><span class="p">,</span> <span class="nv">value</span><span class="p">:</span> <span class="kt">T</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Bool</span> <span class="p">{</span>
+    <span class="k">return</span> <span class="nf">pattern</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>那模式匹配的目的是为了干什么的，减少程序员的代码量。在 OC 当我们遇到不知道的类型时，需要这样写。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="n">id</span> <span class="n">name</span> <span class="o">=</span> <span class="err">@</span><span class="s">"LiLei"</span><span class="p">;</span>
+
+<span class="n">NSArray</span> <span class="o">*</span> <span class="n">list</span> <span class="o">=</span> <span class="err">@</span><span class="p">[</span><span class="err">@</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span><span class="err">@</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span><span class="err">@</span><span class="s">"name"</span><span class="p">];</span>
+
+<span class="p">(</span><span class="k">for</span> <span class="n">value</span> <span class="n">in</span> <span class="n">list</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="p">([</span><span class="n">value</span> <span class="n">isKindOf</span> <span class="p">[</span><span class="n">NSNumber</span> <span class="n">class</span><span class="p">]])</span> <span class="p">{</span>
+        <span class="n">NSLog</span><span class="p">(</span><span class="err">@</span><span class="s">"%@"</span><span class="p">,</span><span class="n">value</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>swift 有了模式匹配可以这样写。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">let</span> <span class="nv">list</span><span class="p">:</span> <span class="p">[</span><span class="kt">Any</span><span class="p">?]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="s">"name"</span><span class="p">]</span>
+
+<span class="k">for</span> <span class="k">case</span> <span class="k">let</span> <span class="nv">result</span><span class="p">?</span> <span class="k">as</span> <span class="kt">Int</span><span class="p">?</span> <span class="k">in</span> <span class="n">list</span> <span class="p">{</span>
+  <span class="nf">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>上面的例子中 case 语句后面的表达式的意思是需要符合 Int 类型的模式，这样编译器就会自动判断从list取得的每个数据，是否是Int类型如果是就赋值给result。甚至还可以增加一个 where 的匹配模式如下</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">for</span> <span class="k">case</span> <span class="k">let</span> <span class="nv">result</span><span class="p">?</span> <span class="k">as</span> <span class="kt">Int</span><span class="p">?</span> <span class="k">where</span> <span class="n">result</span> <span class="o">&gt;</span> <span class="mi">10</span> <span class="k">in</span> <span class="n">list</span> <span class="p">{</span>
+  <span class="nf">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>所以有了匹配模式后，代码会变的非常的简洁。</p>
+
+<h3 id="34-protocol的使用">3.4 Protocol的使用</h3>
+
+<p>Swift 有一个很重要的设计理念就是面向协议编程。之前写过一遍博客分析过<a href="https://mengtnt.com/2020/09/14/coredata-swift.html">面向协议编程</a>。面向协议本质上就是让大家少用继承，多用组合的方式来实现一些复杂的功能。</p>
+
+<p>如何实现上面说的理念，本质上就是把共有的方案抽离出来定义成协议，然后再通过extension的语法实现这个协议。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">protocol</span> <span class="kt">FatherProtocol</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">myChildName</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">String</span>
+<span class="p">}</span>
+
+<span class="kd">extension</span> <span class="kt">FatherProtocol</span> <span class="p">{</span>
+    <span class="kd">func</span> <span class="nf">myChildName</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">String</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="s">"xxx"</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<h3 id="35-错误处理">3.5 错误处理</h3>
+
+<p>Swift 语言终于有了，do-catch语句处理错误的形式。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">do</span> <span class="p">{</span>
+    <span class="k">try</span> <span class="n">expression</span>
+    <span class="n">statements</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="n">pattern</span> <span class="mi">1</span> <span class="p">{</span>
+    <span class="n">statements</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="n">pattern</span> <span class="mi">2</span> <span class="k">where</span> <span class="n">condition</span> <span class="p">{</span>
+    <span class="n">statements</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="p">{</span>
+    <span class="n">statements</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>可以看出来错误处理，也是有模式匹配的特点的。举个网络处理的简单例子如下：</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">enum</span> <span class="kt">NetError</span> <span class="p">:</span> <span class="kt">Error</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="kt">NetBroken</span>
+    <span class="k">case</span> <span class="kt">ServerError</span>
+    <span class="k">case</span> <span class="kt">ClientError</span>
+<span class="p">}</span>
+
+<span class="kd">func</span> <span class="nf">request</span><span class="p">(</span><span class="nv">url</span> <span class="p">:</span> <span class="kt">String</span><span class="p">?)</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kt">String</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">sucess</span> <span class="o">=</span> <span class="o">...</span>
+    <span class="k">if</span> <span class="n">sucess</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="n">content</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">throw</span> <span class="kt">NetError</span><span class="o">.</span><span class="kt">NetBroken</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">do</span> <span class="p">{</span>
+    <span class="k">try</span> <span class="nf">request</span><span class="p">(:</span><span class="s">"xxxx"</span><span class="p">)</span>
+<span class="p">}</span> <span class="k">catch</span> <span class="n">er</span> <span class="p">{</span>
+    <span class="nf">print</span><span class="p">(</span><span class="n">er</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="c1">// 这个是便捷的写法</span>
+<span class="k">try</span><span class="p">?</span> <span class="nf">request</span><span class="p">(:</span><span class="s">"xxxx"</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<p>这里介绍错误处理中，常用的defer关键字，可以在当前范围退出时，延迟执行指定的清理操作。往往是在错误处理分支比较多时，使用这个能力，可以节省很多代码，例如：</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">func</span> <span class="nf">processFile</span><span class="p">(</span><span class="nv">filename</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="k">throws</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">result</span> <span class="p">:</span><span class="kt">String</span><span class="p">?</span>
+    <span class="k">defer</span> <span class="p">{</span>
+        <span class="n">clean</span><span class="o">...</span>
+    <span class="p">}</span>
+    <span class="k">do</span> <span class="p">{</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="k">try</span><span class="p">?</span> <span class="nf">request</span><span class="p">(:</span><span class="s">"xxxx"</span><span class="p">)</span>
+    <span class="p">}</span> <span class="k">catch</span> <span class="n">er</span> <span class="p">{</span>
+        <span class="nf">print</span><span class="p">(</span><span class="n">er</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="p">}</span>
+    <span class="nf">parse</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<span class="p">}</span>
+
+
+</code></pre></div></div>
+
+<h3 id="36-高阶函数">3.6 高阶函数</h3>
+
+<p>Swift 是非常重视函数式编程的，所以高阶函数在 Swift 经常使用，例如 map flapMap 这种数组操作的函数，是官方推荐的替代 for 循环方式。平时我们高阶函数应用最多的应该就是Closure了。如果了解 OC 的block，相信很容易懂。下面就是一个简单的 Swift Closures定义:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">var</span> <span class="nv">block</span> <span class="p">:</span> <span class="p">(</span><span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Int</span><span class="p">?</span>
+<span class="n">block</span> <span class="o">=</span> <span class="p">(</span><span class="nv">name</span><span class="p">:</span><span class="kt">String</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kt">Int</span> <span class="p">{</span>
+    <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s">"0"</span> <span class="p">{</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="mi">1</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>这里是 Closure 介绍的<a href="https://docs.swift.org/swift-book/LanguageGuide/Closures.html">官方文档</a>。关于 Closure 使用的一些高级用法，可以参看 Swift 文档中 <a href="https://docs.swift.org/swift-book/ReferenceManual/Expressions.html">Expressions</a></p>
+
+<p>这里想重点说下 Swift 高阶函数中常用的捕获列表。因为 Swift 的内存管理依旧是用引用计数，不像java的标记分代清理的方法。所以 Swift 依旧有大量的循环引用的问题。举个例子：</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">class</span> <span class="kt">Human</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">lanuage</span> <span class="o">=</span> <span class="s">"Objc"</span>
+
+    <span class="k">var</span> <span class="nv">block</span><span class="p">:</span> <span class="p">(()</span> <span class="o">-&gt;</span> <span class="kt">Void</span><span class="p">)?</span>
+
+    <span class="kd">deinit</span> <span class="p">{</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"deinit"</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="kd">func</span> <span class="nf">recycle</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="p">()</span> <span class="o">-&gt;</span> <span class="p">()</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="nv">code</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="nf">print</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">lanuage</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">block</span> <span class="o">=</span> <span class="n">code</span>
+        <span class="k">return</span> <span class="n">code</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="k">var</span> <span class="nv">human</span><span class="p">:</span> <span class="kt">Human</span><span class="o">!</span> <span class="o">=</span> <span class="kt">Human</span><span class="p">()</span>
+<span class="n">human</span><span class="o">.</span><span class="n">lanuage</span> <span class="o">=</span> <span class="s">"Swift"</span>
+<span class="n">human</span><span class="o">.</span><span class="nf">recycle</span><span class="p">()</span>
+<span class="n">human</span> <span class="o">=</span> <span class="kc">nil</span>
+
+</code></pre></div></div>
+
+<p>然而你会发现控制台里面并没有输出 deinit，human 这个实例被循环引用了。Swift 在类里面默认会把self变量放到捕获列表里面，上面的闭包的写法和下面本质上是等同的。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">let</span> <span class="nv">code</span> <span class="o">=</span> <span class="p">{</span> <span class="p">[</span><span class="k">self</span><span class="p">]</span> <span class="k">in</span>
+    <span class="nf">print</span><span class="p">(</span><span class="k">self</span><span class="o">.</span><span class="n">lanuage</span><span class="p">)</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>所以要在捕获列表中，对 self 变量做弱引用声明，因为是弱引用，闭包在使用这个变量时就要定义为 optional，因为有可能这个变量为空，所以我们更改上面的代码如下:</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">let</span> <span class="nv">code</span> <span class="o">=</span> <span class="p">{</span> <span class="p">[</span><span class="k">weak</span> <span class="k">self</span><span class="p">]</span> <span class="k">in</span>
+    <span class="nf">print</span><span class="p">(</span><span class="k">self</span><span class="p">?</span><span class="o">.</span><span class="n">lanuage</span><span class="p">)</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>再运行就可以看到控制台输出 deinit，另外在控制 self 引用的时候还有个关键字 unowned，这个关键字和 weak 的区别是：unowned 同样不会强引用变量 self，但是它不会改变变量的类型为 optional，也就是说如果变量self被释放后，闭包中仍然使用的话会崩溃。所以在用 unowned 关键字的时候，要保证闭包在调用的时候，self不会被释放。</p>
+
+<h3 id="37-模板编程">3.7 模板编程</h3>
+
+<p>模板编程也是 Swift 一大特点，对于代码重用来讲非常有用。</p>
+
+<p>Swift 的模板编程借鉴了 C++ 很多特性，在学习 Swift 模板中，可以了解 Swift 模板编程中类型推断的方式，在写出来一些模块，类型推断出现 Confuse 报错的时候，可以更好的修改。如果感兴趣可以看下 Swift 类型推断的算法<a href="https://wikichi.icu/wiki/Hindley%E2%80%93Milner_type_system">Hindley-Milner</a>。</p>
+
+<p>模板编程在做一些基础库时，非常又用。目前我们使用 Swift 主要是为了做上层的业务，还不需要很深入的了解模板编程。这里就不详细介绍，感兴趣可以看下官方教程<a href="https://docs.swift.org/swift-book/LanguageGuide/Generics.html">Swift 模板编程</a></p>
+
+<h3 id="38-并发编程">3.8 并发编程</h3>
+
+<ol>
+  <li>async/await用法</li>
+</ol>
+
+<p>和很多语言的async/await的语法，几乎一样。可以解决回调地狱地狱问题，使代码的可读性更强。这里引用下官方文档的例子如下：</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="nf">listPhotos</span><span class="p">(</span><span class="nv">inGallery</span><span class="p">:</span> <span class="s">"Summer Vacation"</span><span class="p">)</span> <span class="p">{</span> <span class="n">photoNames</span> <span class="k">in</span>
+    <span class="k">let</span> <span class="nv">sortedNames</span> <span class="o">=</span> <span class="n">photoNames</span><span class="o">.</span><span class="nf">sorted</span><span class="p">()</span>
+    <span class="k">let</span> <span class="nv">name</span> <span class="o">=</span> <span class="n">sortedNames</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="nf">downloadPhoto</span><span class="p">(</span><span class="nv">named</span><span class="p">:</span> <span class="n">name</span><span class="p">)</span> <span class="p">{</span> <span class="n">photo</span> <span class="k">in</span>
+        <span class="nf">show</span><span class="p">(</span><span class="n">photo</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>使用async/await语法后，代码会更简洁。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">func</span> <span class="nf">listPhotos</span><span class="p">(</span><span class="n">inGallery</span> <span class="nv">name</span><span class="p">:</span> <span class="kt">String</span><span class="p">)</span> <span class="n">async</span> <span class="o">-&gt;</span> <span class="p">[</span><span class="kt">String</span><span class="p">]</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="c1">// ... some asynchronous networking code ...</span>
+    <span class="k">return</span> <span class="n">result</span>
+<span class="p">}</span>
+
+<span class="k">let</span> <span class="nv">photoNames</span> <span class="o">=</span> <span class="n">await</span> <span class="nf">listPhotos</span><span class="p">(</span><span class="nv">inGallery</span><span class="p">:</span> <span class="s">"Summer Vacation"</span><span class="p">)</span>
+<span class="k">let</span> <span class="nv">sortedNames</span> <span class="o">=</span> <span class="n">photoNames</span><span class="o">.</span><span class="nf">sorted</span><span class="p">()</span>
+<span class="k">let</span> <span class="nv">name</span> <span class="o">=</span> <span class="n">sortedNames</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">let</span> <span class="nv">photo</span> <span class="o">=</span> <span class="n">await</span> <span class="nf">downloadPhoto</span><span class="p">(</span><span class="nv">named</span><span class="p">:</span> <span class="n">name</span><span class="p">)</span>
+<span class="nf">show</span><span class="p">(</span><span class="n">photo</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<p>这里是<a href="https://docs.swift.org/swift-book/LanguageGuide/Concurrency.html">官方文档</a>有更详细的介绍。</p>
+
+<ol>
+  <li>actor用法</li>
+</ol>
+
+<p>actor 本质上为了解决多线程同步的问题，定义为 actor 的类，所有的属性和操作本质上都是线程安全的，默认都是加锁的。actor 并发模型，是很多函数式编程语言，多线程处理的方式，可以在编程语言的层面上避免了多线程锁使用的问题。actor模式的由来可以看<a href="https://zh.wikipedia.org/zh-cn/%E6%BC%94%E5%91%98%E6%A8%A1%E5%9E%8B">actor模式</a>。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="n">actor</span> <span class="kt">TemperatureLogger</span> <span class="p">{</span>
+    <span class="k">let</span> <span class="nv">label</span><span class="p">:</span> <span class="kt">String</span>
+    <span class="k">var</span> <span class="nv">measurements</span><span class="p">:</span> <span class="p">[</span><span class="kt">Int</span><span class="p">]</span>
+    <span class="kd">private(set)</span> <span class="k">var</span> <span class="nv">max</span><span class="p">:</span> <span class="kt">Int</span>
+
+    <span class="nf">init</span><span class="p">(</span><span class="nv">label</span><span class="p">:</span> <span class="kt">String</span><span class="p">,</span> <span class="nv">measurement</span><span class="p">:</span> <span class="kt">Int</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">label</span> <span class="o">=</span> <span class="n">label</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">measurements</span> <span class="o">=</span> <span class="p">[</span><span class="n">measurement</span><span class="p">]</span>
+        <span class="k">self</span><span class="o">.</span><span class="n">max</span> <span class="o">=</span> <span class="n">measurement</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>由于一个 actor 本质上就是一个状态机，对 actor 的操作，就相当于消息事件的处理，所以我们在使用 actor 对象时，需要配合 aync/await 语法使用，通过await来等待消息处理的结果。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">let</span> <span class="nv">logger</span> <span class="o">=</span> <span class="kt">TemperatureLogger</span><span class="p">(</span><span class="nv">label</span><span class="p">:</span> <span class="s">"Outdoors"</span><span class="p">,</span> <span class="nv">measurement</span><span class="p">:</span> <span class="mi">25</span><span class="p">)</span>
+<span class="nf">print</span><span class="p">(</span><span class="n">await</span> <span class="n">logger</span><span class="o">.</span><span class="n">max</span><span class="p">)</span>
+<span class="c1">// Prints "25"</span>
+
+</code></pre></div></div>
+
+<h3 id="39-swift-lint">3.9 swift lint</h3>
+
+<p>Swift 语法检测可以用<a href="https://github.com/realm/SwiftLint">Realm语法规范</a></p>
+
+<h2 id="4-swift不同语言的桥接">4 Swift不同语言的桥接</h2>
+
+<p>Swift 语言桥接C和C++必须通过OC来做，Swift 定义的函数如果需要 OC 引用的话，必须加上 @obj 的语法标注，Swift所有@开头的代表的是语法标注，有点像 java 中的语法标注，是在编译期间，可以改变AST语法一些结构。@obj就代表，在编译的 AST 中，插入 OC 的函数定义，便于 OC 的定义。其实标记语法在 SwiftUI 中大量使用，具体可以了解 @State语法的使用。</p>
+
+<p>这里再说下 Swift 引用 OC 变量时，需要注意 <code class="highlighter-rouge">nonnull</code> 这两种形式在Swift中会被识别为非Optional类型，如果强制解包就会崩溃。</p>
+
+<pre><code class="language-oc">@property (nonatomic, strong,) NSString *name;
+@property (nonatomic, strong, nonnull) NSString *name;
+
+@property (nonatomic, strong, nullable) NSString *name;
+
+</code></pre>
+
+<p>并且 Swift 中的 struct 和 enum 类型，OC是无法引用的。所以Swift的库，如果想暴露出OC的接口，兼容性还是很差的。</p>
+
+<h3 id="41-swift的patch能力">4.1 Swift的patch能力</h3>
+
+<p>目前Swift patch能力还是比较弱的，一种方式通过把Swift函数，通过桥接成obj的方法，然后再通过objc的runtime方式进行patch，这个本质上就丧失了swift的便捷性。</p>
+
+<p>另外一种方式就像hook C 的方式。通过动态库加载过程中，函数符号绑定时，找出来swift方法的具体内存地址，然后进行替换。这个可以参考<a href="https://github.com/facebook/fishhook">fish hook</a>。这种方法必须要把需要hook的代码，都做成dylib动态库进行加载，才能完成。并且寻找Swift的函数符号地址可能也不是一个容易的事情。</p>
+
+<h2 id="5-swift语言的学习计划">5 Swift语言的学习计划</h2>
+
+<p>下面是苹果官方关于 Swift 语言学习和发展的计划。</p>
+<blockquote>
+  <p><a href="https://github.com/apple/swift-evolution">Swift开发计划</a>
+<a href="https://github.com/apple/swift">Swift开源项目</a>
+<a href="https://docs.swift.org/swift-book/">Swift官网学习资料</a>
+如果对Swift语法设计感兴趣的，可以看下苹果开源的文档<a href="https://docs.swift.org/swift-book/ReferenceManual/AboutTheLanguageReference.html">Swift语法设计</a></p>
+</blockquote>
+
+<p>苹果每次更新语法时，都会给出示例。例如 <a href="https://github.com/twostraws/whats-new-in-swift-5-6">Swift 5.6示例</a></p>
+
+<p>下面是一些比较有用的swift学习的论坛</p>
+<blockquote>
+  <p>https://www.objc.io/
+swift官方文档的中文翻译 https://swiftgg.gitbook.io/swift/
+swiftUI的书籍 https://onevcat.com/2019/06/swift-ui-firstlook/</p>
+</blockquote>
+
+<h2 id="6-总结">6 总结</h2>
+
+<p>Swift 语言由于是出自开源的 LLVM 编译器作者之手（LLVM是 Python,Rust,C++等一系列语言的编译器），所以里面吸收了很多语言的优秀特性，Swift 说到底是一门静态语言，学习的成本比 JS,Python,Ruby,Dark 这种弱类型语言，成本还是略高的，但是总体来讲比 C++ 这种语言学习成本要低很多，但是同时具备了弱类型语言的语法便捷性，也具备强类型语言的安全和性能，所以还是很推荐大家学习的。</p>
+
+<p>Swift 语言还是主要应用在苹果生态下的桌面和移动应用开发。但是由于 Swift 语言安全性和性能方面有很多优秀的特性，Swift 语言也产出了很多服务器开发的框架，例如 SwiftNIO 苹果开源的非阻塞IO网络框架。并且也有一些组织 vapor 一直在致力于 Swift 的服务器开发，并且开发了 Swift 版本的 HTTP 服务器。不过由于苹果一向任性的做法，Swift 的语言版本兼容性做的一直很差(Go语言到现在还没有2.0，Swift 马上都6.0了)，造成很多服务器开发者不敢轻易的采用，到了 Swift5.1 之后ABI稳定了，会不会有更多 Swift server 的项目，我们拭目以待。</p>
+
+<p>这里再次强调下，这篇博客不是 Swift 的学习教程。只是挑选出来 Swift 语言的一些重要新特性和其他语言做对比，对于将来使用 Swift 的时候可以更好的理解。当然博客中如果有一些错误之处，还望指出和勘正。希望和大家一同学习，共同提高，能够更好的运用 Swift 语言到实际的编程中。</p>
+
+<h2 id="参考文献">参考文献</h2>
+
+<ol>
+  <li>
+    <p>https://docs.swift.org/swift-book/</p>
+  </li>
+  <li>
+    <p>https://github.com/realm/SwiftLint</p>
+  </li>
+  <li>
+    <p>https://github.com/apple/swift-evolution</p>
+  </li>
+  <li>
+    <p>https://github.com/twostraws/whats-new-in-swift-5-6</p>
+  </li>
+  <li>
+    <p>https://swiftgg.gitbook.io/swift/</p>
+  </li>
+</ol>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>
