@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2022-05-04T07:54:24+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">Swift概述</title><link href="https://mengtnt.com/2022/05/04/swift-roadmap.html" rel="alternate" type="text/html" title="Swift概述" /><published>2022-05-04T07:04:48+00:00</published><updated>2022-05-04T07:04:48+00:00</updated><id>https://mengtnt.com/2022/05/04/swift-roadmap</id><content type="html" xml:base="https://mengtnt.com/2022/05/04/swift-roadmap.html">&lt;p&gt;随着越来越多的应用在使用 Swift 语言开发iOS，学习 Swift 语言也很有必要。这个博客不是详细的 Swift 的教程，主要是为了 Swift 初学者，尤其之前使用 OC 开发 iOS 应用的人员，在转入 Swift 这门语言时，应该了解的一些基础知识，为方便进一步的学习做一些铺垫。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2022-05-18T03:02:55+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">Swift概述</title><link href="https://mengtnt.com/2022/05/04/swift-roadmap.html" rel="alternate" type="text/html" title="Swift概述" /><published>2022-05-04T07:04:48+00:00</published><updated>2022-05-04T07:04:48+00:00</updated><id>https://mengtnt.com/2022/05/04/swift-roadmap</id><content type="html" xml:base="https://mengtnt.com/2022/05/04/swift-roadmap.html">&lt;p&gt;随着越来越多的应用在使用 Swift 语言开发iOS，学习 Swift 语言也很有必要。这个博客不是详细的 Swift 的教程，主要是为了 Swift 初学者，尤其之前使用 OC 开发 iOS 应用的人员，在转入 Swift 这门语言时，应该了解的一些基础知识，为方便进一步的学习做一些铺垫。&lt;/p&gt;
 
 &lt;h2 id=&quot;1-swift语言的发展&quot;&gt;1 Swift语言的发展&lt;/h2&gt;
 
@@ -22,7 +22,7 @@
 
 &lt;h3 id=&quot;21-module工程化&quot;&gt;2.1 Module工程化&lt;/h3&gt;
 
-&lt;p&gt;什么是Module化，说白了就是编译器的一种引用方式，很多语言 JavaScript python 等等都是支持 Module化的。OC 语言是继承了 C 的头文件引用方式，在引用一个 xxx.h 文件时，编译器会重新编译 xxx.h 文件的所有语法。这样方式相当于把语法的复杂性暴露给了开发者。下面列举下使用头文件引用的弊端&lt;/p&gt;
+&lt;p&gt;什么是Module化，说白了就是编译器的一种引用方式，很多语言 JavaScript python 等等都是支持 Module化的。OC 语言是继承了 C 的头文件引用方式，在引用一个 xxx.h 文件时，编译器会重新编译 xxx.h 文件的所有语法。这样方式相当于把语法的复杂性暴露给了开发者。下面列举下使用头文件引用的弊端。&lt;/p&gt;
 
 &lt;ol&gt;
   &lt;li&gt;
@@ -40,7 +40,7 @@
 
 &lt;p&gt;OC 语言已经支持了 Clang Module 的引用方式，但是需要开发者在编译项目的时候选择支持 Module 化。（2020年的C++20版本也支持了Clang Module）&lt;/p&gt;
 
-&lt;p&gt;由于Swift 工程 Framework 模块的引用强制使用 Module 化，所以所有的 OC 的Framework必须都要支持。&lt;/p&gt;
+&lt;p&gt;由于 Swift 工程 Framework 模块的引用强制使用 Module 化，所以所有的 OC 的 Framework 必须都要支持。&lt;/p&gt;
 
 &lt;h3 id=&quot;22-module化的问题&quot;&gt;2.2 Module化的问题&lt;/h3&gt;
 
@@ -48,13 +48,10 @@
 
 &lt;ol&gt;
   &lt;li&gt;
-    &lt;p&gt;没有很好的版本控制，很多语言基本都有版本控制工具，但是对于 C、C++ 一直没有很好的版本控制工具。&lt;/p&gt;
+    &lt;p&gt;没有很好的版本控制，很多语言基本都有版本控制工具，但是对于 C、C++ 一直没有很好的版本控制工具。Swift 版本控制一直做的不好，直到 5.1 ABI稳定后，算是解决了版本控制的问题。&lt;/p&gt;
   &lt;/li&gt;
   &lt;li&gt;
-    &lt;p&gt;没有 namespace 的概念，例如相同的class或者struct，在不同的 Module下会有符号冲突。Swift 版本控制一直做的不好，直到 5.1 ABI稳定后，算是临时解决了版本控制的问题。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;Module化依旧会有符号冲突问题，像 C++ C# 语言使用了命名空间，只要是来自不同的命名空间，都不会冲突。为了解决这个问题 Swift的命名空间基于module而不是显式指明 Namespace，每个Module代表了Swift中的一个命名空间，也就是说，同一个Framework 里的类型名称还是不能相同。&lt;/p&gt;
+    &lt;p&gt;没有 namespace 的概念，例如相同的 class 或者 struct，在不同的 Module下会有符号冲突。为了解决这个问题 Swift 的命名空间基于 Module 而不是显式指明 namespace，每个 Module 代表了 Swift 中的一个命名空间，也就是说，不同的 Framework 里的 struct 和 class 是可以一样的。&lt;/p&gt;
   &lt;/li&gt;
 &lt;/ol&gt;
 
@@ -64,10 +61,9 @@
 
 &lt;h2 id=&quot;3-swift-语法&quot;&gt;3 Swift 语法&lt;/h2&gt;
 
-&lt;p&gt;Swift 由于是开源的，每个语法的由来也都是有文档可查的。有兴趣的可以看下 Swift 所有基础类型的Meta定义 &lt;a href=&quot;https://github.com/apple/swift/blob/main/docs/ABI/TypeMetadata.rst&quot;&gt;TypeMetaData&lt;/a&gt;和
-&lt;a href=&quot;https://docs.swift.org/swift-book/ReferenceManual/AboutTheLanguageReference.html&quot;&gt;Swift 语法设计手册&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;Swift 由于是开源的，每个语法的由来也都是有文档可查的。有兴趣的可以看下 Swift 所有基础类型的Meta定义 &lt;a href=&quot;https://github.com/apple/swift/blob/main/docs/ABI/TypeMetadata.rst&quot;&gt;TypeMetaData&lt;/a&gt;和 &lt;a href=&quot;https://docs.swift.org/swift-book/ReferenceManual/AboutTheLanguageReference.html&quot;&gt;Swift 语法设计手册&lt;/a&gt;。&lt;/p&gt;
 
-&lt;p&gt;下面主要介绍下 Swift 语言的一些重要特点。以及和 OC 语法的不同之处。平时开发中可能会经常遇到。&lt;a href=&quot;https://docs.swift.org/swift-book/&quot;&gt;Swift 语法官方教程&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;下面主要介绍下 Swift 语言的一些重要新特点。以及和 OC 语法的不同之处。平时开发中可能会经常遇到。如果要进一步学习，可以看 &lt;a href=&quot;https://docs.swift.org/swift-book/&quot;&gt;Swift 语法官方教程&lt;/a&gt;&lt;/p&gt;
 
 &lt;h3 id=&quot;31-optional-语法&quot;&gt;3.1 Optional 语法&lt;/h3&gt;
 
@@ -81,7 +77,7 @@
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;在 OC 中我们往往认为 int float 这种基础类型不像NSString一样应该没有 nil 的概念。但是在 swift 里面所有的类型都有nil的概念。看下这个写法 &lt;code class=&quot;highlighter-rouge&quot;&gt;var int test = 0&lt;/code&gt; 和 ` var int test? = nil&lt;code class=&quot;highlighter-rouge&quot;&gt; 是完全不同的。其中有 &lt;/code&gt;?&lt;code class=&quot;highlighter-rouge&quot;&gt; 结尾的表示的变量  &lt;/code&gt;test`是 Optional类型，也就是可以做unWrapped的操作,如何拆包那？往往如下面的写法。&lt;/p&gt;
+&lt;p&gt;在 OC 中我们往往认为 int float 这种基础类型不像NSString一样应该没有 nil 的概念。但是在 swift 里面所有的类型都有nil的概念。看下这个写法 &lt;code class=&quot;highlighter-rouge&quot;&gt;var int test = 0&lt;/code&gt; 和 ` var int test? = nil&lt;code class=&quot;highlighter-rouge&quot;&gt; 是完全不同的。其中有 &lt;/code&gt;?&lt;code class=&quot;highlighter-rouge&quot;&gt; 结尾的表示的变量  &lt;/code&gt;test`是 Optional类型，也就是可以做解包(unWrapped)的操作,如何拆包呢？如下面的写法：&lt;/p&gt;
 
 &lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
 &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;test&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt;
@@ -177,7 +173,7 @@ if let result = test {&lt;/code&gt; 。&lt;/p&gt;
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;枚举在 Swift 中本质上是和struct、class 齐平的一种数据结构，我们也可以自定义枚举如下。&lt;/p&gt;
+&lt;p&gt;枚举在 Swift 中本质上是和struct、class 齐平的一种数据结构，我们也可以自定义枚举如下:&lt;/p&gt;
 
 &lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
 &lt;span class=&quot;kd&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Person&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;Equatable&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;ExpressibleByStringLiteral&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
@@ -316,7 +312,7 @@ if let result = test {&lt;/code&gt; 。&lt;/p&gt;
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;可以看出来错误处理，也是有模式匹配的特点的。举个网络处理的简单例子如下：&lt;/p&gt;
+&lt;p&gt;这个异常处理和其他语言没有太大的区别，从语法的定义上，可以看出来错误处理，也是有模式匹配的特点的。举个网络处理的简单例子如下：&lt;/p&gt;
 
 &lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
 &lt;span class=&quot;kd&quot;&gt;enum&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;NetError&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Error&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
@@ -345,7 +341,7 @@ if let result = test {&lt;/code&gt; 。&lt;/p&gt;
 
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
-&lt;p&gt;这里介绍错误处理中，常用的defer关键字，可以在当前范围退出时，延迟执行指定的清理操作。往往是在错误处理分支比较多时，使用这个能力，可以节省很多代码，例如：&lt;/p&gt;
+&lt;p&gt;这里介绍下错误处理中，常用的defer关键字，可以在当前范围退出时，延迟执行指定的清理操作。往往是在错误处理分支比较多时，使用这个能力，可以节省很多代码，例如：&lt;/p&gt;
 
 &lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
 &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;processFile&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;filename&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;throws&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
@@ -367,7 +363,7 @@ if let result = test {&lt;/code&gt; 。&lt;/p&gt;
 
 &lt;h3 id=&quot;36-高阶函数&quot;&gt;3.6 高阶函数&lt;/h3&gt;
 
-&lt;p&gt;Swift 是非常重视函数式编程的，所以高阶函数在 Swift 经常使用，例如 map flapMap 这种数组操作的函数，是官方推荐的替代 for 循环方式。平时我们高阶函数应用最多的应该就是Closure了。如果了解 OC 的block，相信很容易懂。下面就是一个简单的 Swift Closures定义:&lt;/p&gt;
+&lt;p&gt;Swift 是非常重视函数式编程的，所以高阶函数在 Swift 经常使用，例如 map flatMap 这种数组操作的函数，是官方推荐的替代 for 循环方式。平时我们高阶函数应用最多的应该就是 闭包(Closure)了。如果了解 OC 的 block，相信很容易懂。下面就是一个简单的 Swift Closure 定义:&lt;/p&gt;
 
 &lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
 &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;block&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;String&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt;
@@ -377,12 +373,11 @@ if let result = test {&lt;/code&gt; 。&lt;/p&gt;
     &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
     &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
 &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
 &lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
 
 &lt;p&gt;这里是 Closure 介绍的&lt;a href=&quot;https://docs.swift.org/swift-book/LanguageGuide/Closures.html&quot;&gt;官方文档&lt;/a&gt;。关于 Closure 使用的一些高级用法，可以参看 Swift 文档中 &lt;a href=&quot;https://docs.swift.org/swift-book/ReferenceManual/Expressions.html&quot;&gt;Expressions&lt;/a&gt;&lt;/p&gt;
 
-&lt;p&gt;这里想重点说下 Swift 高阶函数中常用的捕获列表。因为 Swift 的内存管理依旧是用引用计数，不像java的标记分代清理的方法。所以 Swift 依旧有大量的循环引用的问题。举个例子：&lt;/p&gt;
+&lt;p&gt;文档上 Closure 的尾随闭包，参数省略等等各种用法都很详细，这里不再介绍。想重点说下 Swift 高阶函数中常用的捕获列表。因为 Swift 的内存管理依旧是用引用计数，不像 java 的标记分代清理的方法。所以 Swift 依旧有大量的循环引用的问题。举个例子:&lt;/p&gt;
 
 &lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
 &lt;span class=&quot;kd&quot;&gt;class&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Human&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
@@ -433,9 +428,9 @@ if let result = test {&lt;/code&gt; 。&lt;/p&gt;
 
 &lt;p&gt;模板编程也是 Swift 一大特点，对于代码重用来讲非常有用。&lt;/p&gt;
 
-&lt;p&gt;Swift 的模板编程借鉴了 C++ 很多特性，在学习 Swift 模板中，可以了解 Swift 模板编程中类型推断的方式，在写出来一些模块，类型推断出现 Confuse 报错的时候，可以更好的修改。如果感兴趣可以看下 Swift 类型推断的算法&lt;a href=&quot;https://wikichi.icu/wiki/Hindley%E2%80%93Milner_type_system&quot;&gt;Hindley-Milner&lt;/a&gt;。&lt;/p&gt;
+&lt;p&gt;Swift 的模板编程借鉴了 C++ 很多特性，在学习 Swift 模板中，可以了解 Swift 模板编程中类型推断的方式，在写出来一些模块，类型推断出现 Confuse 报错的时候，可以更好的修改。如果感兴趣可以看下 Swift 类型推断的算法 &lt;a href=&quot;https://wikichi.icu/wiki/Hindley%E2%80%93Milner_type_system&quot;&gt;Hindley-Milner&lt;/a&gt;。&lt;/p&gt;
 
-&lt;p&gt;模板编程在做一些基础库时，非常又用。目前我们使用 Swift 主要是为了做上层的业务，还不需要很深入的了解模板编程。这里就不详细介绍，感兴趣可以看下官方教程&lt;a href=&quot;https://docs.swift.org/swift-book/LanguageGuide/Generics.html&quot;&gt;Swift 模板编程&lt;/a&gt;&lt;/p&gt;
+&lt;p&gt;模板编程在做一些基础库时，非常又用。目前我们使用 Swift 主要是为了做上层的业务，还不需要很深入的了解模板编程。这里就不详细介绍，感兴趣可以看下官方教程 &lt;a href=&quot;https://docs.swift.org/swift-book/LanguageGuide/Generics.html&quot;&gt;Swift 模板编程&lt;/a&gt;&lt;/p&gt;
 
 &lt;h3 id=&quot;38-并发编程&quot;&gt;3.8 并发编程&lt;/h3&gt;
 
@@ -543,18 +538,24 @@ if let result = test {&lt;/code&gt; 。&lt;/p&gt;
 
 &lt;p&gt;下面是一些比较有用的swift学习的论坛&lt;/p&gt;
 &lt;blockquote&gt;
-  &lt;p&gt;https://www.objc.io/
-swift官方文档的中文翻译 https://swiftgg.gitbook.io/swift/
-swiftUI的书籍 https://onevcat.com/2019/06/swift-ui-firstlook/&lt;/p&gt;
+  &lt;p&gt;https://www.objc.io/&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;a href=&quot;https://swiftgg.gitbook.io/swift/&quot;&gt;swift官方文档的中文翻译&lt;/a&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;a href=&quot;https://onevcat.com/2019/06/swift-ui-firstlook/&quot;&gt;swiftUI的书籍&lt;/a&gt;&lt;/p&gt;
 &lt;/blockquote&gt;
 
 &lt;h2 id=&quot;6-总结&quot;&gt;6 总结&lt;/h2&gt;
 
-&lt;p&gt;Swift 语言由于是出自开源的 LLVM 编译器作者之手（LLVM是 Python,Rust,C++等一系列语言的编译器），所以里面吸收了很多语言的优秀特性，Swift 说到底是一门静态语言，学习的成本比 JS,Python,Ruby,Dark 这种弱类型语言，成本还是略高的，但是总体来讲比 C++ 这种语言学习成本要低很多，但是同时具备了弱类型语言的语法便捷性，也具备强类型语言的安全和性能，所以还是很推荐大家学习的。&lt;/p&gt;
+&lt;p&gt;Swift 语言由于是出自开源的 LLVM 编译器作者之手（LLVM是 Python,Rust,C++等一系列语言的编译器），所以里面吸收了很多语言的优秀特性，Swift 说到底是一门静态语言，学习的成本比 JS,Python,Ruby,Dark 这种弱类型语言，成本还是略高的，但是总体来讲比 C++ 这种语言学习成本要低很多。并且 Swift 同时具备了弱类型语言的语法便捷性，也具备强类型语言的安全和性能，所以还是很推荐大家学习的。&lt;/p&gt;
 
-&lt;p&gt;Swift 语言还是主要应用在苹果生态下的桌面和移动应用开发。但是由于 Swift 语言安全性和性能方面有很多优秀的特性，Swift 语言也产出了很多服务器开发的框架，例如 SwiftNIO 苹果开源的非阻塞IO网络框架。并且也有一些组织 vapor 一直在致力于 Swift 的服务器开发，并且开发了 Swift 版本的 HTTP 服务器。不过由于苹果一向任性的做法，Swift 的语言版本兼容性做的一直很差(Go语言到现在还没有2.0，Swift 马上都6.0了)，造成很多服务器开发者不敢轻易的采用，到了 Swift5.1 之后ABI稳定了，会不会有更多 Swift server 的项目，我们拭目以待。&lt;/p&gt;
+&lt;p&gt;Swift 语言目前主要还是应用在苹果生态下的桌面和移动应用开发。但是由于 Swift 语言安全性和性能方面有很多优秀的特性，Swift 语言也产出了很多服务器开发的框架，例如 SwiftNIO 苹果开源的非阻塞IO网络框架。并且也有一些公司在 Swift 服务器开发上持续投入。例如 &lt;a href=&quot;https://vapor.codes/&quot;&gt;vapor&lt;/a&gt; 框架是一个开源的 HTTP 服务器，这个就是基于 SwiftNIO 框架实现的。不过由于苹果一向任性的做法，Swift 的语言版本兼容性做的一直很差(Go语言到现在还没有2.0，Swift 马上都6.0了)，造成很多服务器开发者不敢轻易的采用，到了 Swift5.1 之后ABI稳定了，会不会有更多 Swift server 的项目，我们拭目以待。&lt;/p&gt;
 
-&lt;p&gt;这里再次强调下，这篇博客不是 Swift 的学习教程。只是挑选出来 Swift 语言的一些重要新特性和其他语言做对比，对于将来使用 Swift 的时候可以更好的理解。当然博客中如果有一些错误之处，还望指出和勘正。希望和大家一同学习，共同提高，能够更好的运用 Swift 语言到实际的编程中。&lt;/p&gt;
+&lt;p&gt;这里再次强调下，这篇博客不是 Swift 的学习教程。只是挑选出来 Swift 语言的一些重要新特性做了介绍，对于将来使用 Swift 的时候可以更好理解其中的语法。当然文章中如果有一些错误之处，还望指出和勘正。希望和大家一同学习，共同提高，能够更好的运用 Swift 语言到实际的编程中。&lt;/p&gt;
 
 &lt;h2 id=&quot;参考文献&quot;&gt;参考文献&lt;/h2&gt;
 
