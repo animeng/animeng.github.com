@@ -1,4 +1,89 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2022-05-18T03:02:55+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">Swift概述</title><link href="https://mengtnt.com/2022/05/04/swift-roadmap.html" rel="alternate" type="text/html" title="Swift概述" /><published>2022-05-04T07:04:48+00:00</published><updated>2022-05-04T07:04:48+00:00</updated><id>https://mengtnt.com/2022/05/04/swift-roadmap</id><content type="html" xml:base="https://mengtnt.com/2022/05/04/swift-roadmap.html">&lt;p&gt;随着越来越多的应用在使用 Swift 语言开发iOS，学习 Swift 语言也很有必要。这个博客不是详细的 Swift 的教程，主要是为了 Swift 初学者，尤其之前使用 OC 开发 iOS 应用的人员，在转入 Swift 这门语言时，应该了解的一些基础知识，为方便进一步的学习做一些铺垫。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2023-02-02T06:09:35+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">职责单一的重要性</title><link href="https://mengtnt.com/2022/09/18/architeche.html" rel="alternate" type="text/html" title="职责单一的重要性" /><published>2022-09-18T06:55:02+00:00</published><updated>2022-09-18T06:55:02+00:00</updated><id>https://mengtnt.com/2022/09/18/architeche</id><content type="html" xml:base="https://mengtnt.com/2022/09/18/architeche.html">&lt;p&gt;最近在做 iPad 改版功能，由于 iPad 的功能和 iPhone 功能上基本保持一致，除了 UI 要适配下 iPad 的屏幕以及分屏的情况外。在这个开发过程中，和同事讨论了一个很有意思的功能扩展的问题。虽然简单但是感觉很有必要记录下来，对于在软件开发中设计业务逻辑时很有启发。&lt;/p&gt;
+
+&lt;h2 id=&quot;故事的开始&quot;&gt;故事的开始&lt;/h2&gt;
+
+&lt;p&gt;iPad 的UI适配的代码写在 XXXiPadViewController 中，主要目的是不改变原有代码的逻辑，只需要添加适配代码即可。其实也是软件设计中经常用的一个特点开闭原则。&lt;/p&gt;
+
+&lt;p&gt;但是遇到的问题是，原来的XXXComponent的代码，但是业务代码都是继承在ViewController中的，了解iOS开发的都清楚，ViewController主要负责页面UI的添加和布局。由于适配 iPad 的视图，尤其是分屏的逻辑，一定需要更改布局，如果想使用原来的 XXXComponent 的代码逻辑，但是不想改动代码的布局，似乎不太可能。&lt;/p&gt;
+
+&lt;h2 id=&quot;解决方法&quot;&gt;解决方法&lt;/h2&gt;
+
+&lt;p&gt;如果熟悉软件设计的装饰器模式的话，这其实有点像装饰器。不改变原有对象的情况下动态地给一个对象扩展功能，即插即用。XXXiPadComponent，就是装饰器，用来装饰XXXComponent，让他具备iPad的布局能力，但是要把分屏布局都放到装饰器中，就需要父视图布局的能力暴露给 XXXiPadComponent。&lt;/p&gt;
+
+&lt;p&gt;下面就是解决这个问题的思路，通过写一个 iPad 的适配器，通过把 XXXiPadViewController 的布局能力暴露给 XXXiPadViewController，达到不改动原来 XXXViewController 的代码逻辑，同时增加了 iPad 布局的能力。要达到上面的目的 ，在 OC 里可以通过代理方法，把布局的动作交给 XXXiPadComponent，就使用了如下的设计，下面用伪代码演示下。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+// 布局的回调方法
+@protocol layoutDelegate
+
+- layoutViewInContainer(View *)
+
+// Component 增加如下能力
+- addPlugin(Component)
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;然后调用者使用的方式就很简单如下&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-oc&quot;&gt;
+let iPadComponet = XXXiPadComponent()
+XXXComponent.addPlugin(iPadComponet)
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;通过这种方式就是把布局代理给了 XXXiPadComponent，由于 XXXiPadComponent 基于于UIViewController，自然就想起来给UIViewController 加上能力扩展就行了。最终版本如下。这样父视图就不用关系childViewController的布局了，只要一行 ` addPlugin `调用就可以了，代码也可以节省很多。&lt;/p&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;- (void)addPlugin:(DTKViewController&amp;lt;ADTViewControllerPlugin&amp;gt;*)pluginVc {
+    pluginVc.overrideInterfaceOrientation = self.overrideInterfaceOrientation;
+    [self addChildViewController:pluginVc];
+    [self.view addSubview:[pluginVc pluginView]];
+    
+    if ([pluginVc respondsToSelector:@selector(layoutPluginInContainer:)]) {
+        [pluginVc layoutPluginInContainer:self.view];
+    }
+    
+    [pluginVc didMoveToParentViewController:self];
+}
+
+- (void)removePlugin:(DTKViewController&amp;lt;ADTViewControllerPlugin&amp;gt;*)pluginVc {
+    [pluginVc removeFromParentViewController];
+    [[pluginVc pluginView] removeFromSuperview];
+}
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;问题的出现&quot;&gt;问题的出现&lt;/h2&gt;
+
+&lt;p&gt;从上面的过程来看，装饰器模式代码结构清晰，但是带来的问题是会增加程序复杂性，下面就说出现的问题。&lt;/p&gt;
+
+&lt;p&gt;对于iPad适配，这种方式似乎挺好基本不用改变原来的代码，只需要适配 iPadViewController 的代码就可以。但是有同事开始质疑这种方式。&lt;/p&gt;
+
+&lt;p&gt;最大的质疑就是为什么不用addChildViewController，不就是childViewController么？
+自己仔细想想确实是，为啥当时不用哪？很重要的一点就是 addChildViewController 的布局是需要父视图来写逻辑代码的，这样就和自己想要把iPad布局的适配代码都写在XXXiPadComponent中矛盾了。&lt;/p&gt;
+
+&lt;p&gt;尤其同事说的这句话让我记忆犹新，为什么你想要把SubViewController的布局交给本身那？SubViewController 就应该是父视图来布局，这样才符合UIViewController逻辑，别人看代码才看的懂。&lt;/p&gt;
+
+&lt;p&gt;如果从UIKit框架来看，确实这样写才是容易理解的代码。但是假如说一个从来没学习过苹果UIKit布局的程序员，想设计一个组件，然后父组件添加子组件他会怎么写哪？最便捷的方法就是直接通过 addPlugin 完成就行，然后子组件布局的代码也很可能写在组件中，因为这样封装性更好，其实很多VUE的组件很多都是一行代码，不用关心布局，一行代码就可以加载插件，除非调用者需要动态改变布局，否则默认就不再暴露出来。&lt;/p&gt;
+
+&lt;p&gt;所以矛盾就出现了 苹果 UIKit 框架设计就是给了UIViewController太多的权利，既可以添加各种视图，又要负责各种视图的布局。当然和刚才说的组件思想有很大的差别，所以自己如果给 UIViewController 添加plugin就会让其他开发者感到困惑。&lt;/p&gt;
+
+&lt;h2 id=&quot;解决方式&quot;&gt;解决方式&lt;/h2&gt;
+
+&lt;p&gt;既然UIKi 框架的设计理念和业务插件的理念有冲突，怎么解决？其实本质上就是我们定义的Plugin暴露出了UIViewController，让这个plugin具备了过多的无用的能力，所以我们的plugin完全可以用下面的方式。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-oc&quot;&gt;
+id&amp;lt;ADTPluginProtocol&amp;gt;
+
+- registerPlugin:(id&amp;lt;ADTPluginProtocol&amp;gt;)plugin
+
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;plugin定义的协议接口不要和UIViewController关联，自然调用者就不会想到这个是UIViewController。所以我们设计某些功能时，发现和系统框架的理念不太一样的话，尽量还是要区分开自己的业务逻辑的功能。说白了就是要职责单一，不要把各种职责都给与一个类，这样就会变成看似功能强大，但是代码无比臃肿。&lt;/p&gt;
+
+&lt;h2 id=&quot;思考总结&quot;&gt;思考总结&lt;/h2&gt;
+
+&lt;p&gt;软件设计中其实比较忌讳的是鱼与熊掌兼得，既想要代码可复用性强，又想要代码功能多扩展强，就很容易陷入到上面说的困境中。其实上面plugin的设计完全没有必要基于 UIViewController，看起来这个plugin功能很强大，既有UIViewController布局子视图的能力，又具备了子视图可以在父视图上布局的能，这样改变了UIKit框架原本定义的UIViewController能力，会让使用开发者非常困惑。
+解决方案就是可以自己定义一个Plugin的对象，这样在使用plugin时，开发者就不会联想到这个就是ViewController，而只会知道Plugin可以让自己获得布局到父视图的能力。
+这也提醒了平台框架层和业务逻辑的能力尽量分离清晰，不要混合在一起，否则开发者理解起来也很容易歧义。说白了还是软件设计的重要原则职责单一，不要给设计的功能分配太多没用的权利，仅仅给需要完成的权利就可以。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近在做 iPad 改版功能，由于 iPad 的功能和 iPhone 功能上基本保持一致，除了 UI 要适配下 iPad 的屏幕以及分屏的情况外。在这个开发过程中，和同事讨论了一个很有意思的功能扩展的问题。虽然简单但是感觉很有必要记录下来，对于在软件开发中设计业务逻辑时很有启发。</summary></entry><entry><title type="html">Swift概述</title><link href="https://mengtnt.com/2022/05/04/swift-roadmap.html" rel="alternate" type="text/html" title="Swift概述" /><published>2022-05-04T07:04:48+00:00</published><updated>2022-05-04T07:04:48+00:00</updated><id>https://mengtnt.com/2022/05/04/swift-roadmap</id><content type="html" xml:base="https://mengtnt.com/2022/05/04/swift-roadmap.html">&lt;p&gt;随着越来越多的应用在使用 Swift 语言开发iOS，学习 Swift 语言也很有必要。这个博客不是详细的 Swift 的教程，主要是为了 Swift 初学者，尤其之前使用 OC 开发 iOS 应用的人员，在转入 Swift 这门语言时，应该了解的一些基础知识，为方便进一步的学习做一些铺垫。&lt;/p&gt;
 
 &lt;h2 id=&quot;1-swift语言的发展&quot;&gt;1 Swift语言的发展&lt;/h2&gt;
 
@@ -1855,69 +1940,4 @@ CMD &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;
 
 &lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
 
-&lt;p&gt;这本书对于做苹果开发的人员还是很值得一读，里面涉及的很多底层的知识，虽然平时开发很少用到里面的相关代码，但是对了解整个系统的架构，以及将来定位问题很有作用。当然上面只是介绍了这个书的几个知识点，里面还有大量有趣的知识点例如: 进程的优先级策略、如何实现POSIX标准的&lt;code class=&quot;highlighter-rouge&quot;&gt;poll select&lt;/code&gt;、网络utun接口抽象等等。不过从上面几个点中可以看出这本书传递给读者一些基本的理念，就是在平台上开发应用时，不仅要知其然，也要知其所以然。这样才能更好的写出来健壮的程序。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">自己做了这么久苹果应用的开发，其实还没有认真的看过苹果系统的整个架构。最近看了“深入解析Mac OS X &amp;amp; iOS操作系统”这本书，也算是对自己之前工作的回顾。如果你已经在这个领域从事了很多年，然后再看这个领域的一些基础的理论知识，和你要学习一门新技术而看这方面的书籍，感受是完全不同的。往往我看一些新技术的书籍时，遇到介绍的新知识点，内心的OS：“不过如此么？不就是xx技术加了一个美丽的外壳么？换汤不换药“。而看你一直从事的工作的书籍时，自己的感受是：”原来这个技术点设计的这么美妙啊，自己用了这么多年这个技术，都没理解这个精髓，真是惭愧啊“。内心有种老友重逢的感觉，有很多话想说，所以自己暂且就把读这本书的一些心得写了下来。下面介绍下自己看到的几个技术点的一些感想。</summary></entry><entry><title type="html">代码重构实践</title><link href="https://mengtnt.com/2021/02/10/rx-refactor.html" rel="alternate" type="text/html" title="代码重构实践" /><published>2021-02-10T07:02:59+00:00</published><updated>2021-02-10T07:02:59+00:00</updated><id>https://mengtnt.com/2021/02/10/rx-refactor</id><content type="html" xml:base="https://mengtnt.com/2021/02/10/rx-refactor.html">&lt;p&gt;  最近因为需求的变更，重构了几个5000多行的大类。完成了之后自然感觉清爽不少。在重构的过程中，自己也在思考，是什么造成了代码需要重构，我曾经重构过的一个类，大概是快6000行代码，类的成员变量有50多个，方法大概也有50个左右。这样的类以后维护起来就容易造成牵一发而动全身，用下图可以形象的表述。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/2021-02-10-1.jpg&quot; alt=&quot;img1&quot; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;臃肿的代码从何而来&quot;&gt;臃肿的代码从何而来&lt;/h2&gt;
-
-&lt;p&gt;  冰冻三尺非一日之寒，我看了下这个类的git记录，有5年多的历史，陆陆续续有几十个人修改过。驱使这个类变的如此大。本质上和过多的业务逻辑增加到了同一个类中有很大关系。这是造成代码臃肿的本质原因，根据自己以往代码的经验来看，下面几种情况极易造成庞大的类出现。&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;
-    &lt;p&gt;业务单例类—单例本质上是让代码能更好的重用，但是如果把所有的业务逻辑都放进去，就等于打开了恶魔的盒子，这个单例的类必然会越来越大。比如XXXNetworkCenter这种把业务的所有网络接口放到里面去，这时候大家就容易无脑的不管什么业务都往里面放置，必然会越来越庞大。所以还是要针对不同的业务独立的能拆分出来需要的网路接口最关键。在oc开发中，常见的方式就是扩展NetworkCenter+xxxExtension。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;工具类—我们往往喜欢把所有业务无关的代码抽离出来，放到一个公共的类中，其实这样做对代码的重用有很大的好处的，但是无止境的往工具类中放代码，也会造成代码臃肿的问题。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;过多的类变量和函数—面对有些复杂业务的逻辑，我们习惯上用一些共享的变量，来存储计算的结果，方便其他地方使用，这样做固然是好。但是如果一个类的变量超过了10个，或者提供给外部调用的函数超过了10个，这样对以后代码的可阅读性和维护性极其不利。因为对个人来讲，记忆超过10个物体的改变状态，其实是很难的挑战。所以当你的类一旦扩展到这种程度时，就要想办法通过好的架构缩减这些共享的变量和方法。&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;h2 id=&quot;如何消除臃肿的代码&quot;&gt;如何消除臃肿的代码&lt;/h2&gt;
-
-&lt;p&gt;  软件工程中，经常讨论架构，好的架构本质上就是消除臃肿的代码，让代码读起来更容易，修改起来更简单。软件架构重要的原则就是Keep it simple。这句话说出来简单，可是想把复杂的东西变简单并不是那么容易的事情，所以各种设计模式就应运而生。这里我讲几个自己实践过程中常用的几个原则。&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;
-    &lt;p&gt;开闭原则，当你设计一个类的时候，尽量完成后不要修改类内部的设计，但是这个类要具备拓展能力，那很多人问，我不修改类的实现怎么来拓展能力哪？这里往往就需要针对相关的业务，有合理的底层通信机制来保证类的拓展性。比如现在操作系统的微内核，就是通过消息传递的方式，来分离系统的各个模块，让你的系统具备拓展能力，同时不用修改内核的代码。其实还有现在的微服务架构，比如RPC服务框架HSF就是通过合理的消息服务机制来分离和拓展各种微服务。当然上面说的都是很庞大的架构，必然实现非常复杂，我在下面的实践代码中，相对来讲分离的方式比较简单，但是麻雀虽小五脏俱全，其中也是可以看出如何分离各个业务模块的代码的。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;尽量减少有副作用函数暴露。现在很多架构，都是想要消除函数的副作用，本质上就要是消除引起公共变量改变的函数。所以有副作用的函数尽量放置到内部处理，外部的入口尽量减少。尤其当类有大量可读写的变量暴露时，这时就要考虑架构是否合理了，如果这时不去改变，公共变量将成为你的噩梦。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;多变的模块做隔离，少做依赖、少变的代码，可以多做依赖。这个原则本质上就是业务的分层设计，让频繁变动的业务层代码最好放在最上层，不要有其他类对它做过多的依赖，否则及其容易牵一发而动全身，引起很多问题。所以同一层的业务代码，分离后尽量不要做依赖。分层设计的目的主要是减少类的大小，便于频繁变动的业务代码的修改。想起来看过的驱动领域设计这本书，描述过抽象出业务领域的语言对于系统的架构非常关键。其实本质上业务领域语言，就是那些少变的底层代码分离出来，放在最下层，而把频繁变化的业务放在最上层。&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;以上就是自己常用的几个原则，也不一定准确的对应某种设计模式，因为就像刚才所说的保持简洁才是最终的目的，不能为了设计模式而把代码搞的复杂了。&lt;/p&gt;
-
-&lt;h2 id=&quot;实践操作&quot;&gt;实践操作&lt;/h2&gt;
-
-&lt;p&gt;  简单描述下重构的会议和电话首页的大概模块划分，如下图所示:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/2021-02-10-2.jpg&quot; alt=&quot;img2&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;重构之前所有的UI和业务逻辑都是写在一个类中，造成这个类大概有5000多行代码，从模块图可以看出，应该拆分更多层才合理。根据上面提到的重构的原则，为了解耦，首先我们要找到一个方式来提供各个模块消息的通信。其实通信的方式很多，我这里借鉴了ReactX的信号方式进行通信，类图如下:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/2021-02-10-3.jpg&quot; alt=&quot;img3&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/2021-02-10-4.jpg&quot; alt=&quot;img4&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;这样各个模块在上层依赖下层时，通过依赖ColdEvent模块进行调用，ColdEvent通信避免了大量的如下的回调写法：&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-oc&quot;&gt;- (void)getLatestMessage:(void (^ BOOL)(void ))complete;
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;减少了公开的方法调用。并且同层模块不相互依赖，实现了各个模块通信的解耦。&lt;/p&gt;
-
-&lt;p&gt;通过这样解耦的方式，如果将来业务复杂了，需要把MeetingModle要分为voiceMeeting和videoMeeting，就可以把MeetingModel再进行横向扩展。其实本质上也是了保持类的简单，避免大量公开的方法。&lt;/p&gt;
-
-&lt;p&gt;通过上述的方式，同时视图层和逻辑层，我借鉴了VIPER的架构方式，把原有的类，拆出了10个类左右，各个类代码在200行左右，类变量和公开方法也保持在10个左右，这样对于代码的阅读性大大增加，同时对维护以及扩展功来说成本也会小很多。整个重构做完之后的感觉，就向下图所示:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/2021-02-10-5.jpg&quot; alt=&quot;img5&quot; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;展望和感悟&quot;&gt;展望和感悟&lt;/h2&gt;
-
-&lt;p&gt;  上述的代码在重构的过程中也用到了很多设计模式，我这里想表述的是设计模式不是软件架构的银弹。有时候不能为了使用设计模式而过度设计类，还是之前提过的原则，保持代码简单。比如一些简单的业务功能，把所有逻辑都放到一个类中也只要100多行代码时，这时就不要犹豫写一个类就好。不用过度的设计和架构，因为软件架构的原则就是保持代码简单，避免复杂，这时候再用各种设计就有点画蛇贴足了。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">  最近因为需求的变更，重构了几个5000多行的大类。完成了之后自然感觉清爽不少。在重构的过程中，自己也在思考，是什么造成了代码需要重构，我曾经重构过的一个类，大概是快6000行代码，类的成员变量有50多个，方法大概也有50个左右。这样的类以后维护起来就容易造成牵一发而动全身，用下图可以形象的表述。</summary></entry></feed>
+&lt;p&gt;这本书对于做苹果开发的人员还是很值得一读，里面涉及的很多底层的知识，虽然平时开发很少用到里面的相关代码，但是对了解整个系统的架构，以及将来定位问题很有作用。当然上面只是介绍了这个书的几个知识点，里面还有大量有趣的知识点例如: 进程的优先级策略、如何实现POSIX标准的&lt;code class=&quot;highlighter-rouge&quot;&gt;poll select&lt;/code&gt;、网络utun接口抽象等等。不过从上面几个点中可以看出这本书传递给读者一些基本的理念，就是在平台上开发应用时，不仅要知其然，也要知其所以然。这样才能更好的写出来健壮的程序。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">自己做了这么久苹果应用的开发，其实还没有认真的看过苹果系统的整个架构。最近看了“深入解析Mac OS X &amp;amp; iOS操作系统”这本书，也算是对自己之前工作的回顾。如果你已经在这个领域从事了很多年，然后再看这个领域的一些基础的理论知识，和你要学习一门新技术而看这方面的书籍，感受是完全不同的。往往我看一些新技术的书籍时，遇到介绍的新知识点，内心的OS：“不过如此么？不就是xx技术加了一个美丽的外壳么？换汤不换药“。而看你一直从事的工作的书籍时，自己的感受是：”原来这个技术点设计的这么美妙啊，自己用了这么多年这个技术，都没理解这个精髓，真是惭愧啊“。内心有种老友重逢的感觉，有很多话想说，所以自己暂且就把读这本书的一些心得写了下来。下面介绍下自己看到的几个技术点的一些感想。</summary></entry></feed>

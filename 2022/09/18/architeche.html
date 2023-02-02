@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>职责单一的重要性 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2022/09/18/architeche.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="职责单一的重要性">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2022/09/18/architeche.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">职责单一的重要性</h1>
+  
+  <span class="post-meta">09月 18日, 2022</span><br>
+  
+  <span class="post-meta small">1 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>最近在做 iPad 改版功能，由于 iPad 的功能和 iPhone 功能上基本保持一致，除了 UI 要适配下 iPad 的屏幕以及分屏的情况外。在这个开发过程中，和同事讨论了一个很有意思的功能扩展的问题。虽然简单但是感觉很有必要记录下来，对于在软件开发中设计业务逻辑时很有启发。</p>
+
+<h2 id="故事的开始">故事的开始</h2>
+
+<p>iPad 的UI适配的代码写在 XXXiPadViewController 中，主要目的是不改变原有代码的逻辑，只需要添加适配代码即可。其实也是软件设计中经常用的一个特点开闭原则。</p>
+
+<p>但是遇到的问题是，原来的XXXComponent的代码，但是业务代码都是继承在ViewController中的，了解iOS开发的都清楚，ViewController主要负责页面UI的添加和布局。由于适配 iPad 的视图，尤其是分屏的逻辑，一定需要更改布局，如果想使用原来的 XXXComponent 的代码逻辑，但是不想改动代码的布局，似乎不太可能。</p>
+
+<h2 id="解决方法">解决方法</h2>
+
+<p>如果熟悉软件设计的装饰器模式的话，这其实有点像装饰器。不改变原有对象的情况下动态地给一个对象扩展功能，即插即用。XXXiPadComponent，就是装饰器，用来装饰XXXComponent，让他具备iPad的布局能力，但是要把分屏布局都放到装饰器中，就需要父视图布局的能力暴露给 XXXiPadComponent。</p>
+
+<p>下面就是解决这个问题的思路，通过写一个 iPad 的适配器，通过把 XXXiPadViewController 的布局能力暴露给 XXXiPadViewController，达到不改动原来 XXXViewController 的代码逻辑，同时增加了 iPad 布局的能力。要达到上面的目的 ，在 OC 里可以通过代理方法，把布局的动作交给 XXXiPadComponent，就使用了如下的设计，下面用伪代码演示下。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+// 布局的回调方法
+@protocol layoutDelegate
+
+- layoutViewInContainer(View *)
+
+// Component 增加如下能力
+- addPlugin(Component)
+
+</code></pre></div></div>
+
+<p>然后调用者使用的方式就很简单如下</p>
+
+<pre><code class="language-oc">
+let iPadComponet = XXXiPadComponent()
+XXXComponent.addPlugin(iPadComponet)
+
+</code></pre>
+
+<p>通过这种方式就是把布局代理给了 XXXiPadComponent，由于 XXXiPadComponent 基于于UIViewController，自然就想起来给UIViewController 加上能力扩展就行了。最终版本如下。这样父视图就不用关系childViewController的布局了，只要一行 ` addPlugin `调用就可以了，代码也可以节省很多。</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>- (void)addPlugin:(DTKViewController&lt;ADTViewControllerPlugin&gt;*)pluginVc {
+    pluginVc.overrideInterfaceOrientation = self.overrideInterfaceOrientation;
+    [self addChildViewController:pluginVc];
+    [self.view addSubview:[pluginVc pluginView]];
+    
+    if ([pluginVc respondsToSelector:@selector(layoutPluginInContainer:)]) {
+        [pluginVc layoutPluginInContainer:self.view];
+    }
+    
+    [pluginVc didMoveToParentViewController:self];
+}
+
+- (void)removePlugin:(DTKViewController&lt;ADTViewControllerPlugin&gt;*)pluginVc {
+    [pluginVc removeFromParentViewController];
+    [[pluginVc pluginView] removeFromSuperview];
+}
+</code></pre></div></div>
+
+<h2 id="问题的出现">问题的出现</h2>
+
+<p>从上面的过程来看，装饰器模式代码结构清晰，但是带来的问题是会增加程序复杂性，下面就说出现的问题。</p>
+
+<p>对于iPad适配，这种方式似乎挺好基本不用改变原来的代码，只需要适配 iPadViewController 的代码就可以。但是有同事开始质疑这种方式。</p>
+
+<p>最大的质疑就是为什么不用addChildViewController，不就是childViewController么？
+自己仔细想想确实是，为啥当时不用哪？很重要的一点就是 addChildViewController 的布局是需要父视图来写逻辑代码的，这样就和自己想要把iPad布局的适配代码都写在XXXiPadComponent中矛盾了。</p>
+
+<p>尤其同事说的这句话让我记忆犹新，为什么你想要把SubViewController的布局交给本身那？SubViewController 就应该是父视图来布局，这样才符合UIViewController逻辑，别人看代码才看的懂。</p>
+
+<p>如果从UIKit框架来看，确实这样写才是容易理解的代码。但是假如说一个从来没学习过苹果UIKit布局的程序员，想设计一个组件，然后父组件添加子组件他会怎么写哪？最便捷的方法就是直接通过 addPlugin 完成就行，然后子组件布局的代码也很可能写在组件中，因为这样封装性更好，其实很多VUE的组件很多都是一行代码，不用关心布局，一行代码就可以加载插件，除非调用者需要动态改变布局，否则默认就不再暴露出来。</p>
+
+<p>所以矛盾就出现了 苹果 UIKit 框架设计就是给了UIViewController太多的权利，既可以添加各种视图，又要负责各种视图的布局。当然和刚才说的组件思想有很大的差别，所以自己如果给 UIViewController 添加plugin就会让其他开发者感到困惑。</p>
+
+<h2 id="解决方式">解决方式</h2>
+
+<p>既然UIKi 框架的设计理念和业务插件的理念有冲突，怎么解决？其实本质上就是我们定义的Plugin暴露出了UIViewController，让这个plugin具备了过多的无用的能力，所以我们的plugin完全可以用下面的方式。</p>
+
+<pre><code class="language-oc">
+id&lt;ADTPluginProtocol&gt;
+
+- registerPlugin:(id&lt;ADTPluginProtocol&gt;)plugin
+
+</code></pre>
+
+<p>plugin定义的协议接口不要和UIViewController关联，自然调用者就不会想到这个是UIViewController。所以我们设计某些功能时，发现和系统框架的理念不太一样的话，尽量还是要区分开自己的业务逻辑的功能。说白了就是要职责单一，不要把各种职责都给与一个类，这样就会变成看似功能强大，但是代码无比臃肿。</p>
+
+<h2 id="思考总结">思考总结</h2>
+
+<p>软件设计中其实比较忌讳的是鱼与熊掌兼得，既想要代码可复用性强，又想要代码功能多扩展强，就很容易陷入到上面说的困境中。其实上面plugin的设计完全没有必要基于 UIViewController，看起来这个plugin功能很强大，既有UIViewController布局子视图的能力，又具备了子视图可以在父视图上布局的能，这样改变了UIKit框架原本定义的UIViewController能力，会让使用开发者非常困惑。
+解决方案就是可以自己定义一个Plugin的对象，这样在使用plugin时，开发者就不会联想到这个就是ViewController，而只会知道Plugin可以让自己获得布局到父视图的能力。
+这也提醒了平台框架层和业务逻辑的能力尽量分离清晰，不要混合在一起，否则开发者理解起来也很容易歧义。说白了还是软件设计的重要原则职责单一，不要给设计的功能分配太多没用的权利，仅仅给需要完成的权利就可以。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>
