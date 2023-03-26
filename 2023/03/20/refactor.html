@@ -174,7 +174,7 @@ MemberListView ..&gt; MemberData: 1..*
 
 <p>这时候你就会发现 <code class="highlighter-rouge">Switch Case</code> 中越来越多的数据请求和渲染代码。随着应用的场景越来越多，会发现 <code class="highlighter-rouge">MemberListViewController</code> 类变的越来越大。这时候如何重构?</p>
 
-<p>这里就要用到重构的一个重要原则：职责单一。化代码就是把 <code class="highlighter-rouge">MemberListViewController</code> 大的类拆分，此类负责渲染视图，不要再负责数据请求了，网络请求相似的功能内聚到另外一个类中<code class="highlighter-rouge">MemberListDataInteractor</code> ，专门处理数据获取，这样可以减少单个类的大小，方便阅读。</p>
+<p>这里就要用到重构的一个重要原则：职责单一。优化代码就是把 <code class="highlighter-rouge">MemberListViewController</code> 大的类拆分，此类负责渲染视图，不要再负责数据请求了，网络请求相似的功能内聚到另外一个类中<code class="highlighter-rouge">MemberListDataInteractor</code> ，专门处理数据获取，这样可以减少单个类的大小，方便阅读。</p>
 
 <pre><code class="language-mermaid">classDiagram
 
@@ -301,7 +301,7 @@ MemberListViewController ..&gt; ColdObserval
 
 </code></pre></div></div>
 
-<p>其实这就是使用观察者模式来拆分。观察着模式的好处就是解耦，减少接口依赖，这样我们想要定义不同的 presentor 类时，也不必依赖各种具体的 interactor，只需要监听消息即可。例如 WebRTC 中重要的线程工具类 TaskQueue ，就是一个很好的解耦的拆分的工具。把编解码，采集，传输很好的解耦分离开。有了这个铺垫，我们最后来看下如何扩展功能。</p>
+<p>其实这就是使用观察者模式来拆分。观察者模式的好处就是解耦，减少接口依赖，这样我们想要定义不同的 presentor 类时，也不必依赖各种具体的 interactor，只需要监听消息即可。例如 WebRTC 中重要的线程工具类 TaskQueue ，就是一个很好的解耦的拆分的工具。把编解码，采集，传输很好的解耦分离开。有了这个铺垫，我们最后来看下如何扩展功能。</p>
 
 <h2 id="扩展新功能">扩展新功能</h2>
 
@@ -356,7 +356,7 @@ MemberListView *-- MemberListViewPlugin : 1..*
       <p>超过了1000行代码了，一定是需要拆分功能了。</p>
     </blockquote>
   </li>
-  <li>当你开发功能时，发现需要原来的类大量更改接口才能实现，我们就需要用工具类来暴露扩展能力。</li>
+  <li>当你开发功能时，发现需要原来的类大量更改接口才能实现，我们就需要用工具类来解耦。</li>
   <li>当添加新功能时，需要频繁更改一个类时。
     <blockquote>
       <p>这时候就需要用代理模式的插件来扩展你的类，这样就可以避免大量的修改逻辑，保证代码稳定性。例如我们经常看到的一些可插拔的插件系统，都是通过这种方式实现的。</p>
