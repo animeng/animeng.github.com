@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>重构 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2023/03/20/refactor.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="重构">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2023/03/20/refactor.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">重构</h1>
+  
+  <span class="post-meta">03月 20日, 2023</span><br>
+  
+  <span class="post-meta small">3 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>重构是一个老生常谈的问题，并且也有大量的书籍介绍重构的方法。那如何重构代码？如何保证重构的代码不出问题？重构后的代码如何防止腐化？我先贴出来 ChatGPT 如何回答的，来感受下她的强大。</p>
+
+<blockquote>
+  <p>如何重构代码</p>
+  <ol>
+    <li>提取方法：如果你有一段过长或过于复杂的代码，可以将其提取为独立的方法，使其更易读且可重复使用。</li>
+    <li>重命名变量和方法：使用描述性的名称命名变量和方法，使代码更容易理解。</li>
+    <li>移除重复代码：查找重复的代码块，并将其提取为可重复使用的方法。</li>
+    <li>简化条件语句：如果条件语句过于复杂，将其分解为更小、更易处理的部分。</li>
+    <li>使用更好的数据结构：如果使用的数据结构效率低下或不能满足需求，考虑使用更好的数据结构。</li>
+    <li>将代码分解成模块：将代码分解成具有特定职责的较小模块，每个模块都有自己的一组测试。</li>
+    <li>移除无用代码：查找不再使用的代码，并将其删除以简化代码库并使其更易维护。
+这些只是重构代码的几个示例。关键在于不断寻找改进代码的方法，使其随着时间推移更易维护。</li>
+  </ol>
+</blockquote>
+
+<p>ChatGPT 上的回答和很多书籍和教程中讲的大同小异，其实有时候描述文字会很抽象。这里我拿自己经历的一个例子说明。当然不是 ChatGPT 给的例子😂。</p>
+
+<h2 id="简单功能的开发">简单功能的开发</h2>
+
+<p>这是很常见的成员列表页面展示功能。我们先看第一个版本的写法。</p>
+
+<pre><code class="language-mermaid">
+classDiagram
+class MemberListViewController {
+  -MemberListView view
+  -loadView()
+}
+
+class MemberListView{ 
+  -renderView(List&lt;MemberData&gt; data)
+}
+
+class MemberData {
+  -String name
+  -Int status
+}
+
+MemberListViewController *-- MemberListView: 1..1
+
+MemberListView ..&gt; MemberData: 1..*
+
+</code></pre>
+
+<p>下面用伪代码的方式展示下，调用的流程。</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">MemberListViewController</span><span class="o">::</span><span class="n">loadView</span><span class="p">(){</span>
+  <span class="n">RequestData</span><span class="p">(){</span> <span class="n">data</span> <span class="n">in</span>
+    <span class="n">List</span><span class="o">&lt;</span><span class="n">MemberData</span><span class="o">&gt;</span> <span class="n">dataList</span> <span class="o">=</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">MemberData</span><span class="o">&gt;</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">view</span><span class="p">.</span><span class="n">render</span><span class="p">(</span><span class="n">dataList</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="n">MemberListViewController</span> <span class="o">*</span><span class="n">vc</span> <span class="o">=</span> <span class="n">MemberListViewController</span><span class="p">()</span>
+<span class="n">vc</span><span class="p">.</span><span class="n">loadView</span><span class="p">()</span>
+
+</code></pre></div></div>
+
+<p>其实这种 UI 开发的逻辑再简单不过了，获取数据然后把数据渲染到相应的 UI 组件上。我们下面来看下功能的发展过程。</p>
+
+<h2 id="臃肿类的形成">臃肿类的形成</h2>
+
+<p>随着此功能设计了不同的应用场景，例如从场景A进去应该获取服务A的数据然后展现，从场景B进去获取服务B的数据…
+先来看如果按照原来的逻辑，需要写类似下面的大量代码。</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">switch</span> <span class="n">condition</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="n">A</span><span class="p">:</span>
+      <span class="n">RequestAData</span><span class="p">(){</span> <span class="n">data</span> <span class="n">in</span>
+        <span class="n">List</span><span class="o">&lt;</span><span class="n">MemberData</span><span class="o">&gt;</span> <span class="n">dataList</span> <span class="o">=</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">MemberData</span><span class="o">&gt;</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">view</span><span class="p">.</span><span class="n">render</span><span class="p">(</span><span class="n">dataList</span><span class="p">)</span> 
+      <span class="p">}</span>
+    <span class="k">case</span> <span class="n">B</span><span class="p">:</span>
+      <span class="n">RequestBData</span><span class="p">(){</span> <span class="n">data</span> <span class="n">in</span>
+        <span class="n">List</span><span class="o">&lt;</span><span class="n">MemberData</span><span class="o">&gt;</span> <span class="n">dataList</span> <span class="o">=</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">MemberData</span><span class="o">&gt;</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">view</span><span class="p">.</span><span class="n">render</span><span class="p">(</span><span class="n">dataList</span><span class="p">)</span>
+      <span class="p">}</span>
+  <span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>这时候你就会发现 <code class="highlighter-rouge">Switch Case</code> 中越来越多的数据请求和渲染代码。随着应用的场景越来越多，会发现 <code class="highlighter-rouge">MemberListViewController</code> 类变的越来越大。这时候如何重构?</p>
+
+<p>这里就要用到重构的一个重要原则：职责单一。化代码就是把 <code class="highlighter-rouge">MemberListViewController</code> 大的类拆分，此类负责渲染视图，不要再负责数据请求了，网络请求相似的功能内聚到另外一个类中<code class="highlighter-rouge">MemberListDataInteractor</code> ，专门处理数据获取，这样可以减少单个类的大小，方便阅读。</p>
+
+<pre><code class="language-mermaid">classDiagram
+
+class MemberData {
+  -String name
+  -Int status
+}
+
+class MemberListDataInteractor { 
+  - List&lt;MemberData&gt; dataList 
+  - requestData(callback(List&lt;MemberData&gt; list))
+}
+
+class MemberListViewController {
+  -MemberListView View
+  -MemberListDataInteractor interactor
+  -loadView()
+}
+
+class MemberListView{ 
+  -View listView 
+  -renderView(List&lt;MemberData&gt; data)
+}
+
+MemberListViewController *-- MemberListView: 1..1
+
+MemberListViewController *-- MemberListDataInteractor: 1..1
+
+MemberListDataInteractor *-- MemberData: 1..*
+
+</code></pre>
+
+<p>这个时候的调用过程可能是这样的。如下的伪代码：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">MemberListViewController</span><span class="o">::</span><span class="n">loadView</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">interactor</span><span class="p">.</span><span class="n">requestData</span><span class="p">()</span> <span class="p">{</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">MemberData</span><span class="o">&gt;</span> <span class="n">list</span> <span class="n">in</span>
+    <span class="n">MemberListView</span><span class="p">.</span><span class="n">renderView</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="n">MemberListViewController</span><span class="o">::</span><span class="n">loadView</span><span class="p">()</span> <span class="p">{</span>
+  <span class="n">interactor</span><span class="p">.</span><span class="n">requestData</span><span class="p">()</span> <span class="p">{</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">MemberData</span><span class="o">&gt;</span> <span class="n">list</span> <span class="n">in</span>
+    <span class="n">MemberListView</span><span class="p">.</span><span class="n">renderView</span><span class="p">(</span><span class="n">list</span><span class="p">)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="n">MemberListViewController</span> <span class="o">*</span><span class="n">vc</span> <span class="o">=</span> <span class="n">MemberListViewController</span><span class="p">()</span>
+<span class="n">vc</span><span class="p">.</span><span class="n">loadView</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>这个其实就是典型的 MVC 的结构，视图渲染、数据模型、模型组装分开，核心就是内聚不同的功能。有时候想一想阅读代码就跟我们看文章一样，如果不分段落，直接一个1000字的段落，相信很多人都不愿意看。职责单一原则的目标就是让人更愿意阅读你的代码，第一眼不至于被吓到。</p>
+
+<h2 id="重复代码的优化">重复代码的优化</h2>
+
+<p>随着功能的演化，用户的界面越来越复杂，需要大量的数据频繁的渲染到视图上。就会发现有大量视图渲染组装的代码。这类代码的特点是相似度很高，只是渲染到不同的视图上而已。这时候重构的另一个重要原则DRY，不要写重复的代码，就发挥作用了，我们只需要把重复的代码再抽象出一层，就可以减少大量相似的代码。
+这个类可以叫做 <code class="highlighter-rouge">MemberListDataPresentor</code>,专门用来组装视图。只要简单的增加 <code class="highlighter-rouge">MemberViewModel</code> 这种数据结构映射到 <code class="highlighter-rouge">MemberListView</code> 这种视图上，然后 <code class="highlighter-rouge">MemberListDataPresentor</code> 就负责数据组装。我们来看下这种结构。</p>
+
+<pre><code class="language-mermaid">classDiagram
+
+class MemberData {
+  -String name
+  -Int status
+}
+
+class MemberViewModel {
+  -List&lt;MemberData&gt; dataList
+}
+
+class MemberListDataPresentor { 
+  -MemberListDataInteractor interactor 
+  - bind(MemberViewModel model,MemberListView view)
+}
+
+class MemberListViewController {
+  -MemberListView View
+  -MemberListDataPresentor presentor
+  - loadView()
+}
+
+class MemberListView{ 
+  -View listView 
+  -renderView(MemberViewModel data)
+}
+
+MemberListDataPresentor *-- MemberViewModel : 1..1
+
+MemberViewModel *-- MemberData: 1..*
+
+MemberListView *-- MemberViewModel: 1..1
+
+MemberListViewController *-- MemberListDataPresentor: 1..1
+
+
+</code></pre>
+
+<p>这样使用的时候只要 <code class="highlighter-rouge">MemberListDataPresentor</code> 组装好数据，就不必再调用渲染了，可以直接通过 <code class="highlighter-rouge">MemberViewModel</code> 映射到 <code class="highlighter-rouge">MemberListView</code> 上了。可以看到下面伪代码的调用过程。</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="n">interactor</span><span class="p">.</span><span class="n">loadAllUserData</span><span class="p">()</span> <span class="p">{</span> <span class="n">List</span><span class="o">&lt;</span><span class="n">MemberData</span><span class="o">&gt;</span> <span class="n">list</span> <span class="n">in</span>
+  <span class="n">presentor</span><span class="p">.</span><span class="n">bindData</span><span class="p">(</span><span class="n">list</span><span class="p">,</span><span class="n">listView</span><span class="p">)</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这其实就是 MVVM 的架构进化的过程。DRY 原则就是不要写重复的代码，就像写文章一样，千篇一律的文字没人愿意看一个道理。我们继续来看这个功能发展的情况。</p>
+
+<h2 id="大量的耦合">大量的耦合</h2>
+
+<p>随着功能越来越复杂，会发现 <code class="highlighter-rouge">MemberListDataPresentor</code> 这个类调用的接口会越来越多，既需要调用 <code class="highlighter-rouge">MemberListDataInteractor</code> 大量的请求接口来获取数据，同时也需要组装各种 Model 的数据，势必会造成大量接口暴露。这种各种复杂关系的调用，使阅读起越来越难。这时候软件工程的一个最好有的原则：任何工程问题，都可以通过增加一个中间层来解决。我们这里就需要增加工具类解耦，解耦的本质通过工具类拆分。使得依赖关系变为如下结构。</p>
+
+<pre><code class="language-mermaid">classDiagram
+
+MemberListDataPresentor ..&gt; ColdObserval
+
+MemberListDataInteractor ..&gt; ColdObserval
+
+MemberListViewController ..&gt; ColdObserval
+
+</code></pre>
+
+<p>有大量接口依赖的类，互相直接调用就可以用类似的方式。</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">presentor</span><span class="p">.</span><span class="n">addObserval</span><span class="p">()</span> <span class="p">{</span> <span class="n">result</span> <span class="n">in</span>
+    <span class="c1">// bind data</span>
+<span class="p">}</span>
+<span class="n">interactor</span><span class="p">.</span><span class="n">postMessage</span><span class="p">();</span>
+
+</code></pre></div></div>
+
+<p>其实这就是使用观察者模式来拆分。观察着模式的好处就是解耦，减少接口依赖，这样我们想要定义不同的 presentor 类时，也不必依赖各种具体的 interactor，只需要监听消息即可。例如 WebRTC 中重要的线程工具类 TaskQueue ，就是一个很好的解耦的拆分的工具。把编解码，采集，传输很好的解耦分离开。有了这个铺垫，我们最后来看下如何扩展功能。</p>
+
+<h2 id="扩展新功能">扩展新功能</h2>
+
+<p>试想下我们需要在 <code class="highlighter-rouge">MemberListViewController</code> 视图上增加新功能，不仅仅是显示 <code class="highlighter-rouge">MemberListView</code> 这一种视图，还能插入各种其他业务视图。</p>
+
+<p>正是因为有了工具类的拆分，这样所有的类都没有任何的依赖，不用暴露新接口，扩展就很容易了。具体可以通过代理模式来横向拆分。定义要扩展的代理类 Plugin，我们新功能只要实现 Plugin 定义的接口函数，就可以横向扩展所有的功能。我们看下类结构。</p>
+
+<pre><code class="language-mermaid">classDiagram
+
+class MemberListViewPlugin { 
+  -View subView 
+  -loadView()
+}
+
+class MemberListDataInteractorPlugin { 
+  -List&lt;MemberData&gt; dataList 
+  -requestData()
+}
+
+class MemberListDataPresentorPlugin { 
+  -List&lt;MemberData&gt; dataList 
+  -bindData()
+}
+
+MemberListDataPresentor *-- MemberListDataPresentorPlugin : 1..*
+
+MemberListDataInteractor *-- MemberListDataInteractorPlugin : 1..*
+
+MemberListView *-- MemberListViewPlugin : 1..*
+
+</code></pre>
+
+<p>然后我们的插件调用过程就如下：</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">MemberListDataPresentorPlugin</span> <span class="o">*</span><span class="n">presentorPlugin</span> <span class="o">=</span> <span class="n">MemberListDataPresentorPlugin</span><span class="p">()</span>
+<span class="n">presentor</span><span class="p">.</span><span class="n">registPlugin</span><span class="p">(</span><span class="n">presentorPlugin</span><span class="p">);</span>
+<span class="n">MemberListDataInteractorPlugin</span> <span class="o">*</span><span class="n">interactorPlugin</span> <span class="o">=</span> <span class="n">MemberListDataInteractorPlugin</span><span class="p">()</span>
+<span class="n">interactor</span><span class="p">.</span><span class="n">registPlugin</span><span class="p">(</span><span class="n">interactorPlugin</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>这样每次增加新功能时，不需要更改原来的 <code class="highlighter-rouge">MemberListDataPresentor</code>、 <code class="highlighter-rouge">MemberListDataInteractor</code> 任何代码，只需要添加插件的实现就可以了。这其实就是很多软件插件的架构模式。</p>
+
+<p>我们从上面这个例子里可以看到代码的演变，如何从 MVC 到 MVVM 再到最后插件化，这些过程让代码结构更加清晰容易阅读，防止代码腐化。</p>
+
+<h2 id="重构的回顾">重构的回顾</h2>
+
+<p>我们总结下上述的重构过程中几个关键的节点。</p>
+
+<ol>
+  <li>当你发现一个类越来越大。
+    <blockquote>
+      <p>超过了1000行代码了，一定是需要拆分功能了。</p>
+    </blockquote>
+  </li>
+  <li>当你开发功能时，发现需要原来的类大量更改接口才能实现，我们就需要用工具类来暴露扩展能力。</li>
+  <li>当添加新功能时，需要频繁更改一个类时。
+    <blockquote>
+      <p>这时候就需要用代理模式的插件来扩展你的类，这样就可以避免大量的修改逻辑，保证代码稳定性。例如我们经常看到的一些可插拔的插件系统，都是通过这种方式实现的。</p>
+    </blockquote>
+  </li>
+  <li>性能优化的代码太多时尤其注意，尽量不要暴露出来，因为性能优化的代码往往可读性比较差。
+    <blockquote>
+      <p>对于优化性能的代码，重构的时候我这里，尽量封装成内部的函数，而不要暴露给外部使用。比如定义了一个 Cache 资源的类，为了优化内存，这种最好不要把API暴露在外面，在内部消化最好。</p>
+    </blockquote>
+  </li>
+  <li>发现无用的功能代码及时的删除，防止进一步防止腐化
+    <blockquote>
+      <p>不及时删除的后果，会发现新功能调用以前移除的功能类的方法，这时候你想删除老功能代码时，你会发现欲哭无泪。</p>
+    </blockquote>
+  </li>
+</ol>
+
+<p>对比 ChatGPT 重构的总结，总体原则一样，但是会更加具体一点。最后我想讲下关于重构代码时，如何保证稳定性的一些原则。我总结起来就是小步快走，保证稳定。在重构的过程中允许一定的冗余代码，增加灰度能力，当发现问题时可以及时回滚，等待重构的代码测试没问题了再删除。</p>
+
+<p>很多优秀的开源项目的代码不仅对代码的性能，也对代码的质量和可维护性要求很高，阅读起来就像欣赏优美的诗篇。屎山一样的代码从来不会有伟大的作品。我相信每个优秀的程序员，都不愿意把自己的代码变成屎山，但是罗马也不是一天能建成的，学会重构是必备的技能。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+<script src="/resource/mermaid.min.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>  
+$(document).ready(function () {
+  window.mermaid.initialize({
+    startOnLoad: true,
+    theme: "default",
+  });
+  window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+});
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

@@ -172,6 +172,18 @@ gitment.render('gitmentContainer');
 gitment.uploadIp();
 </script>
 
+<script src="/resource/mermaid.min.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>  
+$(document).ready(function () {
+  window.mermaid.initialize({
+    startOnLoad: true,
+    theme: "default",
+  });
+  window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+});
+</script>
+
 		
 	
 
