@@ -1,4 +1,166 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2023-03-26T05:18:57+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">重构</title><link href="https://mengtnt.com/2023/03/20/refactor.html" rel="alternate" type="text/html" title="重构" /><published>2023-03-20T06:18:02+00:00</published><updated>2023-03-20T06:18:02+00:00</updated><id>https://mengtnt.com/2023/03/20/refactor</id><content type="html" xml:base="https://mengtnt.com/2023/03/20/refactor.html">&lt;p&gt;重构是一个老生常谈的问题，并且也有大量的书籍介绍重构的方法。那如何重构代码？如何保证重构的代码不出问题？重构后的代码如何防止腐化？我先贴出来 ChatGPT 如何回答的，来感受下她的强大。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2023-06-17T03:34:23+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">视频帧处理</title><link href="https://mengtnt.com/2023/06/17/video-process.html" rel="alternate" type="text/html" title="视频帧处理" /><published>2023-06-17T03:01:06+00:00</published><updated>2023-06-17T03:01:06+00:00</updated><id>https://mengtnt.com/2023/06/17/video-process</id><content type="html" xml:base="https://mengtnt.com/2023/06/17/video-process.html">&lt;p&gt;当我们做美颜、虚拟背景、虚拟人偶等功能时，一般都是需要对 iOS 相机帧进行前置处理。如果做过 iOS 开发的话，很快可以写出来下面的处理过程代码。&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;captureOutput&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AVCaptureOutput&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;captureOutput&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;didOutputSampleBuffer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CMSampleBufferRef&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sampleBuffer&lt;/span&gt;
+       &lt;span class=&quot;n&quot;&gt;fromConnection&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AVCaptureConnection&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;connection&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;CVPixelBufferRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CMSampleBufferGetImageBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sampleBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;CVPixelBufferRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resultPixelBuffe&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;renderPixbuffer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;resultPixelBuffe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;上面的代码看起来没啥问题，不出意外应该也可以顺利的运行起来。下面我们就逐步来看会遇到什么问题。&lt;/p&gt;
+
+&lt;h2 id=&quot;视频卡顿问题&quot;&gt;视频卡顿问题&lt;/h2&gt;
+
+&lt;p&gt;当你写的代码运行的时间比较久时，手机发烫性能下降时会发现延时感非常强烈，看到的自己的画面很可能是5秒之前的画面。主要的原因就是性能下降时，手机的硬件处理速度下降，相机的视频帧的采集速度和处理速度不能匹配，造成了视频帧堆积引起的问题。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/6e785b9273e874349d5d06bb8b9a66a4cb50ca10e3feebe3f25a0d27c676b718.png&quot; alt=&quot;图 1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;上图很形象的展示了这个过程，系统相机采集帧的线程队列优先级往往比较高，当遇到我们的帧处理线程时。相当于高速公路上的汽车突然来到了省道上，如果系统性能比较好时，高速公路不繁忙那么自然不会拥堵，当系统性能下降时很容易遇到上图示例展示的拥堵，这时候用户看到的视频帧自然就会延时的很厉害。&lt;/p&gt;
+
+&lt;h2 id=&quot;线程的优化&quot;&gt;线程的优化&lt;/h2&gt;
+
+&lt;p&gt;既然遇到了拥堵问题，那我们怎么优化呢？第一个想到的是，不要卡主系统相机采集线程的回调，通过设置另一个线程队列来处理我们的视频帧，自然会写出下面的代码。&lt;/p&gt;
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+&lt;span class=&quot;n&quot;&gt;_frameQueue&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dispatch_queue_create&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;org.dingtalk.cameravideocapturer.video&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DISPATCH_QUEUE_SERIAL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;// 提升视频帧处理线程队列的优先级，&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;dispatch_set_target_queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_frameQueue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dispatch_get_global_queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;DISPATCH_QUEUE_PRIORITY_HIGH&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;captureOutput&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AVCaptureOutput&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;captureOutput&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;didOutputSampleBuffer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CMSampleBufferRef&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sampleBuffer&lt;/span&gt;
+       &lt;span class=&quot;n&quot;&gt;fromConnection&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AVCaptureConnection&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;connection&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;CVPixelBufferRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CMSampleBufferGetImageBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sampleBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;CVBufferRetain&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+   &lt;span class=&quot;n&quot;&gt;dispatch_async&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;frameQueue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+     &lt;span class=&quot;n&quot;&gt;CVPixelBufferRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resultPixelBuffe&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;renderPixbuffer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;resultPixelBuffe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+     &lt;span class=&quot;n&quot;&gt;CVBufferRelease&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+   &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;这种想法是没有问题的，但是现实很残酷，虽然你切换了处理线程，并且也提升了线程的优先级，相当于吞吐量增加了。但是遇到性能下降时，尤其像美颜、虚拟背景处理视频帧花费的时间会比较长。会造成的问题是，有大量的视频帧囤积到内存中，然后等待你的 &lt;code class=&quot;highlighter-rouge&quot;&gt;frameQueue&lt;/code&gt; 队列去处理。如果观察内存的变化情况就如下图：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/aec899a03a3f37fb837decdca95cfb498e79daf1114cd7e2c1a4909216f6447b.png&quot; alt=&quot;图 2&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;并且在手机发烫，CPU 性能下降时，每帧视频处理时长会越来越长，导致内存不断增加形成恶性循环，最终的结果就是 OOM 程序崩溃。
+为何内存会囤积到内存中，等待 &lt;code class=&quot;highlighter-rouge&quot;&gt;frameQueue&lt;/code&gt; 线程队列执行呢？这就涉及到我们使用的一个操作 &lt;code class=&quot;highlighter-rouge&quot;&gt;dispatch_async&lt;/code&gt;。下面展示下 &lt;code class=&quot;highlighter-rouge&quot;&gt;dispatch_async&lt;/code&gt; 的源码实现。&lt;/p&gt;
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; 
+&lt;span class=&quot;nf&quot;&gt;dispatch_async&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dispatch_queue_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dispatch_block_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;block&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dispatch_continuation_s&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;contin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;dispatch_continuation_init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;contin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;block&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;_dispatch_async_f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;contin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DISPATCH_INVOKE_ASYNC_BIT&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;DISPATCH_NOINLINE&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;
+&lt;span class=&quot;nf&quot;&gt;_dispatch_async_f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dispatch_queue_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dispatch_continuation_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+    &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ctxt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dispatch_function_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dc_func&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
+    &lt;span class=&quot;kt&quot;&gt;uint64_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dc_data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;uint64_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dc_flags&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// ...&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;dq&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dq_items_tail&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;do_next&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;dq&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dq_items_tail&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;slowpath&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dq&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dq_width&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+        &lt;span class=&quot;c1&quot;&gt;// 如果是串行队列,直接执行任务或唤醒runloop&lt;/span&gt;
+        &lt;span class=&quot;n&quot;&gt;_dispatch_queue_push_list&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;// 如果是并发队列,直接将任务添加到队列尾部&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;我们总结下，&lt;code class=&quot;highlighter-rouge&quot;&gt;dispatch_async&lt;/code&gt; 主要做了下面两个事情。&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;如果 dq 是串行队列,它会直接执行 dc 中的任务或唤醒 runloop 来执行任务。&lt;/li&gt;
+  &lt;li&gt;如果 dq 是并发队列,它只会简单地将 dc 添加到队尾,等待后续被线程查找并执行。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;可以看出 &lt;code class=&quot;highlighter-rouge&quot;&gt;dispatch_async&lt;/code&gt; 的主要工作是将任务加入队列,并根据队列类型来决定是否直接执行任务。所以当我们定义一个串行队列时。本质上就是不停的往队列中放置数据，如果放置的队列中有大数据，而我们又没做相应的丢弃操作，就很容易引起内存堆积问题。&lt;/p&gt;
+
+&lt;h2 id=&quot;丢帧优化&quot;&gt;丢帧优化&lt;/h2&gt;
+
+&lt;p&gt;为了防止上述的 OOM 的情况，最容易想到的就是对堆积的队列做丢帧的处理。可以通过设置丢帧的间隔，比如设置0.1秒间隔，如果处理不完就丢弃掉后面来的视频帧，可以写如下的代码。&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;_processSemaphore&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dispatch_semaphore_create&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;captureOutput&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AVCaptureOutput&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;captureOutput&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;didOutputSampleBuffer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CMSampleBufferRef&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sampleBuffer&lt;/span&gt;
+       &lt;span class=&quot;n&quot;&gt;fromConnection&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AVCaptureConnection&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;connection&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;CVPixelBufferRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CMSampleBufferGetImageBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sampleBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;CVBufferRetain&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+   &lt;span class=&quot;n&quot;&gt;patch_async&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;frameQueue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+       &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dispatch_semaphore_wait&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;processSemaphore&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;n&quot;&gt;dispatch_time&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;DISPATCH_TIME_NOW&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int64_t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NSEC_PER_SEC&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
+            &lt;span class=&quot;n&quot;&gt;CVBufferRelease&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+     &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+     &lt;span class=&quot;n&quot;&gt;CVPixelBufferRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resultPixelBuffe&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;renderPixbuffer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;resultPixelBuffe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+     &lt;span class=&quot;n&quot;&gt;CVBufferRelease&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;dispatch_semaphore_signal&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;processSemaphore&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+   &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;上述的代码，可以用下图形象的展示:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/91f6edf8fe09d458fc666da1f47f648a0b62037ea043071c865ed4fbb901e5e2.png&quot; alt=&quot;图 9&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;这里相当于给高速公路设置了一个分流站，不合格的车辆直接当场扔掉(这样有点残暴，当然这里只是假设)。似乎用这种方式可以解决内存堆积问题。我们的程序用这种方式继续运行，会带来另一个问题。虽然内存不会持续增加了，但是内存会出现过山车的情况忽上忽下。如果用 instument 观察就如下面的现象。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/7faaf3cc155c130962baf6fabf4dddaff71f92fcfb49012967fa4db6af1cb4ff.png&quot; alt=&quot;图 10&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;这种情况虽然不至于让程序很快崩溃，但是也是在危险的边缘不停的试探，一旦一次触发到底线还是会崩溃的。那我们如何解决呢。&lt;/p&gt;
+
+&lt;h2 id=&quot;缓存队列&quot;&gt;缓存队列&lt;/h2&gt;
+
+&lt;p&gt;从上面的代码可以看到，之所以形成了过山车内存的问题，并不是采集问题引起的。因为采集线程已经做了丢帧的操作。我们把问题用下图描述。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/3e4d1941c22bc72457c2f5ba4dc26d22b841ea55201020744a272a68e5b6ecb4.png&quot; alt=&quot;图 4&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;可以看出主要原因是处理线程完成后，在渲染时由于采集和渲染在同一个 &lt;code class=&quot;highlighter-rouge&quot;&gt;framequeue&lt;/code&gt; 线程中，会造成我们最开始描述的视频帧拥堵问题。那我们如何解决这个问题，和上面描述的优化逻辑一样，首先要把采集的线程和渲染线程分离开，然后再做丢帧的操作。这里我们可以通过增加一个缓存队列来做，实现代码如下：&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;CVBufferRetain&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;CVPixelBufferRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;willDropPixelBuffer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffersLock&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffers&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kRTCMaxDropPixBufferFrame&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;willDropPixelBuffer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;__bridge&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CVPixelBufferRef&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffers&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;objectAtIndex&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffers&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;removeObjectAtIndex&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffers&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;addObject&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;__bridge&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffersLock&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;unlock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;willDropPixelBuffer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;CVBufferRelease&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;willDropPixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;那为何采集的时候通过设置 0.1 秒的时间间隔来丢帧，而渲染要通过缓存队列来丢帧呢？其实本质上一样的，只是丢弃帧的逻辑不太一样而已，因为相机采集的帧回调的数据比较多，通过时间间隔丢帧可以更好的控制帧率，防止画面抖动太厉害。而渲染时就没必要这么精准的控制，通过丢弃过老的帧来防止内存抖动问题就可以了。然后我们优化后视频帧的整个处理过程就如下图所示：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/44a65e2f89e402ecce91a8cd8cd2c96063ee8500c963913751863b813e08e7a8.png&quot; alt=&quot;图 5&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;我们总结下，解决视频帧处理遇到的问题，主要通过下面两个手段来防止：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;分离相机帧采集的线程队列和渲染的队列 (frameQueue、renderQueue)，防止采集线程处理慢时造成渲染线程被卡住。&lt;/li&gt;
+  &lt;li&gt;在两个线程队列切换时，增加数据丢帧逻辑防止内存 OOM。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;最终改造后的流程图如下：&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/eae0c47b0d89e435451f0c552d09e58af5c4d60ef00aa1dd8d43f45067ed6ad6.png&quot; alt=&quot;图 6&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;改造之前和改造之后，用 Instument 观察内存的抖动情况，可以明显的看到区别。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/76808d7ec2dff7a1bddc268542f2511c8406b7dae9e02766c0591553bf3ed3d2.png&quot; alt=&quot;图 7&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;上述虽然描述的是视频帧的处理优化过程。其实所有大的内存数据管道化处理时，都应该遵循下面的基本原则：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;各个功能模块分别用不同的线程来处理，这样彼此互相独立不会相互影响数据的处理过程，避免拥塞卡顿问题。&lt;/li&gt;
+  &lt;li&gt;在功能线程切换时传递的内存大数据，通过设置缓存 Buffer 避免引起内存问题，防止内存过多造成 OOM。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;下面我们看下业界比较优秀的 WebRTC 音视频数据的处理过程，如下图所示:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/3ef26960fa812d2a4444c1c773e4b65a31cffaefd84bbed0ff2f39ba830b566e.png&quot; alt=&quot;图 8&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;WebRTC 的视频采集、混合、编码、发送的过程，都是分别使用不同线程，并且都有相应的 Buffer 做缓存操作，非常符合上面我们视频帧优化的整个过程。所以我们在做这种大内存数据处理时尤其要铭记上面提到的两个原则。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">当我们做美颜、虚拟背景、虚拟人偶等功能时，一般都是需要对 iOS 相机帧进行前置处理。如果做过 iOS 开发的话，很快可以写出来下面的处理过程代码。</summary></entry><entry><title type="html">重构</title><link href="https://mengtnt.com/2023/03/20/refactor.html" rel="alternate" type="text/html" title="重构" /><published>2023-03-20T06:18:02+00:00</published><updated>2023-03-20T06:18:02+00:00</updated><id>https://mengtnt.com/2023/03/20/refactor</id><content type="html" xml:base="https://mengtnt.com/2023/03/20/refactor.html">&lt;p&gt;重构是一个老生常谈的问题，并且也有大量的书籍介绍重构的方法。那如何重构代码？如何保证重构的代码不出问题？重构后的代码如何防止腐化？我先贴出来 ChatGPT 如何回答的，来感受下她的强大。&lt;/p&gt;
 
 &lt;blockquote&gt;
   &lt;p&gt;如何重构代码&lt;/p&gt;
@@ -2044,44 +2206,4 @@ CMD &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;
 
 &lt;p&gt;所以何为经验，就是在某个领域解决问题的效率。拿上面的例子，如果是一个经验不丰富的人，可能要花费3倍于经验丰富的人，才能解决这个问题，这个就是生产效率的问题。试问企业更愿意雇佣那种人，显而易见如果企业用1个月就可以赚到3个月的钱时，就愿意拿3倍工资招聘一个经验丰富的人，而不会用平均的工资水平招聘一个经验不足的人。&lt;/p&gt;
 
-&lt;p&gt;对于企业来讲，生产效率是他们立于不败之地的重要手段。很多工具的发明也正是为了提升生产效率。所以作为打工人的我们要考虑，为什么企业要用你，自己的价值何在？工作的时候，一些重复的劳动，就要想有没有什么办法可以做自动化。这不仅节省了企业的成本，重要的是也让自己学到了经验，那将来其他公司也很乐于雇佣你，因为你帮企业提高了生产力，企业就更乐意拿高于没经验人的工资来聘用你。所以在职场上，要不断的增加自己解决问题的经验，然后树立自己的核心竞争力，这样才能立于不败之地。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近想对博客的源码做自动化的CI，原本想着使用github的workflow配置，提交博客源码后让github自动编译发布博客。不过由于还要部署一些其他的内容，所以索性就想着自己写个github的webhook，当提交博客源码时，服务器运行CI工具，顺便发布下自己部署的其他服务。</summary></entry><entry><title type="html">好文章与坏文章</title><link href="https://mengtnt.com/2021/05/03/recoginze.html" rel="alternate" type="text/html" title="好文章与坏文章" /><published>2021-05-03T08:05:10+00:00</published><updated>2021-05-03T08:05:10+00:00</updated><id>https://mengtnt.com/2021/05/03/recoginze</id><content type="html" xml:base="https://mengtnt.com/2021/05/03/recoginze.html">&lt;p&gt;看到这个标题，不要误解。我并不是为了给文章打一个非好及坏标签，我也没这个能力打标签。这里先说下本文说的文章的范围，主要是针对技术领域的内容。所以这里的好文章，更精确的定义应该是让想要学习这个领域的人，能够更容易理解的文章。不过初学者不容易理解的文章就是坏文章么？那当然不是，但是针对于这个人群来说，这类文章的价值意义肯定比不过”好文章”。&lt;/p&gt;
-
-&lt;p&gt;技术类的文章和书籍自己阅读过不少，下面就谈谈关于”好文章和坏文章”的几点心得和看法。&lt;/p&gt;
-
-&lt;h2 id=&quot;有自己的观点不要人云亦云&quot;&gt;有自己的观点，不要人云亦云&lt;/h2&gt;
-
-&lt;p&gt;我经常会看到，有一些技术文章来教大家的安装过程。并不是说这类文章没有意义，而是说这类文章和技术文档其实没什么大的区别。如果能在介绍安装步骤的过程中，讲解下为何要这样安装其实就很有意义了，而不是简单的记流水账。&lt;/p&gt;
-
-&lt;p&gt;还有一类文章，就是翻译的文章，往往容易出现坏文章。因为译者的话毕竟不是作者，一些观点理解难免有误差。再加上如果这个领域不了解的话，就会更加的糟糕。相信你一定读过翻译很烂的技术文章。我下面举一个例子。&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;This is an opaque data type and use xxx api accessed directly.&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;很多技术文章的翻译是，”这是一种不透明的数据类型，使用xxx来访问”。&lt;code class=&quot;highlighter-rouge&quot;&gt;transparent or opaque type&lt;/code&gt;这两个词在英语中形容一些实物挺形象，但是翻译出来，如果译者不加思考的直译的话，对初学者来讲真的很难理解。如果能补充一句说，”这是一种不透明的数据类型，也就是具体的数据结构没有公开方法，只能通过xxx api来访问”。这种就好理解多了。所以如果翻译的文章，没有吃透作者表达的原理，就很容易人云亦云，照着字面意思翻译。&lt;/p&gt;
-
-&lt;h2 id=&quot;不需要整的高大上简单就好&quot;&gt;不需要整的高大上，简单就好&lt;/h2&gt;
-
-&lt;p&gt;有些技术博客，特别是讲架构的技术博客。上来就是&lt;code class=&quot;highlighter-rouge&quot;&gt;kafka dubbo zookeeper&lt;/code&gt;各种新概念。然后复杂无比的架构图一展示，然后使用各种专业名词解释&lt;code class=&quot;highlighter-rouge&quot;&gt;xxxRPC&lt;/code&gt;进行模块间通信，相信这类文章也会遇到不少。这类文章我想说的是，到底是讲给谁听的，如果是讲给想了解这个领域的人听的，别人可能看了几个名词后，就会去搜索这个名词了，然后也不见得会回来再读。讲给这个领域的专家，可能看了开头也不会读下去，不知道到底要表达什么。&lt;/p&gt;
-
-&lt;p&gt;所以写技术文章一定要有个核心，比如讲某个架构是要解决什么问题，可以把问题先定义清楚。因为问题往往比较简答，比如说用户量过大，单台服务器无法满足要求，想动态扩展。然后再来讲架构，讲架构的时候特别遇到一些新的名词时，如果能表述下这个新事物的来龙去脉，发展历程那就很容易吸引读者。&lt;/p&gt;
-
-&lt;p&gt;技术文章不需要一下子讲完所有的东西，只要抓住一个点讲解清楚就完成了任务，因为一个人看一篇文章往往也不会理解太多的东西。所以文章不在于多，在与精简。&lt;/p&gt;
-
-&lt;h2 id=&quot;能够融会贯通的一定是好文章&quot;&gt;能够融会贯通的，一定是好文章&lt;/h2&gt;
-
-&lt;p&gt;什么是融会贯通，就是能把一个复杂的东西，通过一些身边常见的例子，很简单的表述出来了，这就叫融会贯通。很多作者在讲解一个技术点时，自己确实理解的也很透彻，但是讲给别人听的时候，就复杂无比，别人听的云里雾里，这其中就没有把握讲解的核心”大道至简”。&lt;/p&gt;
-
-&lt;p&gt;我这里想吐槽的是很多数学类的书籍，尤其教科书简直就是劝退的书籍。举个线性代数的例子，一上来就把矩阵的式子列出来，然后各种变换的方法讲解起来。上大学的时候读这种书时，我就怀疑人生了，这到底是要干嘛，学这些有什么用。可是当我读到一本叫《漫画傅里叶变换》这本书的时候，书中一开始并没有解释数学公式，而是从两个音乐系的学生在争论一些乐器的声音开始，然后逐步解释了傅里叶变换公式的推导。当时我读完的时候，真是茅厕顿开，解答了困惑自己很多的问题，也明白了这些数学公式到底有什么用。&lt;/p&gt;
-
-&lt;p&gt;所以数学其实很多公式都是很有趣的，设计的非常精妙。只是我们讲解的时候，都是死板的按照公式来的，根本没有结合实际应用融会贯通。造成很多概念极其抽象，完全没有现实中类比的对象。&lt;/p&gt;
-
-&lt;h2 id=&quot;能够讲故事的一定也是好文章&quot;&gt;能够讲故事的，一定也是好文章&lt;/h2&gt;
-
-&lt;p&gt;自己曾经读到过一篇公众号的文章《我是一个线程》。通过讲解一个人在工厂里工作的经历，描述了一个线程的创建，运行和销毁。我感觉讲的非常的好。通过类比我们身边常见的故事，讲解一些晦涩的技术感念，非常的巧妙。对于初学者来讲，通过这种类比，就很容易理解。&lt;/p&gt;
-
-&lt;p&gt;最近也看了《我是一个线程》作者出的《码农翻身》这本书，自己也在学习作者的讲解方法。尤其书中通过漫画和实例相结合的方式，讲解的非常的生动。这类文章就是通过一些有趣的故事，然后就把一个技术点的来龙去脉分析的非常透彻。并且故事和技术点的结合也非常的贴切，这其实需要作者大量的思考才能总结出来这些方法。所以好的文章，不仅需要你理解这个技术点，同时也要很好的能讲解这个技术点。&lt;/p&gt;
-
-&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
-
-&lt;p&gt;个人觉得进入一个行业的门槛，跟这个行业的教育水平有很大的关系。其实我觉得IT行业就挺好，有大量高质量的文章和资料输出。只有这样的文章多起来，才能更好的让初学者进入这一行。我在想例如数学和物理一些理论学科，如果能有更多高质量和有趣的讲解，相信这两门学科比我们想象的有趣多了。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">看到这个标题，不要误解。我并不是为了给文章打一个非好及坏标签，我也没这个能力打标签。这里先说下本文说的文章的范围，主要是针对技术领域的内容。所以这里的好文章，更精确的定义应该是让想要学习这个领域的人，能够更容易理解的文章。不过初学者不容易理解的文章就是坏文章么？那当然不是，但是针对于这个人群来说，这类文章的价值意义肯定比不过”好文章”。</summary></entry></feed>
+&lt;p&gt;对于企业来讲，生产效率是他们立于不败之地的重要手段。很多工具的发明也正是为了提升生产效率。所以作为打工人的我们要考虑，为什么企业要用你，自己的价值何在？工作的时候，一些重复的劳动，就要想有没有什么办法可以做自动化。这不仅节省了企业的成本，重要的是也让自己学到了经验，那将来其他公司也很乐于雇佣你，因为你帮企业提高了生产力，企业就更乐意拿高于没经验人的工资来聘用你。所以在职场上，要不断的增加自己解决问题的经验，然后树立自己的核心竞争力，这样才能立于不败之地。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近想对博客的源码做自动化的CI，原本想着使用github的workflow配置，提交博客源码后让github自动编译发布博客。不过由于还要部署一些其他的内容，所以索性就想着自己写个github的webhook，当提交博客源码时，服务器运行CI工具，顺便发布下自己部署的其他服务。</summary></entry></feed>

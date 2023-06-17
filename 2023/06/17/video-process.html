@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>视频帧处理 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2023/06/17/video-process.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="视频帧处理">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2023/06/17/video-process.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">视频帧处理</h1>
+  
+  <span class="post-meta">06月 17日, 2023</span><br>
+  
+  <span class="post-meta small">4 minute read</span>
+</div>
+
+<article class="post-content">
+  <p>当我们做美颜、虚拟背景、虚拟人偶等功能时，一般都是需要对 iOS 相机帧进行前置处理。如果做过 iOS 开发的话，很快可以写出来下面的处理过程代码。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">captureOutput</span><span class="o">:</span><span class="p">(</span><span class="n">AVCaptureOutput</span> <span class="o">*</span><span class="p">)</span><span class="n">captureOutput</span>
+<span class="n">didOutputSampleBuffer</span><span class="o">:</span><span class="p">(</span><span class="n">CMSampleBufferRef</span><span class="p">)</span><span class="n">sampleBuffer</span>
+       <span class="n">fromConnection</span><span class="o">:</span><span class="p">(</span><span class="n">AVCaptureConnection</span> <span class="o">*</span><span class="p">)</span><span class="n">connection</span> <span class="p">{</span>
+    <span class="n">CVPixelBufferRef</span> <span class="n">pixelBuffer</span> <span class="o">=</span> <span class="n">CMSampleBufferGetImageBuffer</span><span class="p">(</span><span class="n">sampleBuffer</span><span class="p">);</span>
+    <span class="n">CVPixelBufferRef</span> <span class="n">resultPixelBuffe</span> <span class="o">=</span> <span class="p">[</span><span class="n">self</span> <span class="n">handler</span><span class="o">:</span><span class="n">pixelBuffer</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">self</span> <span class="n">renderPixbuffer</span><span class="o">:</span><span class="n">resultPixelBuffe</span><span class="p">];</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>上面的代码看起来没啥问题，不出意外应该也可以顺利的运行起来。下面我们就逐步来看会遇到什么问题。</p>
+
+<h2 id="视频卡顿问题">视频卡顿问题</h2>
+
+<p>当你写的代码运行的时间比较久时，手机发烫性能下降时会发现延时感非常强烈，看到的自己的画面很可能是5秒之前的画面。主要的原因就是性能下降时，手机的硬件处理速度下降，相机的视频帧的采集速度和处理速度不能匹配，造成了视频帧堆积引起的问题。</p>
+
+<p><img src="/images/6e785b9273e874349d5d06bb8b9a66a4cb50ca10e3feebe3f25a0d27c676b718.png" alt="图 1" /></p>
+
+<p>上图很形象的展示了这个过程，系统相机采集帧的线程队列优先级往往比较高，当遇到我们的帧处理线程时。相当于高速公路上的汽车突然来到了省道上，如果系统性能比较好时，高速公路不繁忙那么自然不会拥堵，当系统性能下降时很容易遇到上图示例展示的拥堵，这时候用户看到的视频帧自然就会延时的很厉害。</p>
+
+<h2 id="线程的优化">线程的优化</h2>
+
+<p>既然遇到了拥堵问题，那我们怎么优化呢？第一个想到的是，不要卡主系统相机采集线程的回调，通过设置另一个线程队列来处理我们的视频帧，自然会写出下面的代码。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="n">_frameQueue</span> <span class="o">=</span> <span class="n">dispatch_queue_create</span><span class="p">(</span><span class="s">"org.dingtalk.cameravideocapturer.video"</span><span class="p">,</span> <span class="n">DISPATCH_QUEUE_SERIAL</span><span class="p">);</span>
+<span class="c1">// 提升视频帧处理线程队列的优先级，</span>
+<span class="n">dispatch_set_target_queue</span><span class="p">(</span><span class="n">_frameQueue</span><span class="p">,</span> <span class="n">dispatch_get_global_queue</span><span class="p">(</span><span class="n">DISPATCH_QUEUE_PRIORITY_HIGH</span><span class="p">,</span> <span class="mi">0</span><span class="p">));</span>
+<span class="o">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">captureOutput</span><span class="o">:</span><span class="p">(</span><span class="n">AVCaptureOutput</span> <span class="o">*</span><span class="p">)</span><span class="n">captureOutput</span>
+<span class="n">didOutputSampleBuffer</span><span class="o">:</span><span class="p">(</span><span class="n">CMSampleBufferRef</span><span class="p">)</span><span class="n">sampleBuffer</span>
+       <span class="n">fromConnection</span><span class="o">:</span><span class="p">(</span><span class="n">AVCaptureConnection</span> <span class="o">*</span><span class="p">)</span><span class="n">connection</span> <span class="p">{</span>
+    <span class="n">CVPixelBufferRef</span> <span class="n">pixelBuffer</span> <span class="o">=</span> <span class="n">CMSampleBufferGetImageBuffer</span><span class="p">(</span><span class="n">sampleBuffer</span><span class="p">);</span>
+    <span class="n">CVBufferRetain</span><span class="p">(</span><span class="n">pixelBuffer</span><span class="p">);</span>
+   <span class="n">dispatch_async</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">frameQueue</span><span class="p">,</span> <span class="o">^</span><span class="p">{</span>
+     <span class="n">CVPixelBufferRef</span> <span class="n">resultPixelBuffe</span> <span class="o">=</span> <span class="p">[</span><span class="n">self</span> <span class="n">handler</span><span class="o">:</span><span class="n">pixelBuffer</span><span class="p">];</span>
+     <span class="p">[</span><span class="n">self</span> <span class="n">renderPixbuffer</span><span class="o">:</span><span class="n">resultPixelBuffe</span><span class="p">];</span>
+     <span class="n">CVBufferRelease</span><span class="p">(</span><span class="n">pixelBuffer</span><span class="p">);</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>这种想法是没有问题的，但是现实很残酷，虽然你切换了处理线程，并且也提升了线程的优先级，相当于吞吐量增加了。但是遇到性能下降时，尤其像美颜、虚拟背景处理视频帧花费的时间会比较长。会造成的问题是，有大量的视频帧囤积到内存中，然后等待你的 <code class="highlighter-rouge">frameQueue</code> 队列去处理。如果观察内存的变化情况就如下图：</p>
+
+<p><img src="/images/aec899a03a3f37fb837decdca95cfb498e79daf1114cd7e2c1a4909216f6447b.png" alt="图 2" /></p>
+
+<p>并且在手机发烫，CPU 性能下降时，每帧视频处理时长会越来越长，导致内存不断增加形成恶性循环，最终的结果就是 OOM 程序崩溃。
+为何内存会囤积到内存中，等待 <code class="highlighter-rouge">frameQueue</code> 线程队列执行呢？这就涉及到我们使用的一个操作 <code class="highlighter-rouge">dispatch_async</code>。下面展示下 <code class="highlighter-rouge">dispatch_async</code> 的源码实现。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kt">void</span> 
+<span class="nf">dispatch_async</span><span class="p">(</span><span class="n">dispatch_queue_t</span> <span class="n">queue</span><span class="p">,</span> <span class="n">dispatch_block_t</span> <span class="n">block</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="k">struct</span> <span class="n">dispatch_continuation_s</span> <span class="n">contin</span><span class="p">;</span>
+    <span class="n">dispatch_continuation_init</span><span class="p">(</span><span class="o">&amp;</span><span class="n">contin</span><span class="p">,</span> <span class="n">block</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">queue</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+    <span class="n">_dispatch_async_f</span><span class="p">(</span><span class="n">queue</span><span class="p">,</span> <span class="o">&amp;</span><span class="n">contin</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="nb">NULL</span><span class="p">,</span> <span class="n">DISPATCH_INVOKE_ASYNC_BIT</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="n">DISPATCH_NOINLINE</span>
+<span class="k">static</span> <span class="kt">void</span>
+<span class="nf">_dispatch_async_f</span><span class="p">(</span><span class="n">dispatch_queue_t</span> <span class="n">dq</span><span class="p">,</span> <span class="n">dispatch_continuation_t</span> <span class="n">dc</span><span class="p">,</span> 
+    <span class="kt">void</span> <span class="o">*</span><span class="n">ctxt</span><span class="p">,</span> <span class="n">dispatch_function_t</span> <span class="n">func</span><span class="p">,</span> <span class="kt">void</span> <span class="o">*</span><span class="n">dc_func</span><span class="p">,</span> 
+    <span class="kt">uint64_t</span> <span class="n">dc_data</span><span class="p">,</span> <span class="kt">uint64_t</span> <span class="n">dc_flags</span><span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// ...</span>
+    <span class="n">dq</span><span class="o">-&gt;</span><span class="n">dq_items_tail</span><span class="o">-&gt;</span><span class="n">do_next</span> <span class="o">=</span> <span class="n">dc</span><span class="p">;</span>
+    <span class="n">dq</span><span class="o">-&gt;</span><span class="n">dq_items_tail</span> <span class="o">=</span> <span class="n">dc</span><span class="p">;</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">slowpath</span><span class="p">(</span><span class="n">dq</span><span class="o">-&gt;</span><span class="n">dq_width</span> <span class="o">==</span> <span class="mi">1</span><span class="p">))</span> <span class="p">{</span>
+        <span class="c1">// 如果是串行队列,直接执行任务或唤醒runloop</span>
+        <span class="n">_dispatch_queue_push_list</span><span class="p">(</span><span class="n">dq</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="c1">// 如果是并发队列,直接将任务添加到队列尾部</span>
+<span class="p">}</span>
+</code></pre></div></div>
+<p>我们总结下，<code class="highlighter-rouge">dispatch_async</code> 主要做了下面两个事情。</p>
+<ol>
+  <li>如果 dq 是串行队列,它会直接执行 dc 中的任务或唤醒 runloop 来执行任务。</li>
+  <li>如果 dq 是并发队列,它只会简单地将 dc 添加到队尾,等待后续被线程查找并执行。</li>
+</ol>
+
+<p>可以看出 <code class="highlighter-rouge">dispatch_async</code> 的主要工作是将任务加入队列,并根据队列类型来决定是否直接执行任务。所以当我们定义一个串行队列时。本质上就是不停的往队列中放置数据，如果放置的队列中有大数据，而我们又没做相应的丢弃操作，就很容易引起内存堆积问题。</p>
+
+<h2 id="丢帧优化">丢帧优化</h2>
+
+<p>为了防止上述的 OOM 的情况，最容易想到的就是对堆积的队列做丢帧的处理。可以通过设置丢帧的间隔，比如设置0.1秒间隔，如果处理不完就丢弃掉后面来的视频帧，可以写如下的代码。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">_processSemaphore</span> <span class="o">=</span> <span class="n">dispatch_semaphore_create</span><span class="p">(</span><span class="mi">1</span><span class="p">);</span>
+<span class="o">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">captureOutput</span><span class="o">:</span><span class="p">(</span><span class="n">AVCaptureOutput</span> <span class="o">*</span><span class="p">)</span><span class="n">captureOutput</span>
+<span class="n">didOutputSampleBuffer</span><span class="o">:</span><span class="p">(</span><span class="n">CMSampleBufferRef</span><span class="p">)</span><span class="n">sampleBuffer</span>
+       <span class="n">fromConnection</span><span class="o">:</span><span class="p">(</span><span class="n">AVCaptureConnection</span> <span class="o">*</span><span class="p">)</span><span class="n">connection</span> <span class="p">{</span>
+    <span class="n">CVPixelBufferRef</span> <span class="n">pixelBuffer</span> <span class="o">=</span> <span class="n">CMSampleBufferGetImageBuffer</span><span class="p">(</span><span class="n">sampleBuffer</span><span class="p">);</span>
+    <span class="n">CVBufferRetain</span><span class="p">(</span><span class="n">pixelBuffer</span><span class="p">);</span>
+   <span class="n">patch_async</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">frameQueue</span><span class="p">,</span> <span class="o">^</span><span class="p">{</span>
+       <span class="k">if</span> <span class="p">(</span><span class="n">dispatch_semaphore_wait</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">processSemaphore</span><span class="p">,</span>  <span class="n">dispatch_time</span><span class="p">(</span><span class="n">DISPATCH_TIME_NOW</span><span class="p">,</span> <span class="p">(</span><span class="kt">int64_t</span><span class="p">)(</span><span class="mi">0</span><span class="p">.</span><span class="mi">1</span> <span class="o">*</span> <span class="n">NSEC_PER_SEC</span><span class="p">)))</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">){</span>
+            <span class="n">CVBufferRelease</span><span class="p">(</span><span class="n">pixelBuffer</span><span class="p">);</span>
+            <span class="k">return</span><span class="p">;</span>
+     <span class="p">}</span>
+     <span class="n">CVPixelBufferRef</span> <span class="n">resultPixelBuffe</span> <span class="o">=</span> <span class="p">[</span><span class="n">self</span> <span class="n">handler</span><span class="o">:</span><span class="n">pixelBuffer</span><span class="p">];</span>
+     <span class="p">[</span><span class="n">self</span> <span class="n">renderPixbuffer</span><span class="o">:</span><span class="n">resultPixelBuffe</span><span class="p">];</span>
+     <span class="n">CVBufferRelease</span><span class="p">(</span><span class="n">pixelBuffer</span><span class="p">);</span>
+    <span class="n">dispatch_semaphore_signal</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">processSemaphore</span><span class="p">);</span>
+   <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+<p>上述的代码，可以用下图形象的展示:</p>
+
+<p><img src="/images/91f6edf8fe09d458fc666da1f47f648a0b62037ea043071c865ed4fbb901e5e2.png" alt="图 9" /></p>
+
+<p>这里相当于给高速公路设置了一个分流站，不合格的车辆直接当场扔掉(这样有点残暴，当然这里只是假设)。似乎用这种方式可以解决内存堆积问题。我们的程序用这种方式继续运行，会带来另一个问题。虽然内存不会持续增加了，但是内存会出现过山车的情况忽上忽下。如果用 instument 观察就如下面的现象。</p>
+
+<p><img src="/images/7faaf3cc155c130962baf6fabf4dddaff71f92fcfb49012967fa4db6af1cb4ff.png" alt="图 10" /></p>
+
+<p>这种情况虽然不至于让程序很快崩溃，但是也是在危险的边缘不停的试探，一旦一次触发到底线还是会崩溃的。那我们如何解决呢。</p>
+
+<h2 id="缓存队列">缓存队列</h2>
+
+<p>从上面的代码可以看到，之所以形成了过山车内存的问题，并不是采集问题引起的。因为采集线程已经做了丢帧的操作。我们把问题用下图描述。</p>
+
+<p><img src="/images/3e4d1941c22bc72457c2f5ba4dc26d22b841ea55201020744a272a68e5b6ecb4.png" alt="图 4" /></p>
+
+<p>可以看出主要原因是处理线程完成后，在渲染时由于采集和渲染在同一个 <code class="highlighter-rouge">framequeue</code> 线程中，会造成我们最开始描述的视频帧拥堵问题。那我们如何解决这个问题，和上面描述的优化逻辑一样，首先要把采集的线程和渲染线程分离开，然后再做丢帧的操作。这里我们可以通过增加一个缓存队列来做，实现代码如下：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">CVBufferRetain</span><span class="p">(</span><span class="n">pixelBuffer</span><span class="p">);</span>
+<span class="n">CVPixelBufferRef</span> <span class="n">willDropPixelBuffer</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+<span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">pixelBuffersLock</span> <span class="n">lock</span><span class="p">];</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">pixelBuffers</span><span class="p">.</span><span class="n">count</span> <span class="o">&gt;=</span> <span class="n">kRTCMaxDropPixBufferFrame</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">willDropPixelBuffer</span> <span class="o">=</span> <span class="p">(</span><span class="n">__bridge</span> <span class="n">CVPixelBufferRef</span><span class="p">)[</span><span class="n">self</span><span class="p">.</span><span class="n">pixelBuffers</span> <span class="n">objectAtIndex</span><span class="o">:</span><span class="mi">0</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">pixelBuffers</span> <span class="n">removeObjectAtIndex</span><span class="o">:</span><span class="mi">0</span><span class="p">];</span>
+<span class="p">}</span>
+    <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">pixelBuffers</span> <span class="n">addObject</span><span class="o">:</span><span class="p">(</span><span class="n">__bridge</span> <span class="n">id</span><span class="p">)</span><span class="n">pixelBuffer</span><span class="p">];</span>
+    <span class="p">[</span><span class="n">self</span><span class="p">.</span><span class="n">pixelBuffersLock</span> <span class="n">unlock</span><span class="p">];</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">willDropPixelBuffer</span> <span class="o">!=</span> <span class="nb">NULL</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">CVBufferRelease</span><span class="p">(</span><span class="n">willDropPixelBuffer</span><span class="p">);</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+<p>那为何采集的时候通过设置 0.1 秒的时间间隔来丢帧，而渲染要通过缓存队列来丢帧呢？其实本质上一样的，只是丢弃帧的逻辑不太一样而已，因为相机采集的帧回调的数据比较多，通过时间间隔丢帧可以更好的控制帧率，防止画面抖动太厉害。而渲染时就没必要这么精准的控制，通过丢弃过老的帧来防止内存抖动问题就可以了。然后我们优化后视频帧的整个处理过程就如下图所示：</p>
+
+<p><img src="/images/44a65e2f89e402ecce91a8cd8cd2c96063ee8500c963913751863b813e08e7a8.png" alt="图 5" /></p>
+
+<p>我们总结下，解决视频帧处理遇到的问题，主要通过下面两个手段来防止：</p>
+<ol>
+  <li>分离相机帧采集的线程队列和渲染的队列 (frameQueue、renderQueue)，防止采集线程处理慢时造成渲染线程被卡住。</li>
+  <li>在两个线程队列切换时，增加数据丢帧逻辑防止内存 OOM。</li>
+</ol>
+
+<p>最终改造后的流程图如下：</p>
+
+<p><img src="/images/eae0c47b0d89e435451f0c552d09e58af5c4d60ef00aa1dd8d43f45067ed6ad6.png" alt="图 6" /></p>
+
+<p>改造之前和改造之后，用 Instument 观察内存的抖动情况，可以明显的看到区别。</p>
+
+<p><img src="/images/76808d7ec2dff7a1bddc268542f2511c8406b7dae9e02766c0591553bf3ed3d2.png" alt="图 7" /></p>
+
+<h2 id="总结">总结</h2>
+
+<p>上述虽然描述的是视频帧的处理优化过程。其实所有大的内存数据管道化处理时，都应该遵循下面的基本原则：</p>
+<ol>
+  <li>各个功能模块分别用不同的线程来处理，这样彼此互相独立不会相互影响数据的处理过程，避免拥塞卡顿问题。</li>
+  <li>在功能线程切换时传递的内存大数据，通过设置缓存 Buffer 避免引起内存问题，防止内存过多造成 OOM。</li>
+</ol>
+
+<p>下面我们看下业界比较优秀的 WebRTC 音视频数据的处理过程，如下图所示:</p>
+
+<p><img src="/images/3ef26960fa812d2a4444c1c773e4b65a31cffaefd84bbed0ff2f39ba830b566e.png" alt="图 8" /></p>
+
+<p>WebRTC 的视频采集、混合、编码、发送的过程，都是分别使用不同线程，并且都有相应的 Buffer 做缓存操作，非常符合上面我们视频帧优化的整个过程。所以我们在做这种大内存数据处理时尤其要铭记上面提到的两个原则。</p>
+
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+<script src="/resource/mermaid.min.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>  
+$(document).ready(function () {
+  window.mermaid.initialize({
+    startOnLoad: true,
+    theme: "default",
+  });
+  window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+});
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>
