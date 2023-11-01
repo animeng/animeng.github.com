@@ -497,9 +497,21 @@
   </p>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.0/dist/mermaid.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script>  
+$(document).ready(function () {
+  window.mermaid.initialize({
+    startOnLoad: true,
+    theme: "default",
+  });
+  window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+});
+</script>
+
 <div id="gitmentContainer"></div>
 <link rel="stylesheet" href="/css/comment.css">
-<script src="/resource/gitment.browser.v1.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/animeng/animeng.github.com/resource/gitment.browser.v1.js"></script>
 <script>
 var gitment = new Gitment({
     owner: 'animeng',
@@ -511,18 +523,6 @@ var gitment = new Gitment({
 });
 gitment.render('gitmentContainer');
 gitment.uploadIp();
-</script>
-
-<script src="/resource/mermaid.min.js"></script>
-<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>  
-$(document).ready(function () {
-  window.mermaid.initialize({
-    startOnLoad: true,
-    theme: "default",
-  });
-  window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
-});
 </script>
 
 		
