@@ -4247,7 +4247,7 @@ var Gitment = function () {
       }, options);
 
       this.state.user.isLoggingIn = true;
-      _utils.http.post('https://www.animeng.cn:3000', {
+      _utils.http.post('https://comment.animeng.win', {
         code: code,
         client_id: client_id,
         client_secret: client_secret
@@ -4557,11 +4557,6 @@ var Gitment = function () {
   }, {
     key: 'uploadIp',
     value: function uploadIp() {
-      _utils.http.post('https://www.animeng.cn:3000/uploadip', {}, '').then(function (data) {
-        console.log(data);
-      }).catch(function (e) {
-        alert(e);
-      });
     }
   }]);
 

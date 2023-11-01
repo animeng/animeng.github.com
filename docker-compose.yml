@@ -5,7 +5,7 @@ services:
     ports:
       - "9999:9999/tcp"
     networks:
-      - net-node-blog
+      - tunnel
 
 networks:
-  net-node-blog:
+  tunnel:

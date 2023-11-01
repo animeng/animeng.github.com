@@ -1,450 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2023-11-01T07:47:39+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">视频帧处理</title><link href="https://mengtnt.com/2023/06/17/video-process.html" rel="alternate" type="text/html" title="视频帧处理" /><published>2023-06-17T03:01:06+00:00</published><updated>2023-06-17T03:01:06+00:00</updated><id>https://mengtnt.com/2023/06/17/video-process</id><content type="html" xml:base="https://mengtnt.com/2023/06/17/video-process.html">&lt;p&gt;当我们做美颜、虚拟背景、虚拟人偶等功能时，一般都是需要对 iOS 相机帧进行前置处理。如果做过 iOS 开发的话，很快可以写出来下面的处理过程代码。&lt;/p&gt;
-
-&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;captureOutput&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AVCaptureOutput&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;captureOutput&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;didOutputSampleBuffer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CMSampleBufferRef&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sampleBuffer&lt;/span&gt;
-       &lt;span class=&quot;n&quot;&gt;fromConnection&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AVCaptureConnection&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;connection&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;CVPixelBufferRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CMSampleBufferGetImageBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sampleBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;CVPixelBufferRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resultPixelBuffe&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;renderPixbuffer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;resultPixelBuffe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;上面的代码看起来没啥问题，不出意外应该也可以顺利的运行起来。下面我们就逐步来看会遇到什么问题。&lt;/p&gt;
-
-&lt;h2 id=&quot;视频卡顿问题&quot;&gt;视频卡顿问题&lt;/h2&gt;
-
-&lt;p&gt;当你写的代码运行的时间比较久时，手机发烫性能下降时会发现延时感非常强烈，看到的自己的画面很可能是5秒之前的画面。主要的原因就是性能下降时，手机的硬件处理速度下降，相机的视频帧的采集速度和处理速度不能匹配，造成了视频帧堆积引起的问题。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/6e785b9273e874349d5d06bb8b9a66a4cb50ca10e3feebe3f25a0d27c676b718.png&quot; alt=&quot;图 1&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;上图很形象的展示了这个过程，系统相机采集帧的线程队列优先级往往比较高，当遇到我们的帧处理线程时。相当于高速公路上的汽车突然来到了省道上，如果系统性能比较好时，高速公路不繁忙那么自然不会拥堵，当系统性能下降时很容易遇到上图示例展示的拥堵，这时候用户看到的视频帧自然就会延时的很厉害。&lt;/p&gt;
-
-&lt;h2 id=&quot;线程的优化&quot;&gt;线程的优化&lt;/h2&gt;
-
-&lt;p&gt;既然遇到了拥堵问题，那我们怎么优化呢？第一个想到的是，不要卡主系统相机采集线程的回调，通过设置另一个线程队列来处理我们的视频帧，自然会写出下面的代码。&lt;/p&gt;
-&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;n&quot;&gt;_frameQueue&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dispatch_queue_create&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;org.dingtalk.cameravideocapturer.video&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DISPATCH_QUEUE_SERIAL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;c1&quot;&gt;// 提升视频帧处理线程队列的优先级，&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;dispatch_set_target_queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_frameQueue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dispatch_get_global_queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;DISPATCH_QUEUE_PRIORITY_HIGH&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;));&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;captureOutput&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AVCaptureOutput&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;captureOutput&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;didOutputSampleBuffer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CMSampleBufferRef&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sampleBuffer&lt;/span&gt;
-       &lt;span class=&quot;n&quot;&gt;fromConnection&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AVCaptureConnection&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;connection&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;CVPixelBufferRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CMSampleBufferGetImageBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sampleBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;CVBufferRetain&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-   &lt;span class=&quot;n&quot;&gt;dispatch_async&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;frameQueue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-     &lt;span class=&quot;n&quot;&gt;CVPixelBufferRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resultPixelBuffe&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;renderPixbuffer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;resultPixelBuffe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-     &lt;span class=&quot;n&quot;&gt;CVBufferRelease&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-   &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;这种想法是没有问题的，但是现实很残酷，虽然你切换了处理线程，并且也提升了线程的优先级，相当于吞吐量增加了。但是遇到性能下降时，尤其像美颜、虚拟背景处理视频帧花费的时间会比较长。会造成的问题是，有大量的视频帧囤积到内存中，然后等待你的 &lt;code class=&quot;highlighter-rouge&quot;&gt;frameQueue&lt;/code&gt; 队列去处理。如果观察内存的变化情况就如下图：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/aec899a03a3f37fb837decdca95cfb498e79daf1114cd7e2c1a4909216f6447b.png&quot; alt=&quot;图 2&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;并且在手机发烫，CPU 性能下降时，每帧视频处理时长会越来越长，导致内存不断增加形成恶性循环，最终的结果就是 OOM 程序崩溃。
-为何内存会囤积到内存中，等待 &lt;code class=&quot;highlighter-rouge&quot;&gt;frameQueue&lt;/code&gt; 线程队列执行呢？这就涉及到我们使用的一个操作 &lt;code class=&quot;highlighter-rouge&quot;&gt;dispatch_async&lt;/code&gt;。下面展示下 &lt;code class=&quot;highlighter-rouge&quot;&gt;dispatch_async&lt;/code&gt; 的源码实现。&lt;/p&gt;
-&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; 
-&lt;span class=&quot;nf&quot;&gt;dispatch_async&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dispatch_queue_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dispatch_block_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;block&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dispatch_continuation_s&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;contin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;dispatch_continuation_init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;contin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;block&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;_dispatch_async_f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;queue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;contin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DISPATCH_INVOKE_ASYNC_BIT&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;DISPATCH_NOINLINE&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;
-&lt;span class=&quot;nf&quot;&gt;_dispatch_async_f&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dispatch_queue_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dispatch_continuation_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
-    &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ctxt&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dispatch_function_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dc_func&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; 
-    &lt;span class=&quot;kt&quot;&gt;uint64_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dc_data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;uint64_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dc_flags&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;// ...&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;dq&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dq_items_tail&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;do_next&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;dq&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dq_items_tail&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;slowpath&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dq&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dq_width&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;==&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;c1&quot;&gt;// 如果是串行队列,直接执行任务或唤醒runloop&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;_dispatch_queue_push_list&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dq&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;// 如果是并发队列,直接将任务添加到队列尾部&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;我们总结下，&lt;code class=&quot;highlighter-rouge&quot;&gt;dispatch_async&lt;/code&gt; 主要做了下面两个事情。&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;如果 dq 是串行队列,它会直接执行 dc 中的任务或唤醒 runloop 来执行任务。&lt;/li&gt;
-  &lt;li&gt;如果 dq 是并发队列,它只会简单地将 dc 添加到队尾,等待后续被线程查找并执行。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;可以看出 &lt;code class=&quot;highlighter-rouge&quot;&gt;dispatch_async&lt;/code&gt; 的主要工作是将任务加入队列,并根据队列类型来决定是否直接执行任务。所以当我们定义一个串行队列时。本质上就是不停的往队列中放置数据，如果放置的队列中有大数据，而我们又没做相应的丢弃操作，就很容易引起内存堆积问题。&lt;/p&gt;
-
-&lt;h2 id=&quot;丢帧优化&quot;&gt;丢帧优化&lt;/h2&gt;
-
-&lt;p&gt;为了防止上述的 OOM 的情况，最容易想到的就是对堆积的队列做丢帧的处理。可以通过设置丢帧的间隔，比如设置0.1秒间隔，如果处理不完就丢弃掉后面来的视频帧，可以写如下的代码。&lt;/p&gt;
-
-&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;_processSemaphore&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dispatch_semaphore_create&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;captureOutput&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AVCaptureOutput&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;captureOutput&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;didOutputSampleBuffer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CMSampleBufferRef&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sampleBuffer&lt;/span&gt;
-       &lt;span class=&quot;n&quot;&gt;fromConnection&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;AVCaptureConnection&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;connection&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;CVPixelBufferRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CMSampleBufferGetImageBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;sampleBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;CVBufferRetain&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-   &lt;span class=&quot;n&quot;&gt;patch_async&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;frameQueue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;^&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-       &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dispatch_semaphore_wait&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;processSemaphore&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;n&quot;&gt;dispatch_time&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;DISPATCH_TIME_NOW&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int64_t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;NSEC_PER_SEC&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;){&lt;/span&gt;
-            &lt;span class=&quot;n&quot;&gt;CVBufferRelease&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-     &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-     &lt;span class=&quot;n&quot;&gt;CVPixelBufferRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;resultPixelBuffe&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-     &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;renderPixbuffer&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;resultPixelBuffe&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-     &lt;span class=&quot;n&quot;&gt;CVBufferRelease&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;dispatch_semaphore_signal&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;processSemaphore&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-   &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;上述的代码，可以用下图形象的展示:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/91f6edf8fe09d458fc666da1f47f648a0b62037ea043071c865ed4fbb901e5e2.png&quot; alt=&quot;图 9&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;这里相当于给高速公路设置了一个分流站，不合格的车辆直接当场扔掉(这样有点残暴，当然这里只是假设)。似乎用这种方式可以解决内存堆积问题。我们的程序用这种方式继续运行，会带来另一个问题。虽然内存不会持续增加了，但是内存会出现过山车的情况忽上忽下。如果用 instument 观察就如下面的现象。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/7faaf3cc155c130962baf6fabf4dddaff71f92fcfb49012967fa4db6af1cb4ff.png&quot; alt=&quot;图 10&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;这种情况虽然不至于让程序很快崩溃，但是也是在危险的边缘不停的试探，一旦一次触发到底线还是会崩溃的。那我们如何解决呢。&lt;/p&gt;
-
-&lt;h2 id=&quot;缓存队列&quot;&gt;缓存队列&lt;/h2&gt;
-
-&lt;p&gt;从上面的代码可以看到，之所以形成了过山车内存的问题，并不是采集问题引起的。因为采集线程已经做了丢帧的操作。我们把问题用下图描述。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/3e4d1941c22bc72457c2f5ba4dc26d22b841ea55201020744a272a68e5b6ecb4.png&quot; alt=&quot;图 4&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;可以看出主要原因是处理线程完成后，在渲染时由于采集和渲染在同一个 &lt;code class=&quot;highlighter-rouge&quot;&gt;framequeue&lt;/code&gt; 线程中，会造成我们最开始描述的视频帧拥堵问题。那我们如何解决这个问题，和上面描述的优化逻辑一样，首先要把采集的线程和渲染线程分离开，然后再做丢帧的操作。这里我们可以通过增加一个缓存队列来做，实现代码如下：&lt;/p&gt;
-
-&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;CVBufferRetain&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;CVPixelBufferRef&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;willDropPixelBuffer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffersLock&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;lock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffers&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;count&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kRTCMaxDropPixBufferFrame&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;willDropPixelBuffer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;__bridge&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CVPixelBufferRef&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffers&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;objectAtIndex&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffers&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;removeObjectAtIndex&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffers&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;addObject&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;__bridge&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;id&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;pixelBuffersLock&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;unlock&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;];&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;willDropPixelBuffer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;!=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;NULL&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;CVBufferRelease&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;willDropPixelBuffer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;那为何采集的时候通过设置 0.1 秒的时间间隔来丢帧，而渲染要通过缓存队列来丢帧呢？其实本质上一样的，只是丢弃帧的逻辑不太一样而已，因为相机采集的帧回调的数据比较多，通过时间间隔丢帧可以更好的控制帧率，防止画面抖动太厉害。而渲染时就没必要这么精准的控制，通过丢弃过老的帧来防止内存抖动问题就可以了。然后我们优化后视频帧的整个处理过程就如下图所示：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/44a65e2f89e402ecce91a8cd8cd2c96063ee8500c963913751863b813e08e7a8.png&quot; alt=&quot;图 5&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;我们总结下，解决视频帧处理遇到的问题，主要通过下面两个手段来防止：&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;分离相机帧采集的线程队列和渲染的队列 (frameQueue、renderQueue)，防止采集线程处理慢时造成渲染线程被卡住。&lt;/li&gt;
-  &lt;li&gt;在两个线程队列切换时，增加数据丢帧逻辑防止内存 OOM。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;最终改造后的流程图如下：&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/eae0c47b0d89e435451f0c552d09e58af5c4d60ef00aa1dd8d43f45067ed6ad6.png&quot; alt=&quot;图 6&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;改造之前和改造之后，用 Instument 观察内存的抖动情况，可以明显的看到区别。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/76808d7ec2dff7a1bddc268542f2511c8406b7dae9e02766c0591553bf3ed3d2.png&quot; alt=&quot;图 7&quot; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
-
-&lt;p&gt;上述虽然描述的是视频帧的处理优化过程。其实所有大的内存数据管道化处理时，都应该遵循下面的基本原则：&lt;/p&gt;
-&lt;ol&gt;
-  &lt;li&gt;各个功能模块分别用不同的线程来处理，这样彼此互相独立不会相互影响数据的处理过程，避免拥塞卡顿问题。&lt;/li&gt;
-  &lt;li&gt;在功能线程切换时传递的内存大数据，通过设置缓存 Buffer 避免引起内存问题，防止内存过多造成 OOM。&lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;下面我们看下业界比较优秀的 WebRTC 音视频数据的处理过程，如下图所示:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/3ef26960fa812d2a4444c1c773e4b65a31cffaefd84bbed0ff2f39ba830b566e.png&quot; alt=&quot;图 8&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;WebRTC 的视频采集、混合、编码、发送的过程，都是分别使用不同线程，并且都有相应的 Buffer 做缓存操作，非常符合上面我们视频帧优化的整个过程。所以我们在做这种大内存数据处理时尤其要铭记上面提到的两个原则。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">当我们做美颜、虚拟背景、虚拟人偶等功能时，一般都是需要对 iOS 相机帧进行前置处理。如果做过 iOS 开发的话，很快可以写出来下面的处理过程代码。</summary></entry><entry><title type="html">重构</title><link href="https://mengtnt.com/2023/03/20/refactor.html" rel="alternate" type="text/html" title="重构" /><published>2023-03-20T06:18:02+00:00</published><updated>2023-03-20T06:18:02+00:00</updated><id>https://mengtnt.com/2023/03/20/refactor</id><content type="html" xml:base="https://mengtnt.com/2023/03/20/refactor.html">&lt;p&gt;重构是一个老生常谈的问题，并且也有大量的书籍介绍重构的方法。那如何重构代码？如何保证重构的代码不出问题？重构后的代码如何防止腐化？我先贴出来 ChatGPT 如何回答的，来感受下她的强大。&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;如何重构代码&lt;/p&gt;
-  &lt;ol&gt;
-    &lt;li&gt;提取方法：如果你有一段过长或过于复杂的代码，可以将其提取为独立的方法，使其更易读且可重复使用。&lt;/li&gt;
-    &lt;li&gt;重命名变量和方法：使用描述性的名称命名变量和方法，使代码更容易理解。&lt;/li&gt;
-    &lt;li&gt;移除重复代码：查找重复的代码块，并将其提取为可重复使用的方法。&lt;/li&gt;
-    &lt;li&gt;简化条件语句：如果条件语句过于复杂，将其分解为更小、更易处理的部分。&lt;/li&gt;
-    &lt;li&gt;使用更好的数据结构：如果使用的数据结构效率低下或不能满足需求，考虑使用更好的数据结构。&lt;/li&gt;
-    &lt;li&gt;将代码分解成模块：将代码分解成具有特定职责的较小模块，每个模块都有自己的一组测试。&lt;/li&gt;
-    &lt;li&gt;移除无用代码：查找不再使用的代码，并将其删除以简化代码库并使其更易维护。
-这些只是重构代码的几个示例。关键在于不断寻找改进代码的方法，使其随着时间推移更易维护。&lt;/li&gt;
-  &lt;/ol&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;ChatGPT 上的回答和很多书籍和教程中讲的大同小异，其实有时候描述文字会很抽象。这里我拿自己经历的一个例子说明。当然不是 ChatGPT 给的例子😂。&lt;/p&gt;
-
-&lt;h2 id=&quot;简单功能的开发&quot;&gt;简单功能的开发&lt;/h2&gt;
-
-&lt;p&gt;这是很常见的成员列表页面展示功能。我们先看第一个版本的写法。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-mermaid&quot;&gt;
-classDiagram
-class MemberListViewController {
-  -MemberListView view
-  -loadView()
-}
-
-class MemberListView{ 
-  -renderView(List&amp;lt;MemberData&amp;gt; data)
-}
-
-class MemberData {
-  -String name
-  -Int status
-}
-
-MemberListViewController *-- MemberListView: 1..1
-
-MemberListView ..&amp;gt; MemberData: 1..*
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;下面用伪代码的方式展示下，调用的流程。&lt;/p&gt;
-
-&lt;div class=&quot;language-c++ highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;MemberListViewController&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loadView&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(){&lt;/span&gt;
-  &lt;span class=&quot;n&quot;&gt;RequestData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(){&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;in&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MemberData&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dataList&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MemberData&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;view&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dataList&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;MemberListViewController&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;MemberListViewController&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;vc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loadView&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;其实这种 UI 开发的逻辑再简单不过了，获取数据然后把数据渲染到相应的 UI 组件上。我们下面来看下功能的发展过程。&lt;/p&gt;
-
-&lt;h2 id=&quot;臃肿类的形成&quot;&gt;臃肿类的形成&lt;/h2&gt;
-
-&lt;p&gt;随着此功能设计了不同的应用场景，例如从场景A进去应该获取服务A的数据然后展现，从场景B进去获取服务B的数据…
-先来看如果按照原来的逻辑，需要写类似下面的大量代码。&lt;/p&gt;
-
-&lt;div class=&quot;language-c++ highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;k&quot;&gt;switch&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;condition&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;A&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
-      &lt;span class=&quot;n&quot;&gt;RequestAData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(){&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;in&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MemberData&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dataList&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MemberData&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;view&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dataList&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; 
-      &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;case&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;B&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
-      &lt;span class=&quot;n&quot;&gt;RequestBData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(){&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;in&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MemberData&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dataList&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MemberData&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;view&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;render&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dataList&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-      &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;这时候你就会发现 &lt;code class=&quot;highlighter-rouge&quot;&gt;Switch Case&lt;/code&gt; 中越来越多的数据请求和渲染代码。随着应用的场景越来越多，会发现 &lt;code class=&quot;highlighter-rouge&quot;&gt;MemberListViewController&lt;/code&gt; 类变的越来越大。这时候如何重构?&lt;/p&gt;
-
-&lt;p&gt;这里就要用到重构的一个重要原则：职责单一。优化代码就是把 &lt;code class=&quot;highlighter-rouge&quot;&gt;MemberListViewController&lt;/code&gt; 大的类拆分，此类负责渲染视图，不要再负责数据请求了，网络请求相似的功能内聚到另外一个类中&lt;code class=&quot;highlighter-rouge&quot;&gt;MemberListDataInteractor&lt;/code&gt; ，专门处理数据获取，这样可以减少单个类的大小，方便阅读。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-mermaid&quot;&gt;classDiagram
-
-class MemberData {
-  -String name
-  -Int status
-}
-
-class MemberListDataInteractor { 
-  - List&amp;lt;MemberData&amp;gt; dataList 
-  - requestData(callback(List&amp;lt;MemberData&amp;gt; list))
-}
-
-class MemberListViewController {
-  -MemberListView View
-  -MemberListDataInteractor interactor
-  -loadView()
-}
-
-class MemberListView{ 
-  -View listView 
-  -renderView(List&amp;lt;MemberData&amp;gt; data)
-}
-
-MemberListViewController *-- MemberListView: 1..1
-
-MemberListViewController *-- MemberListDataInteractor: 1..1
-
-MemberListDataInteractor *-- MemberData: 1..*
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;这个时候的调用过程可能是这样的。如下的伪代码：&lt;/p&gt;
-
-&lt;div class=&quot;language-c++ highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;MemberListViewController&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loadView&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;n&quot;&gt;interactor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;requestData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MemberData&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;list&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;in&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;MemberListView&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;renderView&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;list&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;MemberListViewController&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;::&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loadView&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;n&quot;&gt;interactor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;requestData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MemberData&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;list&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;in&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;MemberListView&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;renderView&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;list&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-  &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;MemberListViewController&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;vc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;MemberListViewController&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;vc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loadView&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;这个其实就是典型的 MVC 的结构，视图渲染、数据模型、模型组装分开，核心就是内聚不同的功能。有时候想一想阅读代码就跟我们看文章一样，如果不分段落，直接一个1000字的段落，相信很多人都不愿意看。职责单一原则的目标就是让人更愿意阅读你的代码，第一眼不至于被吓到。&lt;/p&gt;
-
-&lt;h2 id=&quot;重复代码的优化&quot;&gt;重复代码的优化&lt;/h2&gt;
-
-&lt;p&gt;随着功能的演化，用户的界面越来越复杂，需要大量的数据频繁的渲染到视图上。就会发现有大量视图渲染组装的代码。这类代码的特点是相似度很高，只是渲染到不同的视图上而已。这时候重构的另一个重要原则DRY，不要写重复的代码，就发挥作用了，我们只需要把重复的代码再抽象出一层，就可以减少大量相似的代码。
-这个类可以叫做 &lt;code class=&quot;highlighter-rouge&quot;&gt;MemberListDataPresentor&lt;/code&gt;,专门用来组装视图。只要简单的增加 &lt;code class=&quot;highlighter-rouge&quot;&gt;MemberViewModel&lt;/code&gt; 这种数据结构映射到 &lt;code class=&quot;highlighter-rouge&quot;&gt;MemberListView&lt;/code&gt; 这种视图上，然后 &lt;code class=&quot;highlighter-rouge&quot;&gt;MemberListDataPresentor&lt;/code&gt; 就负责数据组装。我们来看下这种结构。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-mermaid&quot;&gt;classDiagram
-
-class MemberData {
-  -String name
-  -Int status
-}
-
-class MemberViewModel {
-  -List&amp;lt;MemberData&amp;gt; dataList
-}
-
-class MemberListDataPresentor { 
-  -MemberListDataInteractor interactor 
-  - bind(MemberViewModel model,MemberListView view)
-}
-
-class MemberListViewController {
-  -MemberListView View
-  -MemberListDataPresentor presentor
-  - loadView()
-}
-
-class MemberListView{ 
-  -View listView 
-  -renderView(MemberViewModel data)
-}
-
-MemberListDataPresentor *-- MemberViewModel : 1..1
-
-MemberViewModel *-- MemberData: 1..*
-
-MemberListView *-- MemberViewModel: 1..1
-
-MemberListViewController *-- MemberListDataPresentor: 1..1
-
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;这样使用的时候只要 &lt;code class=&quot;highlighter-rouge&quot;&gt;MemberListDataPresentor&lt;/code&gt; 组装好数据，就不必再调用渲染了，可以直接通过 &lt;code class=&quot;highlighter-rouge&quot;&gt;MemberViewModel&lt;/code&gt; 映射到 &lt;code class=&quot;highlighter-rouge&quot;&gt;MemberListView&lt;/code&gt; 上了。可以看到下面伪代码的调用过程。&lt;/p&gt;
-
-&lt;div class=&quot;language-c++ highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;n&quot;&gt;interactor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;loadAllUserData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;List&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MemberData&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;list&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;in&lt;/span&gt;
-  &lt;span class=&quot;n&quot;&gt;presentor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bindData&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;list&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;listView&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;这其实就是 MVVM 的架构进化的过程。DRY 原则就是不要写重复的代码，就像写文章一样，千篇一律的文字没人愿意看一个道理。我们继续来看这个功能发展的情况。&lt;/p&gt;
-
-&lt;h2 id=&quot;大量的耦合&quot;&gt;大量的耦合&lt;/h2&gt;
-
-&lt;p&gt;随着功能越来越复杂，会发现 &lt;code class=&quot;highlighter-rouge&quot;&gt;MemberListDataPresentor&lt;/code&gt; 这个类调用的接口会越来越多，既需要调用 &lt;code class=&quot;highlighter-rouge&quot;&gt;MemberListDataInteractor&lt;/code&gt; 大量的请求接口来获取数据，同时也需要组装各种 Model 的数据，势必会造成大量接口暴露。这种各种复杂关系的调用，使阅读起越来越难。这时候软件工程的一个最好有的原则：任何工程问题，都可以通过增加一个中间层来解决。我们这里就需要增加工具类解耦，解耦的本质通过工具类拆分。使得依赖关系变为如下结构。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-mermaid&quot;&gt;classDiagram
-
-MemberListDataPresentor ..&amp;gt; ColdObserval
-
-MemberListDataInteractor ..&amp;gt; ColdObserval
-
-MemberListViewController ..&amp;gt; ColdObserval
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;有大量接口依赖的类，互相直接调用就可以用类似的方式。&lt;/p&gt;
-
-&lt;div class=&quot;language-c++ highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;presentor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;addObserval&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;in&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;// bind data&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;interactor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;postMessage&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;其实这就是使用观察者模式来拆分。观察者模式的好处就是解耦，减少接口依赖，这样我们想要定义不同的 presentor 类时，也不必依赖各种具体的 interactor，只需要监听消息即可。例如 WebRTC 中重要的线程工具类 TaskQueue ，就是一个很好的解耦的拆分的工具。把编解码，采集，传输很好的解耦分离开。有了这个铺垫，我们最后来看下如何扩展功能。&lt;/p&gt;
-
-&lt;h2 id=&quot;扩展新功能&quot;&gt;扩展新功能&lt;/h2&gt;
-
-&lt;p&gt;试想下我们需要在 &lt;code class=&quot;highlighter-rouge&quot;&gt;MemberListViewController&lt;/code&gt; 视图上增加新功能，不仅仅是显示 &lt;code class=&quot;highlighter-rouge&quot;&gt;MemberListView&lt;/code&gt; 这一种视图，还能插入各种其他业务视图。&lt;/p&gt;
-
-&lt;p&gt;正是因为有了工具类的拆分，这样所有的类都没有任何的依赖，不用暴露新接口，扩展就很容易了。具体可以通过代理模式来横向拆分。定义要扩展的代理类 Plugin，我们新功能只要实现 Plugin 定义的接口函数，就可以横向扩展所有的功能。我们看下类结构。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-mermaid&quot;&gt;classDiagram
-
-class MemberListViewPlugin { 
-  -View subView 
-  -loadView()
-}
-
-class MemberListDataInteractorPlugin { 
-  -List&amp;lt;MemberData&amp;gt; dataList 
-  -requestData()
-}
-
-class MemberListDataPresentorPlugin { 
-  -List&amp;lt;MemberData&amp;gt; dataList 
-  -bindData()
-}
-
-MemberListDataPresentor *-- MemberListDataPresentorPlugin : 1..*
-
-MemberListDataInteractor *-- MemberListDataInteractorPlugin : 1..*
-
-MemberListView *-- MemberListViewPlugin : 1..*
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;然后我们的插件调用过程就如下：&lt;/p&gt;
-
-&lt;div class=&quot;language-c++ highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;MemberListDataPresentorPlugin&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;presentorPlugin&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;MemberListDataPresentorPlugin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;presentor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;registPlugin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;presentorPlugin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;MemberListDataInteractorPlugin&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;interactorPlugin&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;MemberListDataInteractorPlugin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;interactor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;registPlugin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;interactorPlugin&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;这样每次增加新功能时，不需要更改原来的 &lt;code class=&quot;highlighter-rouge&quot;&gt;MemberListDataPresentor&lt;/code&gt;、 &lt;code class=&quot;highlighter-rouge&quot;&gt;MemberListDataInteractor&lt;/code&gt; 任何代码，只需要添加插件的实现就可以了。这其实就是很多软件插件的架构模式。&lt;/p&gt;
-
-&lt;p&gt;我们从上面这个例子里可以看到代码的演变，如何从 MVC 到 MVVM 再到最后插件化，这些过程让代码结构更加清晰容易阅读，防止代码腐化。&lt;/p&gt;
-
-&lt;h2 id=&quot;重构的回顾&quot;&gt;重构的回顾&lt;/h2&gt;
-
-&lt;p&gt;我们总结下上述的重构过程中几个关键的节点。&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;当你发现一个类越来越大。
-    &lt;blockquote&gt;
-      &lt;p&gt;超过了1000行代码了，一定是需要拆分功能了。&lt;/p&gt;
-    &lt;/blockquote&gt;
-  &lt;/li&gt;
-  &lt;li&gt;当你开发功能时，发现需要原来的类大量更改接口才能实现，我们就需要用工具类来解耦。&lt;/li&gt;
-  &lt;li&gt;当添加新功能时，需要频繁更改一个类时。
-    &lt;blockquote&gt;
-      &lt;p&gt;这时候就需要用代理模式的插件来扩展你的类，这样就可以避免大量的修改逻辑，保证代码稳定性。例如我们经常看到的一些可插拔的插件系统，都是通过这种方式实现的。&lt;/p&gt;
-    &lt;/blockquote&gt;
-  &lt;/li&gt;
-  &lt;li&gt;性能优化的代码太多时尤其注意，尽量不要暴露出来，因为性能优化的代码往往可读性比较差。
-    &lt;blockquote&gt;
-      &lt;p&gt;对于优化性能的代码，重构的时候我这里，尽量封装成内部的函数，而不要暴露给外部使用。比如定义了一个 Cache 资源的类，为了优化内存，这种最好不要把API暴露在外面，在内部消化最好。&lt;/p&gt;
-    &lt;/blockquote&gt;
-  &lt;/li&gt;
-  &lt;li&gt;发现无用的功能代码及时的删除，防止进一步防止腐化
-    &lt;blockquote&gt;
-      &lt;p&gt;不及时删除的后果，会发现新功能调用以前移除的功能类的方法，这时候你想删除老功能代码时，你会发现欲哭无泪。&lt;/p&gt;
-    &lt;/blockquote&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;对比 ChatGPT 重构的总结，总体原则一样，但是会更加具体一点。最后我想讲下关于重构代码时，如何保证稳定性的一些原则。我总结起来就是小步快走，保证稳定。在重构的过程中允许一定的冗余代码，增加灰度能力，当发现问题时可以及时回滚，等待重构的代码测试没问题了再删除。&lt;/p&gt;
-
-&lt;p&gt;很多优秀的开源项目的代码不仅对代码的性能，也对代码的质量和可维护性要求很高，阅读起来就像欣赏优美的诗篇。屎山一样的代码从来不会有伟大的作品。我相信每个优秀的程序员，都不愿意把自己的代码变成屎山，但是罗马也不是一天能建成的，学会重构是必备的技能。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">重构是一个老生常谈的问题，并且也有大量的书籍介绍重构的方法。那如何重构代码？如何保证重构的代码不出问题？重构后的代码如何防止腐化？我先贴出来 ChatGPT 如何回答的，来感受下她的强大。</summary></entry><entry><title type="html">职责单一的重要性</title><link href="https://mengtnt.com/2022/09/18/architeche.html" rel="alternate" type="text/html" title="职责单一的重要性" /><published>2022-09-18T06:55:02+00:00</published><updated>2022-09-18T06:55:02+00:00</updated><id>https://mengtnt.com/2022/09/18/architeche</id><content type="html" xml:base="https://mengtnt.com/2022/09/18/architeche.html">&lt;p&gt;最近在做 iPad 改版功能，由于 iPad 的功能和 iPhone 功能上基本保持一致，除了 UI 要适配下 iPad 的屏幕以及分屏的情况外。在这个开发过程中，和同事讨论了一个很有意思的功能扩展的问题。虽然简单但是感觉很有必要记录下来，对于在软件开发中设计业务逻辑时很有启发。&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2023-11-01T08:30:12+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">职责单一的重要性</title><link href="https://mengtnt.com/2022/09/18/architeche.html" rel="alternate" type="text/html" title="职责单一的重要性" /><published>2022-09-18T06:55:02+00:00</published><updated>2022-09-18T06:55:02+00:00</updated><id>https://mengtnt.com/2022/09/18/architeche</id><content type="html" xml:base="https://mengtnt.com/2022/09/18/architeche.html">&lt;p&gt;最近在做 iPad 改版功能，由于 iPad 的功能和 iPhone 功能上基本保持一致，除了 UI 要适配下 iPad 的屏幕以及分屏的情况外。在这个开发过程中，和同事讨论了一个很有意思的功能扩展的问题。虽然简单但是感觉很有必要记录下来，对于在软件开发中设计业务逻辑时很有启发。&lt;/p&gt;
 
 &lt;h2 id=&quot;故事的开始&quot;&gt;故事的开始&lt;/h2&gt;
 
@@ -2206,4 +1760,184 @@ CMD &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt; &lt;span class=&quot;s2&quot;
 
 &lt;p&gt;所以何为经验，就是在某个领域解决问题的效率。拿上面的例子，如果是一个经验不丰富的人，可能要花费3倍于经验丰富的人，才能解决这个问题，这个就是生产效率的问题。试问企业更愿意雇佣那种人，显而易见如果企业用1个月就可以赚到3个月的钱时，就愿意拿3倍工资招聘一个经验丰富的人，而不会用平均的工资水平招聘一个经验不足的人。&lt;/p&gt;
 
-&lt;p&gt;对于企业来讲，生产效率是他们立于不败之地的重要手段。很多工具的发明也正是为了提升生产效率。所以作为打工人的我们要考虑，为什么企业要用你，自己的价值何在？工作的时候，一些重复的劳动，就要想有没有什么办法可以做自动化。这不仅节省了企业的成本，重要的是也让自己学到了经验，那将来其他公司也很乐于雇佣你，因为你帮企业提高了生产力，企业就更乐意拿高于没经验人的工资来聘用你。所以在职场上，要不断的增加自己解决问题的经验，然后树立自己的核心竞争力，这样才能立于不败之地。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近想对博客的源码做自动化的CI，原本想着使用github的workflow配置，提交博客源码后让github自动编译发布博客。不过由于还要部署一些其他的内容，所以索性就想着自己写个github的webhook，当提交博客源码时，服务器运行CI工具，顺便发布下自己部署的其他服务。</summary></entry></feed>
+&lt;p&gt;对于企业来讲，生产效率是他们立于不败之地的重要手段。很多工具的发明也正是为了提升生产效率。所以作为打工人的我们要考虑，为什么企业要用你，自己的价值何在？工作的时候，一些重复的劳动，就要想有没有什么办法可以做自动化。这不仅节省了企业的成本，重要的是也让自己学到了经验，那将来其他公司也很乐于雇佣你，因为你帮企业提高了生产力，企业就更乐意拿高于没经验人的工资来聘用你。所以在职场上，要不断的增加自己解决问题的经验，然后树立自己的核心竞争力，这样才能立于不败之地。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近想对博客的源码做自动化的CI，原本想着使用github的workflow配置，提交博客源码后让github自动编译发布博客。不过由于还要部署一些其他的内容，所以索性就想着自己写个github的webhook，当提交博客源码时，服务器运行CI工具，顺便发布下自己部署的其他服务。</summary></entry><entry><title type="html">好文章与坏文章</title><link href="https://mengtnt.com/2021/05/03/recoginze.html" rel="alternate" type="text/html" title="好文章与坏文章" /><published>2021-05-03T08:05:10+00:00</published><updated>2021-05-03T08:05:10+00:00</updated><id>https://mengtnt.com/2021/05/03/recoginze</id><content type="html" xml:base="https://mengtnt.com/2021/05/03/recoginze.html">&lt;p&gt;看到这个标题，不要误解。我并不是为了给文章打一个非好及坏标签，我也没这个能力打标签。这里先说下本文说的文章的范围，主要是针对技术领域的内容。所以这里的好文章，更精确的定义应该是让想要学习这个领域的人，能够更容易理解的文章。不过初学者不容易理解的文章就是坏文章么？那当然不是，但是针对于这个人群来说，这类文章的价值意义肯定比不过”好文章”。&lt;/p&gt;
+
+&lt;p&gt;技术类的文章和书籍自己阅读过不少，下面就谈谈关于”好文章和坏文章”的几点心得和看法。&lt;/p&gt;
+
+&lt;h2 id=&quot;有自己的观点不要人云亦云&quot;&gt;有自己的观点，不要人云亦云&lt;/h2&gt;
+
+&lt;p&gt;我经常会看到，有一些技术文章来教大家的安装过程。并不是说这类文章没有意义，而是说这类文章和技术文档其实没什么大的区别。如果能在介绍安装步骤的过程中，讲解下为何要这样安装其实就很有意义了，而不是简单的记流水账。&lt;/p&gt;
+
+&lt;p&gt;还有一类文章，就是翻译的文章，往往容易出现坏文章。因为译者的话毕竟不是作者，一些观点理解难免有误差。再加上如果这个领域不了解的话，就会更加的糟糕。相信你一定读过翻译很烂的技术文章。我下面举一个例子。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;This is an opaque data type and use xxx api accessed directly.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;很多技术文章的翻译是，”这是一种不透明的数据类型，使用xxx来访问”。&lt;code class=&quot;highlighter-rouge&quot;&gt;transparent or opaque type&lt;/code&gt;这两个词在英语中形容一些实物挺形象，但是翻译出来，如果译者不加思考的直译的话，对初学者来讲真的很难理解。如果能补充一句说，”这是一种不透明的数据类型，也就是具体的数据结构没有公开方法，只能通过xxx api来访问”。这种就好理解多了。所以如果翻译的文章，没有吃透作者表达的原理，就很容易人云亦云，照着字面意思翻译。&lt;/p&gt;
+
+&lt;h2 id=&quot;不需要整的高大上简单就好&quot;&gt;不需要整的高大上，简单就好&lt;/h2&gt;
+
+&lt;p&gt;有些技术博客，特别是讲架构的技术博客。上来就是&lt;code class=&quot;highlighter-rouge&quot;&gt;kafka dubbo zookeeper&lt;/code&gt;各种新概念。然后复杂无比的架构图一展示，然后使用各种专业名词解释&lt;code class=&quot;highlighter-rouge&quot;&gt;xxxRPC&lt;/code&gt;进行模块间通信，相信这类文章也会遇到不少。这类文章我想说的是，到底是讲给谁听的，如果是讲给想了解这个领域的人听的，别人可能看了几个名词后，就会去搜索这个名词了，然后也不见得会回来再读。讲给这个领域的专家，可能看了开头也不会读下去，不知道到底要表达什么。&lt;/p&gt;
+
+&lt;p&gt;所以写技术文章一定要有个核心，比如讲某个架构是要解决什么问题，可以把问题先定义清楚。因为问题往往比较简答，比如说用户量过大，单台服务器无法满足要求，想动态扩展。然后再来讲架构，讲架构的时候特别遇到一些新的名词时，如果能表述下这个新事物的来龙去脉，发展历程那就很容易吸引读者。&lt;/p&gt;
+
+&lt;p&gt;技术文章不需要一下子讲完所有的东西，只要抓住一个点讲解清楚就完成了任务，因为一个人看一篇文章往往也不会理解太多的东西。所以文章不在于多，在与精简。&lt;/p&gt;
+
+&lt;h2 id=&quot;能够融会贯通的一定是好文章&quot;&gt;能够融会贯通的，一定是好文章&lt;/h2&gt;
+
+&lt;p&gt;什么是融会贯通，就是能把一个复杂的东西，通过一些身边常见的例子，很简单的表述出来了，这就叫融会贯通。很多作者在讲解一个技术点时，自己确实理解的也很透彻，但是讲给别人听的时候，就复杂无比，别人听的云里雾里，这其中就没有把握讲解的核心”大道至简”。&lt;/p&gt;
+
+&lt;p&gt;我这里想吐槽的是很多数学类的书籍，尤其教科书简直就是劝退的书籍。举个线性代数的例子，一上来就把矩阵的式子列出来，然后各种变换的方法讲解起来。上大学的时候读这种书时，我就怀疑人生了，这到底是要干嘛，学这些有什么用。可是当我读到一本叫《漫画傅里叶变换》这本书的时候，书中一开始并没有解释数学公式，而是从两个音乐系的学生在争论一些乐器的声音开始，然后逐步解释了傅里叶变换公式的推导。当时我读完的时候，真是茅厕顿开，解答了困惑自己很多的问题，也明白了这些数学公式到底有什么用。&lt;/p&gt;
+
+&lt;p&gt;所以数学其实很多公式都是很有趣的，设计的非常精妙。只是我们讲解的时候，都是死板的按照公式来的，根本没有结合实际应用融会贯通。造成很多概念极其抽象，完全没有现实中类比的对象。&lt;/p&gt;
+
+&lt;h2 id=&quot;能够讲故事的一定也是好文章&quot;&gt;能够讲故事的，一定也是好文章&lt;/h2&gt;
+
+&lt;p&gt;自己曾经读到过一篇公众号的文章《我是一个线程》。通过讲解一个人在工厂里工作的经历，描述了一个线程的创建，运行和销毁。我感觉讲的非常的好。通过类比我们身边常见的故事，讲解一些晦涩的技术感念，非常的巧妙。对于初学者来讲，通过这种类比，就很容易理解。&lt;/p&gt;
+
+&lt;p&gt;最近也看了《我是一个线程》作者出的《码农翻身》这本书，自己也在学习作者的讲解方法。尤其书中通过漫画和实例相结合的方式，讲解的非常的生动。这类文章就是通过一些有趣的故事，然后就把一个技术点的来龙去脉分析的非常透彻。并且故事和技术点的结合也非常的贴切，这其实需要作者大量的思考才能总结出来这些方法。所以好的文章，不仅需要你理解这个技术点，同时也要很好的能讲解这个技术点。&lt;/p&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;个人觉得进入一个行业的门槛，跟这个行业的教育水平有很大的关系。其实我觉得IT行业就挺好，有大量高质量的文章和资料输出。只有这样的文章多起来，才能更好的让初学者进入这一行。我在想例如数学和物理一些理论学科，如果能有更多高质量和有趣的讲解，相信这两门学科比我们想象的有趣多了。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">看到这个标题，不要误解。我并不是为了给文章打一个非好及坏标签，我也没这个能力打标签。这里先说下本文说的文章的范围，主要是针对技术领域的内容。所以这里的好文章，更精确的定义应该是让想要学习这个领域的人，能够更容易理解的文章。不过初学者不容易理解的文章就是坏文章么？那当然不是，但是针对于这个人群来说，这类文章的价值意义肯定比不过”好文章”。</summary></entry><entry><title type="html">深入解析OSX和iOS读后感</title><link href="https://mengtnt.com/2021/03/13/read-bsd.html" rel="alternate" type="text/html" title="深入解析OSX和iOS读后感" /><published>2021-03-13T08:53:28+00:00</published><updated>2021-03-13T08:53:28+00:00</updated><id>https://mengtnt.com/2021/03/13/read-bsd</id><content type="html" xml:base="https://mengtnt.com/2021/03/13/read-bsd.html">&lt;p&gt;自己做了这么久苹果应用的开发，其实还没有认真的看过苹果系统的整个架构。最近看了“深入解析Mac OS X &amp;amp; iOS操作系统”这本书，也算是对自己之前工作的回顾。如果你已经在这个领域从事了很多年，然后再看这个领域的一些基础的理论知识，和你要学习一门新技术而看这方面的书籍，感受是完全不同的。往往我看一些新技术的书籍时，遇到介绍的新知识点，内心的OS：“不过如此么？不就是xx技术加了一个美丽的外壳么？换汤不换药“。而看你一直从事的工作的书籍时，自己的感受是：”原来这个技术点设计的这么美妙啊，自己用了这么多年这个技术，都没理解这个精髓，真是惭愧啊“。内心有种老友重逢的感觉，有很多话想说，所以自己暂且就把读这本书的一些心得写了下来。下面介绍下自己看到的几个技术点的一些感想。&lt;/p&gt;
+
+&lt;h2 id=&quot;达尔文进化史&quot;&gt;达尔文进化史&lt;/h2&gt;
+
+&lt;p&gt;看到这个标题，不要误解并不是讲解进化论，而是想回顾下苹果系统从诞生到现在的历程。因为之前经常听说Darwin是苹果系统内核,其实从来没深究过Darwin是从何而来的，之前只是知道”UNIX”、”XNU”、”FreeBSD”但是他们之间又有什么千丝万缕的联系，从来没关心过。从这本书里得知他们之间的历史还是很有趣的，我这里挑几个关键点介绍下。&lt;/p&gt;
+
+&lt;p&gt;大名鼎鼎的UNIX内核大家应该都知道，是现代操作系统的鼻祖，1960年左右计算机刚诞生时，为了大家可以共享这个庞然大物，美国电信公司(AT&amp;amp;T)旗下的贝尔实验室研发了一套使用计算机硬件的多任务处理的复杂系统(Uniplexed Information and Computing Service，UnICS)，简称叫做UNIX，里面两个大名鼎鼎的工程师叫做肯·汤普逊和丹尼斯·里奇，这两个人就不多做介绍相信大部人都知道。&lt;/p&gt;
+
+&lt;p&gt;讲到这里自己想说一句，在现代的社会里，任何发明都是科学家的梦想和商业世界博弈的结果，科学追逐梦想，商业追求实用型，一实一虚成就了现代的世界。UNIX刚出现的时候是完全免费的给学术机构和大型企业用，但是随着用户量的增多，AT&amp;amp;T公司意识到这玩意可以赚钱了，就不再把源码授权给企业和学术界用了。并且申请了UNIX这个商标，任何系统都不能再叫做UNIX了，导致有很多这方面的专利官司。&lt;/p&gt;
+
+&lt;p&gt;之后很多机构都不能使用UNIX系统了，不得已人们根据UNIX内核的设计理念，就做出了很多类似的系统。其中加州大学伯利克分校为了学术研究，就开发了一套伯利克套件(BSD)产品，诞生于学术研究的BSD发展很迅速，根据开源协议的不同，BSD出现了FreeBSD，OpenBSD，NetBSD各种版本。&lt;/p&gt;
+
+&lt;p&gt;苹果的Darwin内核就是基于FreeBSD开发出来的，当时很多企业和学术机构，为了避免使用UNIX系统商标被官司缠身，就声明了他们的系统不是Unix，例如苹果就声明自己用的内核是XUN(X not unix),所以Mac系统OSX后面的X也就是从这里由来的。由于苹果的内核其实是开源的BSD发展来的，所以要遵循开源的一些协议，Darwin内核也一直是开源的，只是基于上面开发的软件套件是闭源的。所以苹果系统跟windows系统还是有很大区别的，windows系统的前身是DOS系统，完全是一个闭源的商业化操作系统，没有经历过任何开源的洗礼。&lt;/p&gt;
+
+&lt;p&gt;基于UNIX内核设计的开源系统如雨后春笋的发展起来，但是每个系统都是不同的学术机构和企业开发出来的，商业的社会大家都有各种自己的心思，一不小心就触犯了专利，尤其学术界对此非常的反感。为了自由总会有人站出来的，在1983年9月27日时，理查德·斯托曼在麻省理工学院公开发起一个计划。它的目标是创建一套完全自由的操作系统，称为GNU(G is Not Unix)。&lt;/p&gt;
+
+&lt;p&gt;GNU计划不仅要造出完全自由免费的操作系统，还要基于系统上造出各种免费的软件套件。但是这个计划是很美好，现实很骨感，在没有商业利益的情况下，GNU组织一直没能开发出来一个完全免费的操作系统。直到1991年，林纳斯·托瓦兹编写出了与UNIX内核兼容的Linux操作系统，之后Linux与GNU结合后，一个完全自由的操作系统正式诞生。许多程序员参与了Linux的开发与修改，也经常将Linux当成开发GNU计划软件的平台。但Linux本身不属于GNU计划的一部分。&lt;/p&gt;
+
+&lt;p&gt;据说GNU的Hurd内核现在仍然在开发，还没有发布1.0版本。虽然GNU计划并没有完全的实施完毕，但是开源的计划促进了很多软件的发展，例如shell、mark、vi等一系列开发编辑的软件都是在GNU计划中诞生的。还有大家都知道的Android系统也是基于Linux内核开发的，可以说也是得益GNU计划，同样Android系统也遵循了GNU计划的初衷，所有的内核代码都是开源的。&lt;/p&gt;
+
+&lt;p&gt;说来也惭愧，读了这本书之后，才真正的把目前主流的操作系统的前世今生关联起来，之前只是知其然不知所以然。下面也介绍几个读完此书后，自己经常使用但是不知所以然的几个知识点。&lt;/p&gt;
+
+&lt;h2 id=&quot;魔数&quot;&gt;魔数&lt;/h2&gt;
+
+&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;chomod +x&lt;/code&gt;这个操作我们经常使用，都知道这是告诉操作系统改变一个文件成为可执行文件，但是操作系统怎么识别这个文件是可执行文件那？其实过程很简单，就是会给这个文件打上一个标志。告诉操作系统将这个文件读入内存，然后寻找一个头签名。这个头签名就是”魔数(magic)”。每个操作系统都会定义可执行文件的魔数，然后根据不同的魔数正确加载和解析二进制文件，下面列出常用的一些魔数。&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;可执行格式&lt;/th&gt;
+      &lt;th&gt;魔数&lt;/th&gt;
+      &lt;th&gt;用途&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;PE32/PE32+&lt;/td&gt;
+      &lt;td&gt;M2&lt;/td&gt;
+      &lt;td&gt;window系统的可执行文件&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;ELF&lt;/td&gt;
+      &lt;td&gt;\x7FELF&lt;/td&gt;
+      &lt;td&gt;Linux和大部分Unix系统的可执行文件，Mac OS不支持&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;脚本&lt;/td&gt;
+      &lt;td&gt;#!&lt;/td&gt;
+      &lt;td&gt;系统内核会寻找#!之后的文本开始执行&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Universal Binary&lt;/td&gt;
+      &lt;td&gt;0xcafebabe(小尾顺序) 0xbebafeca(大尾顺序)&lt;/td&gt;
+      &lt;td&gt;通用二进制文件 OS X上支持&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;Mach-O&lt;/td&gt;
+      &lt;td&gt;0xfeedface(32位) 0xfeedfacf(64位)&lt;/td&gt;
+      &lt;td&gt;OS X原生二进制文件&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这里我想说的是，自己经常写脚本的时候默认都写 &lt;code class=&quot;highlighter-rouge&quot;&gt;&lt;span class=&quot;c&quot;&gt;#! /bin/bash&lt;/span&gt;&lt;/code&gt;，但是很少去深究为啥要带上&lt;code class=&quot;highlighter-rouge&quot;&gt;#!&lt;/code&gt;这个标志。想一想如果当年开发脚本的大师们用了&lt;code class=&quot;highlighter-rouge&quot;&gt;#@&lt;/code&gt;,可能现在的脚本都要带上这个标志了。虽然是个小小的知识点，但是也能考察出自己学习东西的认真程度。&lt;/p&gt;
+
+&lt;h2 id=&quot;沙盒机制&quot;&gt;沙盒机制&lt;/h2&gt;
+
+&lt;p&gt;沙盒机制是苹果很早就具备的能力，尤其是iOS系统，一诞生就有了这个机制，其实在Unix系统下，想实现这个机制还是相对比较容易的，因为Unix系统内核当初开发的时候，就是为了多用户共享使用硬件的资源，共享的前提必须要做好隔离，例如现在的Docker技术就是使用了这个思想，进行容器隔离的。不过苹果使用的方案是不同的，下面就大概了解下苹果系统是怎么完成沙盒机制的。
+沙盒机制上面描述起来简单，但是如果内核支持的不好的话，真正的要实现难度还是很大的，因为现在进程的拦截技术很容易打破这些沙盒能力。BSD内核有一层Mac(mandatory access control)层,是专门用来处理沙盒机制的。用户态的进程在访问操作系统资源的时候，会先进入到Mac层,系统会读取entitlement文件，然后决定此进程的权限，从而分配不同的能力。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/read-bsd-system-1.png&quot; alt=&quot;img1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;我们在开发苹果下的应用时，需要通过我们的证书生成entitlement.plist文件，这个文件苹果在官方文档中介绍的比较少，只是说用来提供进程的可访问的能力，其实本质上是苹果用来做沙盒控制的一个手段。苹果会通过Mac层对进程的代码签名进行检查，只有苹果自己颁发的证书的签名才能通过，然后根据entitlement.plist配置授予相应的权限。所以越狱的话，本质上就是要打破内核的Mac层，从而使用户的进程具备系统的root权限。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;这里想说一个知识点，就是在iOS下改变一个应用程序权限的时候，例如关闭一个应用程序的麦克风权限，这个程序就需要重启。如果你了解上面苹果实现沙盒机制的原理，就很容易理解，因为权限的分配是在加载程序之前就需要决定的，自然必须要重启应用。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;内存破坏问题&quot;&gt;内存破坏问题&lt;/h2&gt;
+
+&lt;p&gt;编程问题中，遇到的最多的两类问题就是内存问题和线程问题。如果能很好的解决这两大类问题，基本90%以上的问题都可以解决。下面就基于这本书的介绍，讨论下这内存问题发生时，如何更好的定位。&lt;/p&gt;
+
+&lt;p&gt;内存问题一般包含两类：缓冲区溢出和堆内存破坏。在很多情况下，导致上面崩溃的代码往往相隔甚远，所以从bug出现到程序崩溃往往不在一个时间点，这样就很难定位bug的位置。&lt;/p&gt;
+
+&lt;p&gt;苹果系统为了方便定位这些问题，在&lt;code class=&quot;highlighter-rouge&quot;&gt;malloc&lt;/code&gt;操作的时候，允许开发者设置如下的环境变量，便于定位问题。下面的表格列出mac系统提供的相关的内存检测的环境变量。&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/images/read-bsd-system-2.png&quot; alt=&quot;img1&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;下面介绍下系统的libgmalloc.dylib这个动态库，如何来定位一些内存的bug的。这个库的大致原理就是通过拦截libsystem库的内存分配函数，给分配函数的内存打上不同的标记，从而定位问题。&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;给进程分配的每个内存块上加上自定义的数据头，一般包含分配者的函数调用信息，这样当某块内存出问题时方便定位调用堆栈。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;给进程的每个内存块分配一个自己专有的页上，相邻的页面设置为不可写或者不可访问，这样一旦程序出现bug，例如缓存溢出或者访问了相邻的内存页面时，就会出现bad access的信号出现，这样就可以定位问题了。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;释放内存块时，解除分配的内存页面的读写权限，这样在过度释放相邻内存块的数据时，同样会引起崩溃的问题。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;通过上述的方法可以方便的定位到，是那行代码破坏了进程中的内存结构，不用等到运行到被破坏的结构时才会崩溃。所以本质上xcode的instrument工具，例如检测内存泄漏，用的都是类似于上述的方法。&lt;/p&gt;
+
+&lt;h2 id=&quot;mach任务概念&quot;&gt;Mach任务概念&lt;/h2&gt;
+
+&lt;p&gt;严格来讲苹果的系统没有标准的线程的概念，他使用的叫做Mach任务，其实这个数据结构可以看做是线程的概念。同时苹果在上层通过Mach任务也实现了linux的POSIX的线程能力。所以在MAC上也是可以使用Unix下标准的线程接口的。不过苹果开发文档还是建议开发者用苹果自己封装的线程队列(GCD)。&lt;/p&gt;
+
+&lt;p&gt;Mach任务是通过消息传递来实现各个任务的通信的，同样异常处理也是通过Mach消息(msg_send)下发的。下面就介绍下mach任务常见的一些异常处理。&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cp&quot;&gt;#define EXC_BAD_ACCESS // 内存访问异常
+&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define EXC_BAD_INSTRUTION //指令执行异常,非法或者未定义的指令
+&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define EXC_ARITHMETIC // 算数计算异常
+&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define EXC_EMULATION // 模拟指令异常
+&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define EXC_SOFTWARE // 软件产生的异常，0-0xFFFF范围内的代码时给硬件的，0x1000-0x1FFF范围内的代码时给操作系统模拟的
+&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define EXC_BREAKPOINT // 跟踪或者断点相关的异常
+&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define EXC_SYSCALL // 系统调用的异常
+&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define EXC_RPC_ALERT // RPC 报警
+&lt;/span&gt;
+&lt;span class=&quot;cp&quot;&gt;#define EXC_CRASH // 异常的系统推出
+&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;上述这些错误都是早期的MAC系统定义的，其实现在还有很多其他错误没有包含进去，比如abort(系统终止)和segment(内存页错误)，都是操作系统通知进程的错误消息，只有充分了解了这些错误都是什么意思，以及如何发生才能更好的定位问题。&lt;/p&gt;
+
+&lt;h2 id=&quot;系统崩溃&quot;&gt;系统崩溃&lt;/h2&gt;
+
+&lt;p&gt;当用户登陆成功时，苹果系统会启动Finder进程而iOS下叫做SpringBoard，这两个都是操作系统的界面GUI。一旦这两个进程崩溃界面的UI就会卡死。&lt;/p&gt;
+
+&lt;p&gt;有意思的是，系统内核崩溃时，各个操作系统展示的默认样式是不同的。Linux喜欢将内容导出在黑白控制台上，windows更喜欢EGA的蓝屏风格，而Mac OS X更喜欢黑灰色的半透明画面，这个就是大家熟悉的死亡灰屏，本质上是调用内部的panic()函数，如果感兴趣的可以下载mac的内核，虚拟机上编译下，然后执行panic函数感受下死亡黑屏。&lt;/p&gt;
+
+&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
+
+&lt;p&gt;这本书对于做苹果开发的人员还是很值得一读，里面涉及的很多底层的知识，虽然平时开发很少用到里面的相关代码，但是对了解整个系统的架构，以及将来定位问题很有作用。当然上面只是介绍了这个书的几个知识点，里面还有大量有趣的知识点例如: 进程的优先级策略、如何实现POSIX标准的&lt;code class=&quot;highlighter-rouge&quot;&gt;poll select&lt;/code&gt;、网络utun接口抽象等等。不过从上面几个点中可以看出这本书传递给读者一些基本的理念，就是在平台上开发应用时，不仅要知其然，也要知其所以然。这样才能更好的写出来健壮的程序。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">自己做了这么久苹果应用的开发，其实还没有认真的看过苹果系统的整个架构。最近看了“深入解析Mac OS X &amp;amp; iOS操作系统”这本书，也算是对自己之前工作的回顾。如果你已经在这个领域从事了很多年，然后再看这个领域的一些基础的理论知识，和你要学习一门新技术而看这方面的书籍，感受是完全不同的。往往我看一些新技术的书籍时，遇到介绍的新知识点，内心的OS：“不过如此么？不就是xx技术加了一个美丽的外壳么？换汤不换药“。而看你一直从事的工作的书籍时，自己的感受是：”原来这个技术点设计的这么美妙啊，自己用了这么多年这个技术，都没理解这个精髓，真是惭愧啊“。内心有种老友重逢的感觉，有很多话想说，所以自己暂且就把读这本书的一些心得写了下来。下面介绍下自己看到的几个技术点的一些感想。</summary></entry></feed>
