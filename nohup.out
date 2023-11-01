@@ -1,0 +1,98 @@
+Building myblog
+Sending build context to Docker daemon  39.46MB
+
+Step 1/15 : FROM ruby:2.7.0
+ ---> ea1d77821a3c
+Step 2/15 : ARG REFRESHED_AT
+ ---> Using cache
+ ---> f166eb1692b6
+Step 3/15 : ENV REFRESHED_AT $REFRESHED_AT
+ ---> Using cache
+ ---> 8bf76b908bf0
+Step 4/15 : SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ ---> Using cache
+ ---> c53985038e5c
+Step 5/15 : USER root
+ ---> Using cache
+ ---> 34c2f60005da
+Step 6/15 : RUN mkdir -p /home/blogsource
+ ---> Using cache
+ ---> bb73a54225a5
+Step 7/15 : WORKDIR /home/blogsource
+ ---> Using cache
+ ---> 63e85d4c0c1f
+Step 8/15 : COPY . /home/blogsource
+ ---> 66a92617d685
+Step 9/15 : SHELL ["/bin/bash", "-o", "pipefail", "-c"]
+ ---> Running in 7c31fad13cc1
+Removing intermediate container 7c31fad13cc1
+ ---> ea28096a427e
+Step 10/15 : RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add -
+ ---> Running in 133a302f2d00
+[91mWarning: apt-key output should not be parsed (stdout is not a terminal)
+[0mOK
+Removing intermediate container 133a302f2d00
+ ---> 7c8de3f483e5
+Step 11/15 : RUN curl -sL https://deb.nodesource.com/setup_14.x | bash -  && apt-get update -qq   && apt-get install -y lsb-release   && apt-get install -qq --no-install-recommends nodejs   && apt-get clean   && rm -rf /var/lib/apt/lists/*  && cd ./_nodejs/   && npm install   && mkdir /root/.ssh   && cp -r ./gitconfig/* /root/.ssh/   && chmod 600 ~/.ssh/github_rsa   && git config --global user.email "animeng68@gmail.com"   && git config --global user.name "mengtnt"
+ ---> Running in 8323345d58c2
+
+## Installing the NodeSource Node.js 14.x repo...
+
+
+## Populating apt-get cache...
+
++ apt-get update
+Get:1 http://security.debian.org/debian-security buster/updates InRelease [34.8 kB]
+Get:2 http://deb.debian.org/debian buster InRelease [122 kB]
+Get:3 http://deb.debian.org/debian buster-updates InRelease [56.6 kB]
+Get:4 http://security.debian.org/debian-security buster/updates/main amd64 Packages [470 kB]
+Get:5 http://deb.debian.org/debian buster/main amd64 Packages [7909 kB]
+Get:6 http://deb.debian.org/debian buster-updates/main amd64 Packages [8788 B]
+Fetched 8601 kB in 3s (3422 kB/s)
+Reading package lists...
+
+## Installing packages required for setup: lsb-release...
+
++ apt-get install -y lsb-release > /dev/null 2>&1
+
+## Confirming "buster" is supported...
+
++ curl -sLf -o /dev/null 'https://deb.nodesource.com/node_14.x/dists/buster/Release'
+
+## Adding the NodeSource signing key to your keyring...
+
++ curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | gpg --dearmor | tee /usr/share/keyrings/nodesource.gpg >/dev/null
+
+## Creating apt sources list file for the NodeSource Node.js 14.x repo...
+
++ echo 'deb [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_14.x buster main' > /etc/apt/sources.list.d/nodesource.list
++ echo 'deb-src [signed-by=/usr/share/keyrings/nodesource.gpg] https://deb.nodesource.com/node_14.x buster main' >> /etc/apt/sources.list.d/nodesource.list
+
+## Running `apt-get update` for you...
+
++ apt-get update
+Hit:1 http://security.debian.org/debian-security buster/updates InRelease
+Hit:2 http://deb.debian.org/debian buster InRelease
+Hit:3 http://deb.debian.org/debian buster-updates InRelease
+Get:4 https://deb.nodesource.com/node_14.x buster InRelease [4584 B]
+Get:5 https://deb.nodesource.com/node_14.x buster/main amd64 Packages [776 B]
+Fetched 5360 B in 10s (518 B/s)
+Reading package lists...
+
+## Run `sudo apt-get install -y nodejs` to install Node.js 14.x and npm
+## You may also need development tools to build native addons:
+     sudo apt-get install gcc g++ make
+## To install the Yarn package manager, run:
+     curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | gpg --dearmor | sudo tee /usr/share/keyrings/yarnkey.gpg >/dev/null
+     echo "deb [signed-by=/usr/share/keyrings/yarnkey.gpg] https://dl.yarnpkg.com/debian stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+     sudo apt-get update && sudo apt-get install yarn
+
+
+Reading package lists...
+Building dependency tree...
+Reading state information...
+lsb-release is already the newest version (10.2019051400).
+0 upgraded, 0 newly installed, 0 to remove and 182 not upgraded.
+The command '/bin/bash -o pipefail -c curl -sL https://deb.nodesource.com/setup_14.x | bash -  && apt-get update -qq   && apt-get install -y lsb-release   && apt-get install -qq --no-install-recommends nodejs   && apt-get clean   && rm -rf /var/lib/apt/lists/*  && cd ./_nodejs/   && npm install   && mkdir /root/.ssh   && cp -r ./gitconfig/* /root/.ssh/   && chmod 600 ~/.ssh/github_rsa   && git config --global user.email "animeng68@gmail.com"   && git config --global user.name "mengtnt"' returned a non-zero code: 137
+Service 'myblog' failed to build
+Building myblog
