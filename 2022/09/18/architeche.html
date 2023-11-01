@@ -18,7 +18,7 @@
     <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
     <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
     
-      <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+      <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
     
 
     <!-- Open Graph -->
@@ -207,6 +207,18 @@ var gitment = new Gitment({
 });
 gitment.render('gitmentContainer');
 gitment.uploadIp();
+</script>
+
+<script src="/resource/mermaid.min.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>  
+$(document).ready(function () {
+  window.mermaid.initialize({
+    startOnLoad: true,
+    theme: "default",
+  });
+  window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+});
 </script>
 
 		
