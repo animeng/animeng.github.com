@@ -224,8 +224,9 @@
     const oHtml = document.getElementsByTagName('html')[0]
     const width = oHtml.clientWidth;
     const pageFooter = document.getElementsByClassName("btn-group")
+    const devicePixelRatio = window.devicePixelRatio || 1;
     // 320px的屏幕基准
-    var size = 0.22 * (width / 320) + "rem";
+    var size = 0.382 * ((width/devicePixelRatio) / 320) + "rem";
     pageFooter[0].style.fontSize = size;
   }
   setRem();
