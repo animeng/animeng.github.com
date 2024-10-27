@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>VisionPro所需的SwiftUI </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2024/03/02/vision-swiftui.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="VisionPro所需的SwiftUI">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2024/03/02/vision-swiftui.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">VisionPro所需的SwiftUI</h1>
+  
+  <span class="post-meta">03月 02日, 2024</span><br>
+  
+  <span class="post-meta small">11 minute read</span>
+</div>
+
+<article class="post-content">
+  <h2 id="1-背景">1. 背景</h2>
+<p>在我们开发 Vision Pro 开发之前，先大致了解下 SwiftUI 框架是非常有必要的，不然很多系统的新特性苹果往往只会提供 SwiftUI 的演示代码，甚至有些 API 只能 SwiftUI 才能使用。所以想要更好的适配 Vision Pro 最好的方式是用 SwiftUI 进行开发。</p>
+
+<p>SwitUI 几个特点相比大家都有所耳闻：声明式编程、数据驱动、自适应布局。我们来看下数据驱动的 UI 框架一个经典的公式。</p>
+
+<p><img src="https://oss-ata.alibaba.com/article/2024/02/6fa0034e-2f2a-427f-a5c8-bfe4cb7a0b64.png" alt="" /></p>
+
+<p>这个公式就一目了然了，UI 的展示就是数据状态的一个函数映射，所有的数据驱动的 UI 框架都遵循这个原则。那么 SwiftUI 的框架又是什么样子的呢？下面针对 SwiftUI 几个重要特征的由来做个介绍，限于篇幅详情的学习可以参看 <a href="[https://](https://developer.apple.com/tutorials/swiftui)">官方文档</a></p>
+
+<h2 id="2-dsl语法">2. DSL语法</h2>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">struct</span> <span class="kt">ContentView</span><span class="p">:</span> <span class="kt">View</span> <span class="p">{</span>
+    
+    <span class="k">var</span> <span class="nv">body</span><span class="p">:</span> <span class="kd">some</span> <span class="kt">View</span> <span class="p">{</span>
+        <span class="kt">Text</span><span class="p">(</span><span class="s">"Hello world"</span><span class="p">)</span>
+        <span class="kt">Image</span><span class="p">(</span><span class="nv">systemName</span><span class="p">:</span> <span class="s">"shareplay"</span><span class="p">)</span>
+        <span class="o">.</span><span class="nf">foregroundColor</span><span class="p">(</span><span class="o">.</span><span class="n">white</span><span class="p">)</span>
+        <span class="o">.</span><span class="nf">frame</span><span class="p">(</span><span class="nv">width</span><span class="p">:</span> <span class="mi">28</span><span class="p">,</span><span class="nv">height</span><span class="p">:</span> <span class="mi">28</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>对于熟悉 Swift 语言，但是初次接触 SwiftUI 的同学来说，上面的语法大概率会有下面的疑惑：“为啥 body 这个函数没有 return 任何变量？” 假如说我们把上面的这段代码，改为下面的形式，相信做过 iOS 开发的同学一眼都能看明白。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">struct</span> <span class="kt">ContentView</span><span class="p">:</span> <span class="kt">View</span> <span class="p">{</span>
+    
+    <span class="k">var</span> <span class="nv">body</span><span class="p">:</span> <span class="kd">some</span> <span class="kt">View</span> <span class="p">{</span>
+        <span class="k">let</span> <span class="nv">textView</span> <span class="o">=</span> <span class="kt">Text</span><span class="p">(</span><span class="s">"Hello world"</span><span class="p">)</span>
+        <span class="k">let</span> <span class="nv">imageView</span> <span class="o">=</span> <span class="kt">Image</span><span class="p">(</span><span class="nv">systemName</span><span class="p">:</span> <span class="s">"shareplay"</span><span class="p">)</span>
+        <span class="o">.</span><span class="nf">foregroundColor</span><span class="p">(</span><span class="o">.</span><span class="n">white</span><span class="p">)</span>
+        <span class="o">.</span><span class="nf">frame</span><span class="p">(</span><span class="nv">width</span><span class="p">:</span> <span class="mi">28</span><span class="p">,</span><span class="nv">height</span><span class="p">:</span> <span class="mi">28</span><span class="p">)</span>
+        <span class="k">let</span> <span class="nv">container</span> <span class="o">=</span> <span class="kt">View</span><span class="p">()</span>
+        <span class="n">container</span><span class="o">.</span><span class="nf">addSubView</span><span class="p">(</span><span class="n">textView</span><span class="p">)</span>
+        <span class="n">container</span><span class="o">.</span><span class="nf">addSubView</span><span class="p">(</span><span class="n">imageView</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">container</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>其实这种语法就是 SwifUI 描述视图布局的领域专用语言 (DSL)，在编译时就会把这种 DSL 转换成我们上面可以看懂的视图布局方式。DSL 的好处就是简化语法，只需要描述问题即可不用提供问题的解决过程，然后框架层会自动生成解决问题的繁琐代码。这看起来其实有点类似数据库的 SQL 语句，只要描述下我要解决的问题即可，大大节省了代码量，让代码可读性也变的更好。</p>
+
+<p>那么就有下个疑问了，SwiftUI 这种 DSL 语法是如何构建的呢？答案是通过 ViewBuilder 构建出来的。要了解 ViewBuilder 这里我们就需要了解 Swift 语言标记语法了，何为标记语法？说白了就是可以帮我们在语法树中插入一段我们自定义的代码，方便我们简化代码的结构，我简单的用下面的图示表示。</p>
+
+<p><img src="https://oss-ata.alibaba.com/article/2024/02/281f8d1d-d21b-4fb6-aebe-45ff0a8949bd.png" alt="" /></p>
+
+<p>其中图 1 就代表正常的语法树，而图 2 就代表我们自定义的语法树，标记语法就相当于给了我们一个能力，把语法树上的一个节点替换成我们自定义的语法树的内容。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">public</span> <span class="kd">protocol</span> <span class="kt">View</span> <span class="p">{</span>
+
+    <span class="c1">/// The type of view representing the body of this view.</span>
+    <span class="c1">///</span>
+    <span class="c1">/// When you create a custom view, Swift infers this type from your</span>
+    <span class="c1">/// implementation of the required ``View/body-swift.property`` property.</span>
+    <span class="kd">associatedtype</span> <span class="kt">Body</span> <span class="p">:</span> <span class="kt">View</span>
+
+    <span class="c1">/// The content and behavior of the view.</span>
+    <span class="c1">///</span>
+    <span class="c1">/// When you implement a custom view, you must implement a computed</span>
+    <span class="c1">/// `body` property to provide the content for your view. Return a view</span>
+    <span class="c1">/// that's composed of built-in views that SwiftUI provides, plus other</span>
+    <span class="c1">/// composite views that you've already defined:</span>
+    <span class="c1">///</span>
+    <span class="c1">///     struct MyView: View {</span>
+    <span class="c1">///         var body: some View {</span>
+    <span class="c1">///             Text("Hello, World!")</span>
+    <span class="c1">///         }</span>
+    <span class="c1">///     }</span>
+    <span class="c1">///</span>
+    <span class="c1">/// For more information about composing views and a view hierarchy,</span>
+    <span class="c1">/// see &lt;doc:Declaring-a-Custom-View&gt;.</span>
+    <span class="kd">@ViewBuilder</span> <span class="kd">@MainActor</span> <span class="k">var</span> <span class="nv">body</span><span class="p">:</span> <span class="k">Self</span><span class="o">.</span><span class="kt">Body</span> <span class="p">{</span> <span class="k">get</span> <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>上面这段代码就是 body 的声明，可以看出来这个函数传递的参数是一个 ViewBuilder 。然后 SwiftUI 通过 ViewBuilder 的能力重新构造语法树，从而把添加视图的过程给实现了。ViewBuilder 是通过 Swift 语言中 ResultBuilder 这个标记语法能力构建的，ResultBuilder 是 Swift 语言提供给开发者构建自定义 DSL 的能力。而 ResultBuilder 这个语法又是从 FunctionBuilder 延伸出来的，他们的演化历史简单的表述如下：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="n">function</span> <span class="n">builder</span> <span class="o">--&gt;</span> <span class="n">result</span> <span class="n">builder</span> <span class="o">--&gt;</span> <span class="n">view</span> <span class="n">builder</span>
+
+</code></pre></div></div>
+
+<p>如果你想要详细了解苹果标记语法的能力，建议你观看 <a href="https://developer.apple.com/videos/play/wwdc2021/10253/">apple result builder</a> 这个 WWDC 的视频会有详细的讲解，这里不再赘述。</p>
+
+<p>通过上面的分析过程，我们其实可以归纳出，支持高阶函数的语言，本质上构建这种语法应该都不困难。在前端开发看来，SwiftUI 这种 DSL 是他们很早就具备的能力，例如 React 和 VUE 都有自己定义的 DSL。并且像 google 的跨平台框架 Flutter 也是用的声明式的标记语法实现的，还有最近华为的纯血鸿蒙系统，前端 UI 构建也采用了声明式的框架。可见声明式的 UI 框架还是非常受欢迎的。</p>
+
+<h2 id="3-视图树">3. 视图树</h2>
+
+<p>下面我们就来看下 SwiftUI 的视图树是如何通过上述的 DSL 构建的。</p>
+
+<h3 id="31-链式语法">3.1 链式语法</h3>
+<p>我们来看一个简单的例子如下：</p>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kt">Text</span><span class="p">(</span><span class="s">"Hello"</span><span class="p">)</span>
+<span class="o">.</span><span class="nf">padding</span><span class="p">()</span>
+<span class="o">.</span><span class="nf">backgound</span><span class="p">(</span><span class="kt">Color</span><span class="o">.</span><span class="n">blue</span><span class="p">)</span>
+
+</code></pre></div></div>
+<p>我们再来看下这段代码，我们把链式调用的位置交换了下，代码如下：</p>
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kt">Text</span><span class="p">(</span><span class="s">"Hello"</span><span class="p">)</span> 
+<span class="o">.</span><span class="nf">background</span><span class="p">(</span><span class="kt">Color</span><span class="o">.</span><span class="n">blue</span><span class="p">)</span> 
+<span class="o">.</span><span class="nf">padding</span><span class="p">()</span>
+
+</code></pre></div></div>
+<p>来看下两段代码运行的结果：左一就是第一段代码生成的视图，右一是第二段代码的视图。
+<img src="https://oss-ata.alibaba.com/article/2024/02/86f27896-c29e-4cd1-863f-ba02bf541291.png" alt="Image Description" width="600" height="auto" /></p>
+
+<p>为什么会不同呢？分析这个视图的构建过程，SwiftUI 的视图构建是一个递归的过程，根据视图树上面所有子视图的尺寸决定视图的大小，再根据链式调用自下而上的构建相应的视图，每个链式操作其实都会创建一个子视图，第一段代码的构建过程如下：
+<img src="https://oss-ata.alibaba.com/article/2024/02/0029e12d-de6a-4362-9482-b052fd5c7bb7.png" alt="Image Description" width="400" height="auto" />
+可以看出来确定完视图大小后，会先放置 <code class="highlighter-rouge">.backgound</code> 这个子视图，然后再放置它的子视图 <code class="highlighter-rouge">.padding</code> 和 <code class="highlighter-rouge">.color</code>，最后的 <code class="highlighter-rouge">.text</code> 是属于 <code class="highlighter-rouge">.padding</code> 的子视图，所以自然背景色范围就比较广。下图就是第二段代码的构建过程。
+<img src="https://oss-ata.alibaba.com/article/2024/02/8f04a6ec-a385-4e14-8fad-f8146e0e19c4.png" alt="Image Description" width="400" height="auto" />
+可以看出来是先构建了 <code class="highlighter-rouge">.padding</code> 这个子视图，然后再放置 <code class="highlighter-rouge">.backgound</code> 子视图，自然背景就被裁剪掉了。
+<strong>每个链式调用本质上就是创建一个子视图，然后自下而上构建视图的</strong> ，记住这个构建规则，对于你写 SwiftUI 的代码会有很大的帮助。那我们可以自定义链式语法的函数么？这就涉及到另一个概念「修饰器」，下面我们来看下。</p>
+
+<h3 id="32-修饰器-viewmodifer">3.2 修饰器 (ViewModifer)</h3>
+
+<p>修饰器相当于给视图增加了扩展能力。下面就是扩展视图背景的一个例子。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">enum</span> <span class="kt">BGType</span><span class="p">:</span><span class="kt">Int</span> <span class="p">{</span>
+    <span class="k">case</span> <span class="n">clear</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">case</span> <span class="n">glass</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">case</span> <span class="n">meterial</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="k">case</span> <span class="n">pureColor</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="p">}</span>
+
+<span class="kd">extension</span> <span class="kt">View</span> <span class="p">{</span>
+<span class="kd">func</span> <span class="nf">dtBackgroundEffect</span><span class="p">(</span>
+        <span class="nv">effectType</span><span class="p">:</span><span class="kt">BGType</span> <span class="o">=</span> <span class="o">.</span><span class="n">clear</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kd">some</span> <span class="kt">View</span> <span class="p">{</span>
+        <span class="k">self</span><span class="o">.</span><span class="nf">modifier</span><span class="p">(</span>
+            <span class="nf">dtBackgroundEffectModifier</span><span class="p">(</span><span class="nv">effectType</span><span class="p">:</span> <span class="n">effectType</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">private</span> <span class="kd">struct</span> <span class="nv">dtBackgroundEffectModifier</span><span class="p">:</span> <span class="kt">ViewModifier</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">effectType</span><span class="p">:</span><span class="kt">BGType</span> <span class="o">=</span> <span class="o">.</span><span class="n">clear</span>
+    <span class="kd">func</span> <span class="nf">body</span><span class="p">(</span><span class="nv">content</span><span class="p">:</span> <span class="kt">Content</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kd">some</span> <span class="kt">View</span> <span class="p">{</span>
+        <span class="k">switch</span> <span class="n">effectType</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="o">.</span><span class="nv">clear</span><span class="p">:</span>
+            <span class="n">content</span><span class="o">.</span><span class="nf">background</span><span class="p">(</span><span class="o">.</span><span class="n">clear</span><span class="p">)</span>
+        <span class="k">case</span> <span class="o">.</span><span class="nv">glass</span><span class="p">:</span>
+            <span class="n">content</span>
+                <span class="o">.</span><span class="nf">glassBackgroundEffect</span><span class="p">(</span><span class="nv">displayMode</span><span class="p">:</span> <span class="o">.</span><span class="n">always</span><span class="p">)</span>
+        <span class="k">case</span> <span class="o">.</span><span class="nv">meterial</span><span class="p">:</span>
+            <span class="n">content</span>
+                <span class="o">.</span><span class="nf">background</span><span class="p">(</span><span class="o">.</span><span class="n">regularMaterial</span><span class="p">)</span>
+        <span class="k">case</span> <span class="o">.</span><span class="nv">pureColor</span><span class="p">:</span>
+            <span class="n">content</span>
+                <span class="o">.</span><span class="nf">background</span><span class="p">(</span><span class="kt">Color</span><span class="p">(</span><span class="nv">uiColor</span><span class="p">:</span> <span class="kt">UIColor</span><span class="o">.</span><span class="nf">dt_color</span><span class="p">(</span><span class="nv">withHexString</span><span class="p">:</span> <span class="s">"29231F"</span><span class="p">)))</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>这段代码的 switch case 语法给修饰器创建了不同的视图，这样调用的地方就只要一行代码 <code class="highlighter-rouge">Text("name").dtBackgroundEffect(effectType:effect)</code> 就可以了，避免了写大量这种重复的代码，对于代码复用这种方式非常有用。不过看到这里你可能会有疑问， 扩展视图能力类似下面这样的写法不是也可以么？</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">extension</span> <span class="kt">View</span> <span class="p">{</span>
+<span class="kd">func</span> <span class="nf">dtBackgroundEffect</span><span class="p">(</span>
+        <span class="nv">effectType</span><span class="p">:</span><span class="kt">BGType</span> <span class="o">=</span> <span class="o">.</span><span class="n">clear</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kd">some</span> <span class="kt">View</span> <span class="p">{</span>
+        <span class="k">var</span> <span class="nv">effectType</span><span class="p">:</span><span class="kt">BGType</span> <span class="o">=</span> <span class="o">.</span><span class="n">clear</span>
+        <span class="k">switch</span> <span class="n">effectType</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="o">.</span><span class="nv">clear</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">self</span><span class="o">.</span><span class="nf">background</span><span class="p">(</span><span class="o">.</span><span class="n">clear</span><span class="p">)</span>
+        <span class="k">case</span> <span class="o">.</span><span class="nv">glass</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">self</span>
+                <span class="o">.</span><span class="nf">glassBackgroundEffect</span><span class="p">(</span><span class="nv">displayMode</span><span class="p">:</span> <span class="o">.</span><span class="n">always</span><span class="p">)</span>
+        <span class="k">case</span> <span class="o">.</span><span class="nv">meterial</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">self</span>
+                <span class="o">.</span><span class="nf">background</span><span class="p">(</span><span class="o">.</span><span class="n">regularMaterial</span><span class="p">)</span>
+        <span class="k">case</span> <span class="o">.</span><span class="nv">pureColor</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">self</span>
+                <span class="o">.</span><span class="nf">background</span><span class="p">(</span><span class="kt">Color</span><span class="p">(</span><span class="nv">uiColor</span><span class="p">:</span> <span class="kt">UIColor</span><span class="o">.</span><span class="nf">dt_color</span><span class="p">(</span><span class="nv">withHexString</span><span class="p">:</span> <span class="s">"29231F"</span><span class="p">)))</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>这段代码初看没啥问题，但是编译的话就会报错 <code class="highlighter-rouge">Function declares an opaque return type 'some View', but the return statements in its body do not have matching underlying types</code> 。从编译报错里面可以明确看出，虽然返回的都是 <code class="highlighter-rouge">some View</code> 但是 Swift 语言对类型检测非常严格的，我们来看下 Background 定义。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">@inlinable</span> <span class="kd">public</span> <span class="kd">func</span> <span class="n">background</span><span class="o">&lt;</span><span class="kt">S</span><span class="o">&gt;</span><span class="p">(</span><span class="n">_</span> <span class="nv">style</span><span class="p">:</span> <span class="kt">S</span><span class="p">,</span> <span class="n">ignoresSafeAreaEdges</span> <span class="nv">edges</span><span class="p">:</span> <span class="kt">Edge</span><span class="o">.</span><span class="kt">Set</span> <span class="o">=</span> <span class="o">.</span><span class="n">all</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kd">some</span> <span class="kt">View</span> <span class="k">where</span> <span class="kt">S</span> <span class="p">:</span> <span class="kt">ShapeStyle</span>
+
+</code></pre></div></div>
+
+<p>这里返回的 some view 类型会有一个传递的模版参数 S 的定义，如果模版类型不一致的话 Swift 就会认为他们类型本质上不一样的。如何来解决这个问题，其实我们只要增加 ViewBuilder 标记语法，用如下的方式就可以编译通过了。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">extension</span> <span class="kt">View</span> <span class="p">{</span>
+<span class="kd">@ViewBuilder</span>
+<span class="kd">func</span> <span class="nf">dtBackgroundEffect</span><span class="p">(</span>
+        <span class="nv">effectType</span><span class="p">:</span><span class="kt">BGType</span> <span class="o">=</span> <span class="o">.</span><span class="n">clear</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="kd">some</span> <span class="kt">View</span> <span class="p">{</span>
+        <span class="k">var</span> <span class="nv">effectType</span><span class="p">:</span><span class="kt">BGType</span> <span class="o">=</span> <span class="o">.</span><span class="n">clear</span>
+        <span class="k">switch</span> <span class="n">effectType</span> <span class="p">{</span>
+        <span class="k">case</span> <span class="o">.</span><span class="nv">clear</span><span class="p">:</span>
+            <span class="k">self</span><span class="o">.</span><span class="nf">background</span><span class="p">(</span><span class="o">.</span><span class="n">clear</span><span class="p">)</span>
+        <span class="k">case</span> <span class="o">.</span><span class="nv">glass</span><span class="p">:</span>
+            <span class="k">self</span>
+                <span class="o">.</span><span class="nf">glassBackgroundEffect</span><span class="p">(</span><span class="nv">displayMode</span><span class="p">:</span> <span class="o">.</span><span class="n">always</span><span class="p">)</span>
+        <span class="k">case</span> <span class="o">.</span><span class="nv">meterial</span><span class="p">:</span>
+            <span class="k">self</span>
+                <span class="o">.</span><span class="nf">background</span><span class="p">(</span><span class="o">.</span><span class="n">regularMaterial</span><span class="p">)</span>
+        <span class="k">case</span> <span class="o">.</span><span class="nv">pureColor</span><span class="p">:</span>
+            <span class="k">self</span>
+                <span class="o">.</span><span class="nf">background</span><span class="p">(</span><span class="kt">Color</span><span class="p">(</span><span class="nv">uiColor</span><span class="p">:</span> <span class="kt">UIColor</span><span class="o">.</span><span class="nf">dt_color</span><span class="p">(</span><span class="nv">withHexString</span><span class="p">:</span> <span class="s">"29231F"</span><span class="p">)))</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>这里就可以看出来 ViewBuilder 其实会重新组装我们的 View 成为一个确定的类型，就不会报错了。那么问题来了，ViewModifer 和用普通的 Extension Function 来扩展有什么大的区别呢？这里简单描述下用法的区别。</p>
+
+<ol>
+  <li>
+    <p>如果你代码重用的部分比较复杂，涉及到很多条件创建不同的 View，这时候就适合 ViewModifer ，因为在性能方面，ViewModifier它可以利用 SwiftUI 的优化机制，避免不必要的视图层次重建。而我们自定义的扩展就没这个能力了。</p>
+  </li>
+  <li>
+    <p>如果你定义的方法只用在特定的一个 View 上，不需要大量的重用，并且扩展相对比较简单，其实就没必要使用 ViewModifer。</p>
+  </li>
+</ol>
+
+<p>像上面这种需要用 switch case 来创建各种不同的视图来修饰的话，就比较适合用 ViewModifer 了，视图树的构建方式讲到这里，那么数据如何驱动这些视图渲染呢？下面就开始分析下 SwiftUI 的状态管理。</p>
+
+<h2 id="4-状态管理">4. 状态管理</h2>
+
+<p>我们先来看下面这段代码，SwiftUI 是如何映射数据状态到视图树上面的?</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">@state</span> <span class="k">var</span> <span class="nv">showChinese</span> <span class="o">=</span> <span class="kc">false</span>
+<span class="kt">Text</span><span class="p">(</span><span class="n">showChinese</span> <span class="p">?</span> <span class="s">"你好"</span> <span class="p">:</span> <span class="s">"Hello"</span><span class="p">)</span>
+<span class="o">.</span><span class="nf">padding</span><span class="p">()</span>
+<span class="o">.</span><span class="nf">backgound</span><span class="p">(</span><span class="n">showChinese</span> <span class="p">?</span> <span class="kt">Color</span><span class="o">.</span><span class="nv">red</span> <span class="p">:</span> <span class="kt">Color</span><span class="o">.</span><span class="n">blue</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<p>我简单的画了一个数据和视图树的依赖关系图。</p>
+
+<p><img src="https://oss-ata.alibaba.com/article/2024/02/e35c1d33-f7b5-4544-aa6a-4b75b5924bc2.png" alt="Image Description" width="600" height="auto" /></p>
+
+<p>从上面的代码可以看出，模型是通过 <code class="highlighter-rouge">@state</code> 这种语法来映射到 SwiftUI 的视图树上的，那么 <code class="highlighter-rouge">@state</code> 的作用我们下面来简单分析下。</p>
+
+<h3 id="41-数据驱动的标记语法">4.1 数据驱动的标记语法</h3>
+
+<p>SwiftUI 中<code class="highlighter-rouge">@state</code> 这种语法，其实属于属性包装器 (Property Wrapper),也是 Swift 语言的一个语法特性。如果想要详细了解这个语法的话，可以参看 <a href="[https://](https://docs.swift.org/swift-book/documentation/the-swift-programming-language/properties/)">官方文档</a>。它的作用就是当标记的数据有变化时，通知视图树来刷新 UI。</p>
+
+<p>类似这种属性包装器的语法，SwiftUI 还有很多个，<code class="highlighter-rouge">@State @StateObject @Binding @ObservedObject</code> 。记住这些语法都是用来做数据驱动 UI 使用的。至于这些属性包装器具体如何使用，下面列出来了一些规则可供参考。</p>
+
+<ol>
+  <li>初始化属性
+ 如果属性无法在声明时进行初始化，而是需要接收父节点的数据，应该考虑使用 <code class="highlighter-rouge">@Binding</code> 或 <code class="highlighter-rouge">@ObservedObject</code>，而不是 <code class="highlighter-rouge">@State</code> 或 <code class="highlighter-rouge">@StateObject</code>。</li>
+  <li>普通属性 vs. 属性包装器
+ 尽可能在视图中使用普通属性，当仅需将值传递到视图中时，不需要使用属性包装器。</li>
+  <li>@State
+ 当视图需要对一个值进行读写访问，并且该值作为本地的私有视图状态时，应该使用 <code class="highlighter-rouge">@State</code>。</li>
+  <li>@Binding
+ 当视图需要对一个值进行读写访问，但该值不属于视图本身，而是由外部传递进来时，应该使用 <code class="highlighter-rouge">@Binding</code>。</li>
+  <li>@StateObject 和 @ObservedObject
+ 当视图需要以对象的形式拥有状态，并且这个状态是本地私有的视图状态时，应该使用 <code class="highlighter-rouge">@StateObject</code>。当需要从外部传入一个对象时，应该使用 <code class="highlighter-rouge">@ObservedObject</code>。</li>
+</ol>
+
+<p><em>注意:上面这样原则其实是 iOS17 之前需要遵守的，之后语法有了相应的更新，使用起来会更加的简单。等下我们就会讲到 iOS17 带来的更新。</em></p>
+
+<p>在我们定义模型对象时，还有个重要的概念要讲 Identifiable Protocol （身份协议）。因为 SwiftUI 所有的视图树都是值类型，不同于 UIKit 每个 UIView 在内存中都有唯一的地址。而 SwiftUI 中的 View 是和映射的模型绑定到一起，框架是依靠模型的不同来确定是否为不同的视图，而如何确定模型的身份就是靠 Identifiable Protocol 这个协议，我们我就拿官网的示例代码展示下，Identifiable 作用。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">enum</span> <span class="kt">Animal</span> <span class="p">{</span> <span class="k">case</span> <span class="n">dog</span><span class="p">,</span><span class="n">cat</span> <span class="p">}</span>
+
+<span class="kd">struct</span> <span class="kt">Pet</span><span class="p">:</span><span class="kt">Identifiable</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">name</span><span class="p">:</span><span class="kt">String</span>
+    <span class="k">var</span> <span class="nv">kind</span><span class="p">:</span><span class="kt">Animal</span>
+    <span class="k">var</span> <span class="nv">id</span><span class="p">:</span> <span class="kt">UUID</span> <span class="p">{</span> <span class="kt">UUID</span><span class="p">()</span> <span class="p">}</span>
+    <span class="k">var</span> <span class="nv">dataBaseID</span><span class="p">:</span><span class="kt">Int</span>
+<span class="p">}</span>
+
+<span class="kd">struct</span> <span class="kt">FavoritePets</span><span class="p">:</span> <span class="kt">View</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">pets</span><span class="p">:[</span><span class="kt">Pet</span><span class="p">]</span>
+    <span class="k">var</span> <span class="nv">body</span><span class="p">:</span> <span class="kd">some</span> <span class="kt">View</span> <span class="p">{</span>
+        <span class="kt">List</span> <span class="p">{</span>
+            <span class="kt">ForEach</span><span class="p">(</span><span class="n">pets</span><span class="p">)</span> <span class="p">{</span>
+                <span class="kt">PetView</span> <span class="p">{</span><span class="nv">$0</span><span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>上面这个方式构建的 SwiftUI 的视图会出现一个问题，每次向 pets 中添加新的模型时，整个列表都会刷新，所有的视图重新创建了。再看下面的代码。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">struct</span> <span class="kt">FavoritePets</span><span class="p">:</span> <span class="kt">View</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">pets</span><span class="p">:[</span><span class="kt">Pet</span><span class="p">]</span>
+    <span class="k">var</span> <span class="nv">body</span><span class="p">:</span> <span class="kd">some</span> <span class="kt">View</span> <span class="p">{</span>
+        <span class="kt">List</span> <span class="p">{</span>
+            <span class="kt">ForEach</span><span class="p">(</span><span class="n">pets</span><span class="p">,</span><span class="nv">id</span><span class="p">:</span><span class="o">.</span><span class="p">\</span><span class="n">dataBaseID</span><span class="p">)</span> <span class="p">{</span>
+                <span class="kt">PetView</span> <span class="p">{</span><span class="nv">$0</span><span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>如果在创建视图时，改成上面的实现方式，给一个确定的 id 例如 dataBaseID 是一个持久化到数据库中。就不会出现上述的问题，所以我们在实现模型的 Identifiable 协议时，一定要牢记他就是对应 SwiftUI 的视图。</p>
+
+<p>如果想要详细了解数据如何驱动视图树的原理，建议参看苹果 WWDC <a href="https://developer.apple.com/videos/play/wwdc2021/10022/">揭开 SwiftUI 的神秘面纱</a>。</p>
+
+<h3 id="42-ios17-之后的变化">4.2 iOS17 之后的变化</h3>
+
+<p>为什么要讲 iOS17 之后 SwiftUI 的变化呢？因为 visionOS 使用的 SwiftUI 就是 iOS17 之后的。我们来看下对比 iOS17 前后状态驱动语法的变化。</p>
+
+<ol>
+  <li>iOS17 之前</li>
+</ol>
+
+<table>
+  <thead>
+    <tr>
+      <th>类型</th>
+      <th>根状态</th>
+      <th>子状态</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>值类型</td>
+      <td>@State</td>
+      <td>@Binding</td>
+    </tr>
+    <tr>
+      <td>引用类型</td>
+      <td>@StateObject</td>
+      <td>@ObservedObject</td>
+    </tr>
+  </tbody>
+</table>
+
+<ol>
+  <li>iOS17 之后</li>
+</ol>
+
+<table>
+  <thead>
+    <tr>
+      <th>类型</th>
+      <th>根状态</th>
+      <th>子状态</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>值类型</td>
+      <td>@State</td>
+      <td>@Binding</td>
+    </tr>
+    <tr>
+      <td>引用类型</td>
+      <td>@State</td>
+      <td>@Bindable</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>从上面可以看出来 iOS17 之后 SwiftUI 状态绑定的用法更简单了。iOS17 之前如果你想要一个全局的数据源，驱动 UI 变化需要写下面的代码？</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">import</span> <span class="kt">SwiftUI</span>
+<span class="kd">import</span> <span class="kt">Combine</span>
+
+<span class="c1">// 1. 定义全局数据源</span>
+<span class="kd">class</span> <span class="kt">GlobalData</span><span class="p">:</span> <span class="kt">ObservableObject</span> <span class="p">{</span>
+    <span class="kd">@Published</span> <span class="k">var</span> <span class="nv">counter</span><span class="p">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="kd">static</span> <span class="k">let</span> <span class="nv">shared</span> <span class="o">=</span> <span class="kt">GlobalData</span><span class="p">()</span> <span class="c1">// 单例对象</span>
+<span class="p">}</span>
+
+<span class="kd">struct</span> <span class="kt">ContentView</span><span class="p">:</span> <span class="kt">View</span> <span class="p">{</span>
+    <span class="c1">// 2. 订阅数据变化</span>
+    <span class="kd">@ObservedObject</span> <span class="k">var</span> <span class="nv">globalData</span> <span class="o">=</span> <span class="kt">GlobalData</span><span class="o">.</span><span class="n">shared</span>
+    
+    <span class="k">var</span> <span class="nv">body</span><span class="p">:</span> <span class="kd">some</span> <span class="kt">View</span> <span class="p">{</span>
+        <span class="kt">VStack</span> <span class="p">{</span>
+            <span class="kt">Text</span><span class="p">(</span><span class="s">"Counter: </span><span class="se">\(</span><span class="n">globalData</span><span class="o">.</span><span class="n">counter</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+            <span class="kt">Button</span><span class="p">(</span><span class="s">"Increment"</span><span class="p">)</span> <span class="p">{</span>
+                <span class="kt">GlobalData</span><span class="o">.</span><span class="n">shared</span><span class="o">.</span><span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span> <span class="c1">// 修改全局数据源的值</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>iOS17 之后的 Swift 语法有个重大更新，就是支持了宏。然后在 SwiftUI 中， 新增了 @Observable 宏定义，开发者完全不用使用 Combine 框架的数据绑定能力了，只需要简单的写下面的代码：</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">@Observable</span>
+<span class="kd">class</span> <span class="kt">GlobalData</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">counter</span><span class="p">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="kd">static</span> <span class="k">let</span> <span class="nv">shared</span> <span class="o">=</span> <span class="kt">GlobalData</span><span class="p">()</span> <span class="c1">// 单例对象</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>再使用 iOS17 之后 SwiftUI 为 View 新增的 <code class="highlighter-rouge">environment</code> API，创建 View 的时候简单的调用  <code class="highlighter-rouge">ContentView.environment(self.GlobalData.shared)</code>，然后视图就可以用下面的代码监听数据变化。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">extension</span> <span class="kt">View</span> <span class="p">{</span>
+    <span class="kd">@available</span><span class="p">(</span><span class="n">iOS</span> <span class="mf">17.0</span><span class="p">,</span> <span class="n">macOS</span> <span class="mf">14.0</span><span class="p">,</span> <span class="n">tvOS</span> <span class="mf">17.0</span><span class="p">,</span> <span class="n">watchOS</span> <span class="mf">10.0</span><span class="p">,</span> <span class="o">*</span><span class="p">)</span>
+    <span class="kd">public</span> <span class="kd">func</span> <span class="n">environment</span><span class="o">&lt;</span><span class="kt">T</span><span class="o">&gt;</span><span class="p">(</span><span class="n">_</span> <span class="nv">object</span><span class="p">:</span> <span class="kt">T</span><span class="p">?)</span> <span class="o">-&gt;</span> <span class="kd">some</span> <span class="kt">View</span> <span class="k">where</span> <span class="kt">T</span> <span class="p">:</span> <span class="kt">AnyObject</span><span class="p">,</span> <span class="kt">T</span> <span class="p">:</span> <span class="kt">Observable</span>
+<span class="p">}</span>
+<span class="kd">struct</span> <span class="kt">ContentView</span><span class="p">:</span> <span class="kt">View</span> <span class="p">{</span>
+    <span class="c1">// 订阅数据变化</span>
+    <span class="kd">@Environment</span><span class="p">(</span><span class="kt">GlobalData</span><span class="o">.</span><span class="k">self</span><span class="p">)</span> <span class="kd">private</span> <span class="k">var</span> <span class="nv">globalData</span><span class="p">:</span> <span class="kt">GlobalData</span>
+    
+    <span class="k">var</span> <span class="nv">body</span><span class="p">:</span> <span class="kd">some</span> <span class="kt">View</span> <span class="p">{</span>
+        <span class="kt">VStack</span> <span class="p">{</span>
+            <span class="kt">Text</span><span class="p">(</span><span class="s">"Counter: </span><span class="se">\(</span><span class="n">globalData</span><span class="o">.</span><span class="n">counter</span><span class="se">)</span><span class="s">"</span><span class="p">)</span>
+            <span class="kt">Button</span><span class="p">(</span><span class="s">"Increment"</span><span class="p">)</span> <span class="p">{</span>
+                <span class="kt">GlobalData</span><span class="o">.</span><span class="n">shared</span><span class="o">.</span><span class="n">counter</span> <span class="o">+=</span> <span class="mi">1</span> <span class="c1">// 修改全局数据源的值</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>那如果说我们创建的 Model 某些属性不需要监听怎么办？比较好的方式定义为 let 常量，如果说需要变量存储中间状态可以使用 <code class="highlighter-rouge">@ObservationIgnored</code> 这种标记语法。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kd">@Observable</span>
+<span class="kd">class</span> <span class="kt">GlobalData</span> <span class="p">{</span>
+    <span class="k">var</span> <span class="nv">counter</span><span class="p">:</span> <span class="kt">Int</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="kd">@ObservationIgnored</span> <span class="kd">private</span> <span class="k">var</span> <span class="nv">tempValue</span> <span class="o">=</span> <span class="kc">false</span>
+    <span class="kd">static</span> <span class="k">let</span> <span class="nv">shared</span> <span class="o">=</span> <span class="kt">GlobalData</span><span class="p">()</span> <span class="c1">// 单例对象</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>这样当 tempValue 变化时就不会触发通知，对控制 UI 频繁刷新很有用途。</p>
+
+<h2 id="5-总结">5. 总结</h2>
+
+<p>如果上面说的这些能力都掌握的话，开发 SwiftUI 基本就没什么问题了。虽然说 SwiftUI 可以大大节省 UI 的开发量。但是开发过程中遇到的棘手问题就是调试。在 UIKit 所有的 UIView 都有内存地址，来确定某个视图什么时候创建、销毁、以及放置到那里。所以 UIKit 调试的时候，只要看下内存地址就很方便定位是那个视图，但是 SwiftUI 中的视图 View 你无法打印内存地址，就像上文说的你只能跟踪他的模型状态，但是在 Debug 过程中，往往视图的变化堆栈不会有模型变化的堆栈，在调试一些 UI 层级问题时就会遇到很多问题。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="https://cdn.jsdelivr.net/gh/animeng/animeng.github.com/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.0/dist/mermaid.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script>  
+$(document).ready(function () {
+  window.mermaid.initialize({
+    startOnLoad: true,
+    theme: "default",
+  });
+  window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+});
+</script>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="https://cdn.jsdelivr.net/gh/animeng/animeng.github.com/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>灵动岛按钮交互事件原理探究 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2024/01/01/widgets.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="灵动岛按钮交互事件原理探究">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2024/01/01/widgets.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">灵动岛按钮交互事件原理探究</h1>
+  
+  <span class="post-meta">01月 01日, 2024</span><br>
+  
+  <span class="post-meta small">6 minute read</span>
+</div>
+
+<article class="post-content">
+  <h1 id="问题背景">问题背景</h1>
+
+<p>苹果 WWDC2023 Widgets 增加了新的交互能力，iOS17 以前 Widgets 只能展示，无法响应 UI 上所有的按钮事件，只能跳转到主 App 中。iOS17 之后，通过这个新的交互能力，就可以实现 Widgets 上面的按钮点击事件。如果感兴趣可以看下苹果的<a href="https://developer.apple.com/videos/play/wwdc2023/10028/">WWDC视频</a>和<a href="https://developer.apple.com/documentation/widgetkit/adding-interactivity-to-widgets-and-live-activities">官方文档</a>，下面会简单的介绍下苹果实现灵动岛 (LiveActivity Widget) 上按钮响应的方式和开发的过程中遇到的问题。</p>
+
+<h2 id="1-灵动岛如何增加按钮响应事件">1. 灵动岛如何增加按钮响应事件</h2>
+
+<p>根据苹果的 Widgets 的逻辑，也就是我们写的所有 SwiftUI 的代码会放在 Widgets Extension 的进程中，但是在 SwiftUI 代码中所有的异步事件都无法执行，例如按钮事件、下载事件等等。可以看下在 Widgets Extension 中编写下面的代码，<code class="highlighter-rouge">print("test")</code> 这行代码是没法执行的。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kt">DynamicIslandExpandedRegion</span><span class="p">(</span><span class="o">.</span><span class="n">bottom</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">Button</span><span class="p">(</span><span class="s">"Start"</span><span class="p">)</span> <span class="p">{</span>
+        <span class="nf">print</span><span class="p">(</span><span class="s">"test"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>猜测苹果在 Extension 进程中，把所有异步事件注册的能力给拔除了。</p>
+
+<p>那 iOS17 之后灵动岛的 Widgets 又是怎么来响应异步事件呢？苹果是用 Intent 的方式来执行的，这样需要注册一个 Intent 类，然后来执行事件的代码。示例中按钮注册的代码如下：</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kt">DynamicIslandExpandedRegion</span><span class="p">(</span><span class="o">.</span><span class="n">bottom</span><span class="p">)</span> <span class="p">{</span>
+    <span class="kt">Button</span><span class="p">(</span><span class="nv">intent</span><span class="p">:</span> <span class="kt">ConfigurationAppIntent</span><span class="p">())</span> <span class="p">{</span>
+        <span class="kt">Image</span><span class="p">(</span><span class="nv">systemName</span><span class="p">:</span> <span class="s">"plus.circle.fill"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>在接收的模块需要实现一个 Intent 的类，如下：</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">struct</span> <span class="kt">ConfigurationAppIntent</span><span class="p">:</span> <span class="kt">WidgetConfigurationIntent</span> <span class="p">{</span>
+    <span class="kd">static</span> <span class="k">var</span> <span class="nv">title</span><span class="p">:</span> <span class="kt">LocalizedStringResource</span> <span class="o">=</span> <span class="s">"Configuration"</span>
+    <span class="kd">static</span> <span class="k">var</span> <span class="nv">description</span> <span class="o">=</span> <span class="kt">IntentDescription</span><span class="p">(</span><span class="s">"This is an example widget."</span><span class="p">)</span>
+    
+    <span class="kd">func</span> <span class="nf">perform</span><span class="p">()</span> <span class="n">async</span> <span class="k">throws</span> <span class="o">-&gt;</span> <span class="kd">some</span> <span class="kt">IntentResult</span> <span class="p">{</span>
+        <span class="kt">ShareData</span><span class="o">.</span><span class="nf">updateButtonStatus</span><span class="p">()</span>
+        <span class="k">return</span> <span class="o">.</span><span class="nf">result</span><span class="p">()</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>按照上述的方式，按钮点击时，就可以执行 <code class="highlighter-rouge">updateButtonStatus</code> 这个方法了，下面是 <code class="highlighter-rouge">updateButtonStatus</code> 这个方法执行的逻辑，就是在共享的 group 中存储数据，然后主进程就可以读取数据的变化了。</p>
+
+<div class="language-swift highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kd">public</span> <span class="kd">struct</span> <span class="kt">ShareData</span> <span class="p">{</span>
+    <span class="kd">static</span> <span class="k">let</span> <span class="nv">appGroup</span> <span class="o">=</span> <span class="s">"com.mengtnt.myGroup"</span>
+    
+    <span class="kd">private</span> <span class="kd">static</span> <span class="k">var</span> <span class="nv">currentActivity</span><span class="p">:</span> <span class="kt">Activity</span><span class="o">&lt;</span><span class="kt">DynamicIslandAttributes</span><span class="o">&gt;</span><span class="p">?</span> <span class="o">=</span> <span class="kc">nil</span>
+    
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">value</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kt">Int</span> <span class="p">{</span>
+        <span class="k">guard</span> <span class="k">let</span> <span class="nv">result</span> <span class="o">=</span> <span class="kt">UserDefaults</span><span class="p">(</span><span class="nv">suiteName</span><span class="p">:</span> <span class="n">appGroup</span><span class="p">)?</span><span class="o">.</span><span class="nf">value</span><span class="p">(</span><span class="nv">forKey</span><span class="p">:</span> <span class="s">"value"</span><span class="p">)</span> <span class="k">as?</span> <span class="kt">Int</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">result</span>
+    <span class="p">}</span>
+    
+    <span class="kd">public</span> <span class="kd">static</span> <span class="kd">func</span> <span class="nf">updateButtonStatus</span><span class="p">()</span> <span class="p">{</span>
+        <span class="k">var</span> <span class="nv">result</span> <span class="o">=</span> <span class="nf">value</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="kt">UserDefaults</span><span class="p">(</span><span class="nv">suiteName</span><span class="p">:</span> <span class="n">appGroup</span><span class="p">)?</span><span class="o">.</span><span class="nf">setValue</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="nv">forKey</span><span class="p">:</span> <span class="s">"value"</span><span class="p">)</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>这里展示下运行效果。
+<img src="https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/36818385-adb4-4aea-9839-5034a33edcd2.gif" alt="" /></p>
+
+<h2 id="2-遇到事件无响应的问题">2. 遇到事件无响应的问题</h2>
+
+<p>由于钉钉都是基于 Framework 开发的，并不是全源码编译。所以这里模拟了钉钉的方式，写了如下的工程。所有的 Intent 和 LiveActivity 的代码都放到了一个叫 Appintent 的 Framework 下。然后相应的类引用这个 Framework，这个工程中任何源码都没改动。</p>
+
+<p><img src="https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/a8d66e3a-d13a-49e7-9a91-240e07846ae5.png" alt="" /></p>
+
+<p>然后神奇的一幕就发生了，灵动岛上的按钮事件没有任何反应。并且相应的代码也不会调用。效果如下:
+<img src="https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/15b84045-781d-4763-97aa-697d238d1185.gif" alt="" /></p>
+
+<p>然后推测是不是用 Framework 的方式，苹果把 Intent 的代码调用给裁剪掉了，然后用 hopper 分别打开了两种方式下生成的最终产物，分别搜索按钮响应事件调用的 <code class="highlighter-rouge">updateButtonStatus</code> 方法.</p>
+
+<p><img src="https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/b6f0b3b1-2922-4649-ae47-2f706a7ae3ad.png" alt="" /></p>
+
+<p>然后通过 hopper 跳转到调用的函数地址，就会发现调用的函数都是 Intent 类的 perform 方法。所以 Intent 类的 perform 方法其实都已经 link 到了目标 Target 中，只是两种方式生成的符号地址不一样而已。</p>
+
+<p><img src="https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/cd9f1768-5fbf-4c79-988a-d67bd2ad3b09.png" alt="" /></p>
+
+<p><img src="https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/2b51b1a6-71df-41ee-9b6e-9637351933be.png" alt="" /></p>
+
+<p>所以应该不是先前的猜测，用 Framework 的方式执行的目标代码应该没有被裁剪。那么执行的代码都生成了，又会是什么原因造成按钮事件无响应呢？</p>
+
+<h2 id="3-找出-intent-调用的真相">3. 找出 Intent 调用的真相</h2>
+
+<p>然后就继续对比了下全源码编译的产物和 Framework 方式编译的最终产物。发现全源码编译在 Extension Target 下面多了这个文件夹 MetaData.appintents，但是 Framework 方式并没有。</p>
+
+<p><img src="https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/d6ed9ea9-2012-4ef8-9ef8-a459a0033e3d.png" alt="" /></p>
+
+<p>打开这个文件，发现里面有一个 extract.actionsdata 的 json 文件，里面注册了一个 mangledTypeName 名字。</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="w">
+</span><span class="p">{</span><span class="w">
+    </span><span class="nl">"generator"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"xcode-tools"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"15.0"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"enums"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+    </span><span class="nl">"queries"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+    </span><span class="nl">"autoShortcuts"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+    </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"entities"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+    </span><span class="nl">"negativePhrases"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+    </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"ConfigurationAppIntent"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"outputFlags"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"isDiscoverable"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"typeSpecificMetadata"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+            </span><span class="nl">"requiredCapabilities"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+            </span><span class="nl">"effectiveBundleIdentifiers"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+            </span><span class="nl">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+            </span><span class="nl">"systemProtocolMetadata"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                </span><span class="s2">"com.apple.link.systemProtocol.WidgetConfiguration"</span><span class="p">,</span><span class="w">
+                </span><span class="p">{</span><span class="w">
+                    </span><span class="nl">"empty"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+            </span><span class="p">],</span><span class="w">
+            </span><span class="nl">"descriptionMetadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"searchKeywords"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+                </span><span class="nl">"descriptionText"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                    </span><span class="nl">"key"</span><span class="p">:</span><span class="w"> </span><span class="s2">"This is an example widget."</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="nl">"mangledTypeNameByBundleIdentifier"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+            </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"key"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Configuration"</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="nl">"identifier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ConfigurationAppIntent"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"systemProtocols"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                </span><span class="s2">"com.apple.link.systemProtocol.WidgetConfiguration"</span><span class="w">
+            </span><span class="p">],</span><span class="w">
+            </span><span class="nl">"authenticationPolicy"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"presentationStyle"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"mangledTypeName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"22DynamicIslandExtension22ConfigurationAppIntentV"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"availabilityAnnotations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"LNPlatformNameWildcard"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                    </span><span class="nl">"introducedVersion"</span><span class="p">:</span><span class="w"> </span><span class="s2">"*"</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="nl">"openAppWhenRun"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"shortcutTileColor"</span><span class="p">:</span><span class="w"> </span><span class="mi">14</span><span class="w">
+</span><span class="p">}</span><span class="w">
+
+</span></code></pre></div></div>
+
+<p>mangled type name 又是什么，简单的讲就是编译器根据用户的代码生成的特殊符号，里面包含了很多信息例如类型、接收的参数，返回类型，模板的情况等等。如果感兴趣可以详细了解 Swift 语言关于 mangled type 的原理。说白了 mangledTypeName 就是在编译器 link 的时候，方便获取函数调用的真正地址。用 hopper 打开，搜索定义的符号名称 <code class="highlighter-rouge">22DynamicIslandExtension22ConfigurationAppIntentV</code>。这个名字正是前面看到的 Intent 类的地址符号。</p>
+
+<p><img src="https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/5195cf4e-7a51-4832-a794-052753095045.png" alt="" /></p>
+
+<p>通过此 mangledTypeName 就可以找到类相应的内存地址，从而找到执行的 perform 方法。</p>
+
+<p><img src="https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/6ba4e051-fa78-4ec7-bd3f-69cf655f5ade.png" alt="" /></p>
+
+<p>那通过同样的方式，就寻找了下 Framework 方式下的 Extension 的产物，然后使用 hopper 打开，寻找相应的 Intent 类的符号，发现为 <code class="highlighter-rouge">9AppIntent013ConfigurationaB0V</code>，如下图，这里可以看出来这个符号是带有 Framework 名称 AppIntent。</p>
+
+<p><img src="https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/8ead5539-eadf-4fa7-8986-9e8415730c8b.png" alt="" /></p>
+
+<p>然后用类似的方式，在 Extension Target 下面创建了 metadata.appintents 文件夹，然后配置了如下数据：</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+    </span><span class="nl">"generator"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"xcode-tools"</span><span class="p">,</span><span class="w">
+        </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"15.0"</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"enums"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+    </span><span class="nl">"queries"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+    </span><span class="nl">"autoShortcuts"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+    </span><span class="nl">"version"</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w">
+    </span><span class="nl">"entities"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+    </span><span class="nl">"negativePhrases"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+    </span><span class="nl">"actions"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+        </span><span class="nl">"ConfigurationAppIntent"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+            </span><span class="nl">"outputFlags"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"isDiscoverable"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"typeSpecificMetadata"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+            </span><span class="nl">"requiredCapabilities"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+            </span><span class="nl">"effectiveBundleIdentifiers"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+            </span><span class="nl">"parameters"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+            </span><span class="nl">"systemProtocolMetadata"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                </span><span class="s2">"com.apple.link.systemProtocol.WidgetConfiguration"</span><span class="p">,</span><span class="w">
+                </span><span class="p">{</span><span class="w">
+                    </span><span class="nl">"empty"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+            </span><span class="p">],</span><span class="w">
+            </span><span class="nl">"descriptionMetadata"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"searchKeywords"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span><span class="w">
+                </span><span class="nl">"descriptionText"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                    </span><span class="nl">"key"</span><span class="p">:</span><span class="w"> </span><span class="s2">"This is an example widget."</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="nl">"mangledTypeNameByBundleIdentifier"</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span><span class="w">
+            </span><span class="nl">"title"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"key"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Configuration"</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="nl">"identifier"</span><span class="p">:</span><span class="w"> </span><span class="s2">"ConfigurationAppIntent"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"systemProtocols"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="w">
+                </span><span class="s2">"com.apple.link.systemProtocol.WidgetConfiguration"</span><span class="w">
+            </span><span class="p">],</span><span class="w">
+            </span><span class="nl">"authenticationPolicy"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"presentationStyle"</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"mangledTypeName"</span><span class="p">:</span><span class="w"> </span><span class="s2">"9AppIntent013ConfigurationaB0V"</span><span class="p">,</span><span class="w">
+            </span><span class="nl">"availabilityAnnotations"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                </span><span class="nl">"LNPlatformNameWildcard"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w">
+                    </span><span class="nl">"introducedVersion"</span><span class="p">:</span><span class="w"> </span><span class="s2">"*"</span><span class="w">
+                </span><span class="p">}</span><span class="w">
+            </span><span class="p">},</span><span class="w">
+            </span><span class="nl">"openAppWhenRun"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="w">
+        </span><span class="p">}</span><span class="w">
+    </span><span class="p">},</span><span class="w">
+    </span><span class="nl">"shortcutTileColor"</span><span class="p">:</span><span class="w"> </span><span class="mi">14</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p>运行后，果然按钮事件可以响应了，和全源码编译的运行结果一模一样。</p>
+
+<h2 id="4-总结">4. 总结</h2>
+
+<p>通过上面的尝试，我们可以总结出来苹果 Intent 的运行原理，其实有点像 patch 原理，把异步事件响应的代码，用 metaData.appintents 中定义的符号地址替换，用户运行时就执行了 metaData.appintents 中定义的 action 方法。</p>
+
+<p>其实苹果在开发者文档的中描述过 Intent 的大致执行过程，但是具体的实现方式并没有描述。</p>
+
+<p><img src="https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/0393b314-2fcd-48b7-b5f7-eb0e0155a70e.png" alt="" /></p>
+
+<p>通过进一步验证了，把 Intent 类放到了主 App 的 Target 中，编译后，在主进程的 Target 中同样会生成一个 metaData.appintents，然后运行后，事件响应的代码就在主进程的空间中执行了。</p>
+
+<p><img src="https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/e2796830-7ab6-499a-b3b7-cc3796c4f256.png" alt="" /></p>
+
+<p>所以总结下，Widgets 的整个生命周期的事件循环，本质上都是系统托管的。然后如何执行用户的异步事件呢？就像上面说的，在编译 Widgets 代码的时候，会根据注册的异步事件，然后生成 Intent 类的符号地址，然后会把此符号地址放到 metaData.appintents 文件夹下 extract.actionsdata 这个 json 文件中。当异步事件调用时，系统就会替换为 Intent 类注册的 perform 方法。不过发现 xcode 在编译 Widgets Extension 时，如果 Target 源码中没有 Intent 这个类就不生成调用地址的符号数据了，从而造成使用 Framework 这种方式，无法响应异步事件，不知道是苹果特意这样设计的，还是给我们开发者埋的小惊喜😂。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="https://cdn.jsdelivr.net/gh/animeng/animeng.github.com/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.0/dist/mermaid.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script>  
+$(document).ready(function () {
+  window.mermaid.initialize({
+    startOnLoad: true,
+    theme: "default",
+  });
+  window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+});
+</script>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="https://cdn.jsdelivr.net/gh/animeng/animeng.github.com/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>

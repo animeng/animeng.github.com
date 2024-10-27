@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>如何用 Metal 做视频帧合流渲染 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2024/10/01/metal-render.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="如何用 Metal 做视频帧合流渲染">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2024/10/01/metal-render.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">如何用 Metal 做视频帧合流渲染</h1>
+  
+  <span class="post-meta">10月 01日, 2024</span><br>
+  
+  <span class="post-meta small">14 minute read</span>
+</div>
+
+<article class="post-content">
+  <h1 id="背景">背景</h1>
+
+<p>最近在做远程控制的功能，使用的技术方案是远程控制的鼠标数据流和桌面画面视频流分开传输。这样观看端就需要把鼠标的画面和桌面的画面进行合并渲染。如果在数据层面做利用 FFmpeg 框架就可以实现两路视频流的合并。这个可能在直播场景比较适合，由于视频会议对实时性要就比较高，用户在远程控制时，延时忍受度较低，所以为了体验就采用了客户端端在渲染时，来合并两路流进行显示。</p>
+
+<p>这里就引申到本文讨论的话题了，在 iOS 平台用 Metal 如何来渲染两路视频流到一个视图上？</p>
+
+<h1 id="1-metal-是如何渲染图形的">1. Metal 是如何渲染图形的</h1>
+
+<p>首先我们先看下图形如何通过GPU显示出来的。下面是一个简单的示意图。
+<img src="https://oss-ata.alibaba.com/article/2024/09/93b28736-b6e0-4e9d-9c17-a252c07d582c.png" alt="Description" style="width:640px; height:600px;" />
+渲染过程通过  CPU 给 GPU 发送相应的渲染指令，然后把数据拷贝到 GPU 中，用 GPU 渲染上屏。从上图的过程可以看出，图形渲染的过程 CPU 负责组装指令，而 GPU 负责上屏渲染这个过程。
+那Metal 其实就是封装了 GPU 图形化的接口，方便开发者调用 GPU 的能力。整个渲染过程和大多数图形框架 OpenGL Vulkan 基本相似，我们来看下这个流程。</p>
+<ol>
+  <li>
+    <p>代码上配置的 GPU 指令，这个配置过程是在 CPU 中执行的，有兴趣可以看下<a href="https://developer.apple.com/library/archive/documentation/Miscellaneous/Conceptual/MetalProgrammingGuide">官方文档</a>。下图是 Metal 框架中可以配置的命令的种类。
+<img src="https://oss-ata.alibaba.com/article/2024/09/ffb7030f-d848-4fd4-b8f3-040349563bc2.png" alt="" />
+上图中位块命令编码器（Blit Command Encode）是用于处理数据传输和图像处理的操作。它允许开发者高效地在 GPU 上执行内存拷贝、图像缩放、图像转换等任务。 计算命令编码器(Compute Command Encoder)用于编码在 GPU 上执行计算内核的命令。可以执行通用计算，例如图像处理、机器学习或任何并行化的任务。而我们做图形渲染主要关心的是渲染编码器(Render Command Encoder)如何使用的，渲染编码器需要配置的有顶点坐标数据、纹理数据、采样信息、深度信息然后发送到 GPU中，从此图中也可以看出来，除了图形处理外，同时 Metal 还可以做机器学习相关的计算。</p>
+  </li>
+  <li>
+    <p>下面看下渲染指令的配置过程，下图就描述了一个渲染指令的创建过程
+<img src="https://oss-ata.alibaba.com/article/2024/09/9861328c-bdee-41f3-bddf-56194d9a2b46.png" alt="Description" style="width:600px; height:600px;" />
+其中可以看到 Vertex Function 和 Fragment Function 就是 GPU 可以被编程的核心，通过注入顶点和片段着色器就可以利用 GPU 自定义渲染的逻辑。Metal 会把这些指令编译优化后，配置到 GPU中。</p>
+  </li>
+  <li>
+    <p>最后就开始执行 Metal 的渲染 ，下图就是渲染出最终图形这个过程中 GPU 需要执行的各个阶段，也就是我们常说的渲染管道 PipLine。
+<img src="https://oss-ata.alibaba.com/article/2024/09/bb113629-6b01-4240-a42c-833d4f5ce74e.png" alt="" />
+渲染管道的流程就是从上面我们配置的数据和自定义的渲染逻辑，然后计算出相应位置的像素点位信息，经过深度和模版测试(本质上就是对深度信息、透明度、以及叠加视图进行裁剪和融合操作)，渲染到缓冲区，最终根据屏幕的刷新率渲染上屏。</p>
+  </li>
+</ol>
+
+<p>上述就是 Metal 渲染 Pipline 的基本描述，有兴趣可以下载<a href="https://developer.apple.com/documentation/metal/using_a_render_pipeline_to_render_primitives?language=objc">官方示例代码</a>。从上面的配置过程可以看出，开发 Metal 渲染要做的两件事情，在 CPU 中配置渲染的 GPU 指令，通过框架提供的可编程PipLine，编写自定义的 Shader 给 GPU，执行定制化的渲染。</p>
+
+<h1 id="2-webrtc-的渲染架构">2. WebRTC 的渲染架构</h1>
+
+<p>在我们开始写视频合流的逻辑时，先来看下我们音视频会议用的 WebRTC 框架，是如何使用 Metal 来渲染的？下图是 WebRTC Metal 渲染的类图。
+<img src="https://oss-ata.alibaba.com/article/2024/09/8cb4e6e6-f80f-46b2-a8e7-55b3a635679e.png" alt="" />
+从上图看还是比较简单的，获取解码后的视频数据帧，传递给 RTCMTLVideoView 后，RTCMTLVideoView 通过 DisplayLink 定时器指定渲染帧率，然后根据视频帧的不同颜色格式，分发给不同的 Render 渲染器执行渲染。</p>
+
+<p>然后我们鼠标合流的过程可以用下面的流程图描述下。
+<img src="https://oss-ata.alibaba.com/article/2024/09/66eb0c46-227a-485f-8d67-2369ea2a5c0b.png" alt="Description" style="width:400px; height:600px;" /></p>
+
+<p>流程图中鼠标渲染的逻辑也很简单，在渲染视频帧的时候，发现相应时间点有鼠标帧过来时，就通过 Metal 合流的方式渲染上屏。下面我们就详细来看下 Metal 渲染上屏的代码。</p>
+
+<h1 id="3-metal-渲染示例代码">3. Metal 渲染示例代码</h1>
+
+<h2 id="31-渲染管道配置">3.1 渲染管道配置</h2>
+<p>开发 Metal 渲染的代码，先看下 CPU 如何配置渲染管道这个过程，下面是一个示例代码。</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="o">-</span> <span class="p">(</span><span class="n">nonnull</span> <span class="n">instancetype</span><span class="p">)</span><span class="n">initWithMetalKitView</span><span class="o">:</span><span class="p">(</span><span class="n">nonnull</span> <span class="n">MTKView</span> <span class="o">*</span><span class="p">)</span><span class="n">mtkView</span>
+<span class="p">{</span>
+    <span class="n">self</span> <span class="o">=</span> <span class="p">[</span><span class="n">super</span> <span class="n">init</span><span class="p">];</span>
+    <span class="k">if</span><span class="p">(</span><span class="n">self</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">_device</span> <span class="o">=</span> <span class="n">mtkView</span><span class="p">.</span><span class="n">device</span><span class="p">;</span>
+
+        <span class="n">NSURL</span> <span class="o">*</span><span class="n">imageFileLocation</span> <span class="o">=</span> <span class="p">[[</span><span class="n">NSBundle</span> <span class="n">mainBundle</span><span class="p">]</span> <span class="n">URLForResource</span><span class="o">:</span><span class="err">@</span><span class="s">"background"</span>
+                                                           <span class="nl">withExtension:</span><span class="err">@</span><span class="s">"tga"</span><span class="p">];</span>
+        
+        <span class="n">_texture</span> <span class="o">=</span> <span class="p">[</span><span class="n">self</span> <span class="n">loadTextureUsingAAPLImage</span><span class="o">:</span> <span class="n">imageFileLocation</span><span class="p">];</span>
+
+        <span class="c1">// Set up a simple MTLBuffer with vertices which include texture coordinates</span>
+        <span class="k">static</span> <span class="k">const</span> <span class="n">AAPLVertex</span> <span class="n">quadVertices</span><span class="p">[]</span> <span class="o">=</span>
+        <span class="p">{</span>
+            <span class="c1">// Pixel positions, Texture coordinates</span>
+            <span class="p">{</span> <span class="p">{</span>  <span class="mi">250</span><span class="p">,</span>  <span class="o">-</span><span class="mi">250</span> <span class="p">},</span>  <span class="p">{</span> <span class="mi">1</span><span class="p">.</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="n">f</span> <span class="p">}</span> <span class="p">},</span>
+            <span class="p">{</span> <span class="p">{</span> <span class="o">-</span><span class="mi">250</span><span class="p">,</span>  <span class="o">-</span><span class="mi">250</span> <span class="p">},</span>  <span class="p">{</span> <span class="mi">0</span><span class="p">.</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="n">f</span> <span class="p">}</span> <span class="p">},</span>
+            <span class="p">{</span> <span class="p">{</span> <span class="o">-</span><span class="mi">250</span><span class="p">,</span>   <span class="mi">250</span> <span class="p">},</span>  <span class="p">{</span> <span class="mi">0</span><span class="p">.</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="n">f</span> <span class="p">}</span> <span class="p">},</span>
+
+            <span class="p">{</span> <span class="p">{</span>  <span class="mi">250</span><span class="p">,</span>  <span class="o">-</span><span class="mi">250</span> <span class="p">},</span>  <span class="p">{</span> <span class="mi">1</span><span class="p">.</span><span class="n">f</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="n">f</span> <span class="p">}</span> <span class="p">},</span>
+            <span class="p">{</span> <span class="p">{</span> <span class="o">-</span><span class="mi">250</span><span class="p">,</span>   <span class="mi">250</span> <span class="p">},</span>  <span class="p">{</span> <span class="mi">0</span><span class="p">.</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="n">f</span> <span class="p">}</span> <span class="p">},</span>
+            <span class="p">{</span> <span class="p">{</span>  <span class="mi">250</span><span class="p">,</span>   <span class="mi">250</span> <span class="p">},</span>  <span class="p">{</span> <span class="mi">1</span><span class="p">.</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="n">f</span> <span class="p">}</span> <span class="p">},</span>
+        <span class="p">};</span>
+
+        <span class="c1">// Create a vertex buffer, and initialize it with the quadVertices array</span>
+        <span class="n">_vertices</span> <span class="o">=</span> <span class="p">[</span><span class="n">_device</span> <span class="n">newBufferWithBytes</span><span class="o">:</span><span class="n">quadVertices</span>
+                                         <span class="nl">length:</span><span class="k">sizeof</span><span class="p">(</span><span class="n">quadVertices</span><span class="p">)</span>
+                                        <span class="nl">options:</span><span class="n">MTLResourceStorageModeShared</span><span class="p">];</span>
+
+        <span class="c1">// Calculate the number of vertices by dividing the byte length by the size of each vertex</span>
+        <span class="n">_numVertices</span> <span class="o">=</span> <span class="mi">6</span><span class="p">;</span>
+
+        <span class="c1">/// Create the render pipeline.</span>
+        <span class="c1">// Load the shaders from the default library</span>
+        <span class="n">id</span><span class="o">&lt;</span><span class="n">MTLLibrary</span><span class="o">&gt;</span> <span class="n">defaultLibrary</span> <span class="o">=</span> <span class="p">[</span><span class="n">_device</span> <span class="n">newDefaultLibrary</span><span class="p">];</span>
+        <span class="n">id</span><span class="o">&lt;</span><span class="n">MTLFunction</span><span class="o">&gt;</span> <span class="n">vertexFunction</span> <span class="o">=</span> <span class="p">[</span><span class="n">defaultLibrary</span> <span class="n">newFunctionWithName</span><span class="o">:</span><span class="err">@</span><span class="s">"vertexShader"</span><span class="p">];</span>
+        <span class="n">id</span><span class="o">&lt;</span><span class="n">MTLFunction</span><span class="o">&gt;</span> <span class="n">fragmentFunction</span> <span class="o">=</span> <span class="p">[</span><span class="n">defaultLibrary</span> <span class="n">newFunctionWithName</span><span class="o">:</span><span class="err">@</span><span class="s">"samplingShader"</span><span class="p">];</span>
+
+        <span class="c1">// Set up a descriptor for creating a pipeline state object</span>
+        <span class="n">MTLRenderPipelineDescriptor</span> <span class="o">*</span><span class="n">pipelineStateDescriptor</span> <span class="o">=</span> <span class="p">[[</span><span class="n">MTLRenderPipelineDescriptor</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+        <span class="n">pipelineStateDescriptor</span><span class="p">.</span><span class="n">label</span> <span class="o">=</span> <span class="err">@</span><span class="s">"Texturing Pipeline"</span><span class="p">;</span>
+        <span class="n">pipelineStateDescriptor</span><span class="p">.</span><span class="n">vertexFunction</span> <span class="o">=</span> <span class="n">vertexFunction</span><span class="p">;</span>
+        <span class="n">pipelineStateDescriptor</span><span class="p">.</span><span class="n">fragmentFunction</span> <span class="o">=</span> <span class="n">fragmentFunction</span><span class="p">;</span>
+        <span class="n">pipelineStateDescriptor</span><span class="p">.</span><span class="n">colorAttachments</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">pixelFormat</span> <span class="o">=</span> <span class="n">mtkView</span><span class="p">.</span><span class="n">colorPixelFormat</span><span class="p">;</span>
+
+        <span class="n">NSError</span> <span class="o">*</span><span class="n">error</span> <span class="o">=</span> <span class="nb">NULL</span><span class="p">;</span>
+        <span class="n">_pipelineState</span> <span class="o">=</span> <span class="p">[</span><span class="n">_device</span> <span class="n">newRenderPipelineStateWithDescriptor</span><span class="o">:</span><span class="n">pipelineStateDescriptor</span>
+                                                                 <span class="nl">error:</span><span class="o">&amp;</span><span class="n">error</span><span class="p">];</span>
+
+        <span class="n">NSAssert</span><span class="p">(</span><span class="n">_pipelineState</span><span class="p">,</span> <span class="err">@</span><span class="s">"Failed to create pipeline state: %@"</span><span class="p">,</span> <span class="n">error</span><span class="p">);</span>
+
+        <span class="n">_commandQueue</span> <span class="o">=</span> <span class="p">[</span><span class="n">_device</span> <span class="n">newCommandQueue</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">self</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+<p>通过上面的代码可以看出，主要是在配置顶点向量和着色器函数。我们画如下的图来看下顶点坐标是如何定义的。
+<img src="https://oss-ata.alibaba.com/article/2024/09/7027766f-c806-4579-8c28-1a28bc071f41.png" alt="Description" style="width:400px; height:400px;" />
+可以看出来中心点是 (0,0) 。因为我们视频帧只用了 2D 坐标，如果 3D 坐标的话，坐标系如下。
+<img src="https://oss-ata.alibaba.com/article/2024/09/20022f4f-759f-4fc3-af2b-7758a2ad885f.png" alt="Description" style="width:400px; height:400px;" />
+Metal 渲染使用的是左手坐标系，如果是OpenGL右手坐标系，Z 轴就是反向的，个人感觉左手更符合人的直觉。</p>
+
+<p>这里我们要注意的配置渲染顶点坐标的类型，用的 MTLPrimitiveTypeTriangle。MTLPrimitiveTypeTriangleStrip  和  MTLPrimitiveTypeTriangle  是 Metal 框架中用于指定图形渲染顶点数据类型的枚举值。它们之间的主要区别在于如何处理顶点数据以形成三角形。</p>
+
+<ol>
+  <li>
+    <p>MTLPrimitiveTypeTriangle 这种类型表示独立的三角形。在绘制时，每三个顶点组成一个三角形。因此如果你有 N 个三角形，你需要提供 3 * N 个顶点。 每个三角形的顶点之间没有共享，所有的三角形都是独立的。</p>
+  </li>
+  <li>
+    <p>MTLPrimitiveTypeTriangle，这种类型表示对三角形顶点做适当裁剪。在绘制时，第一个三角形由前两个顶点和第三个顶点组成，之后的每个新顶点都会与前两个顶点一起形成一个新的三角形。 这样绘制 N 个三角形只需要 N + 2 个顶点，效率更高，因为可以减少顶点数据的传输。</p>
+  </li>
+</ol>
+
+<p>MTLPrimitiveTypeTriangle 用于独立三角形，而  MTLPrimitiveTypeTriangleStrip  用于通过共享顶点来高效地绘制一系列相连的三角形。选择哪种类型取决于你的具体需求和数据结构。下面的这个顶点坐标类型就是完整的三角形模式，后面可以看到我们实际项目中用的是 MTLPrimitiveTypeTriangleStrip ，因为视频帧是 2D 平面比较简单，可以用4个顶点代表一个正方形。</p>
+
+<h2 id="32-渲染命令提交">3.2 渲染命令提交</h2>
+<p>提交渲染命令给 GPU 的的过程中。看下面的示例代码。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="o">-</span> <span class="p">(</span><span class="kt">void</span><span class="p">)</span><span class="n">drawInMTKView</span><span class="o">:</span><span class="p">(</span><span class="n">nonnull</span> <span class="n">MTKView</span> <span class="o">*</span><span class="p">)</span><span class="n">view</span>
+<span class="p">{</span>
+    <span class="c1">// Create a new command buffer for each render pass to the current drawable</span>
+    <span class="n">id</span><span class="o">&lt;</span><span class="n">MTLCommandBuffer</span><span class="o">&gt;</span> <span class="n">commandBuffer</span> <span class="o">=</span> <span class="p">[</span><span class="n">_commandQueue</span> <span class="n">commandBuffer</span><span class="p">];</span>
+    <span class="n">commandBuffer</span><span class="p">.</span><span class="n">label</span> <span class="o">=</span> <span class="err">@</span><span class="s">"MyCommand"</span><span class="p">;</span>
+
+    <span class="c1">// Obtain a renderPassDescriptor generated from the view's drawable textures</span>
+    <span class="n">MTLRenderPassDescriptor</span> <span class="o">*</span><span class="n">renderPassDescriptor</span> <span class="o">=</span> <span class="n">view</span><span class="p">.</span><span class="n">currentRenderPassDescriptor</span><span class="p">;</span>
+
+    <span class="k">if</span><span class="p">(</span><span class="n">renderPassDescriptor</span> <span class="o">!=</span> <span class="n">nil</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="n">_viewportSize</span><span class="p">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">view</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">width</span><span class="p">;</span>
+        <span class="n">_viewportSize</span><span class="p">.</span><span class="n">y</span> <span class="o">=</span> <span class="n">view</span><span class="p">.</span><span class="n">bounds</span><span class="p">.</span><span class="n">size</span><span class="p">.</span><span class="n">height</span><span class="p">;</span>
+        <span class="n">id</span><span class="o">&lt;</span><span class="n">MTLRenderCommandEncoder</span><span class="o">&gt;</span> <span class="n">renderEncoder</span> <span class="o">=</span>
+        <span class="p">[</span><span class="n">commandBuffer</span> <span class="n">renderCommandEncoderWithDescriptor</span><span class="o">:</span><span class="n">renderPassDescriptor</span><span class="p">];</span>
+        <span class="n">renderEncoder</span><span class="p">.</span><span class="n">label</span> <span class="o">=</span> <span class="err">@</span><span class="s">"MyRenderEncoder"</span><span class="p">;</span>
+
+        <span class="c1">// Set the region of the drawable to draw into.</span>
+        <span class="p">[</span><span class="n">renderEncoder</span> <span class="n">setViewport</span><span class="o">:</span><span class="p">(</span><span class="n">MTLViewport</span><span class="p">){</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="n">_viewportSize</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="n">_viewportSize</span><span class="p">.</span><span class="n">y</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span> <span class="p">}];</span>
+
+        <span class="p">[</span><span class="n">renderEncoder</span> <span class="n">setRenderPipelineState</span><span class="o">:</span><span class="n">_pipelineState</span><span class="p">];</span>
+
+        <span class="p">[</span><span class="n">renderEncoder</span> <span class="n">setVertexBuffer</span><span class="o">:</span><span class="n">_vertices</span>
+                                <span class="nl">offset:</span><span class="mi">0</span>
+                              <span class="nl">atIndex:</span><span class="mi">0</span><span class="p">];</span>
+
+        <span class="p">[</span><span class="n">renderEncoder</span> <span class="n">setVertexBytes</span><span class="o">:&amp;</span><span class="n">_viewportSize</span>
+                               <span class="nl">length:</span><span class="k">sizeof</span><span class="p">(</span><span class="n">_viewportSize</span><span class="p">)</span>
+                              <span class="nl">atIndex:</span><span class="n">AAPLVertexInputIndexViewportSize</span><span class="p">];</span>
+
+        <span class="c1">// Set the texture object.  The AAPLTextureIndexBaseColor enum value corresponds</span>
+        <span class="c1">///  to the 'colorMap' argument in the 'samplingShader' function because its</span>
+        <span class="c1">//   texture attribute qualifier also uses AAPLTextureIndexBaseColor for its index.</span>
+        <span class="p">[</span><span class="n">renderEncoder</span> <span class="n">setFragmentTexture</span><span class="o">:</span><span class="n">_texture</span><span class="p">];</span>
+
+        <span class="c1">// Draw the triangles.</span>
+        <span class="p">[</span><span class="n">renderEncoder</span> <span class="n">drawPrimitives</span><span class="o">:</span><span class="n">MTLPrimitiveTypeTriangle</span>
+                          <span class="nl">vertexStart:</span><span class="mi">0</span>
+                          <span class="nl">vertexCount:</span><span class="mi">6</span><span class="p">];</span>
+
+        <span class="p">[</span><span class="n">renderEncoder</span> <span class="n">endEncoding</span><span class="p">];</span>
+
+        <span class="c1">// Schedule a present once the framebuffer is complete using the current drawable</span>
+        <span class="p">[</span><span class="n">commandBuffer</span> <span class="n">presentDrawable</span><span class="o">:</span><span class="n">view</span><span class="p">.</span><span class="n">currentDrawable</span><span class="p">];</span>
+    <span class="p">}</span>
+
+    <span class="c1">// Finalize rendering here &amp; push the command buffer to the GPU</span>
+    <span class="p">[</span><span class="n">commandBuffer</span> <span class="n">commit</span><span class="p">];</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+<p><code class="highlighter-rouge">[renderEncoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:_numVertices];</code>这里就可以看到我们提交给 GPU 的顶点向量的类型为 MTLPrimitiveTypeTriangle ，所以正方形的话需要2个三角形来表示。这里还有个注意点，我们顶点向量传递的是实际像素的话，需要额外传递下 _viewportSize ，因为我们之后片段着色器用到的顶点位置其实都是相对位置，不是实际的像素位置，主要是为了方便纹理贴图时，计算纹理位置。之后我们也会讲到。</p>
+
+<h2 id="33-数据传递">3.3 数据传递</h2>
+<p>内存数据传输，例如 <code class="highlighter-rouge">[texture replaceRegion:region mipmapLevel:0 withBytes:image.data.bytes bytesPerRow:bytesPerRow];</code> 给片段着色器传递数据，本质上就是 CPU 把内存的数据给 GPU 的内存。这里要注意颜色格式问题，一定要约定好像素的格式，MTLPixelFormatBGRA8Unorm 表示的32位的纹理数据。不然数据拷贝的时候会因为格式问题导致拷贝的数据 GPU 无法处理。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="o">-</span> <span class="p">(</span><span class="n">id</span><span class="o">&lt;</span><span class="n">MTLTexture</span><span class="o">&gt;</span><span class="p">)</span><span class="n">loadTextureUsingAAPLImage</span><span class="o">:</span> <span class="p">(</span><span class="n">NSURL</span> <span class="o">*</span><span class="p">)</span> <span class="n">url</span> <span class="p">{</span>
+    
+    <span class="n">AAPLImage</span> <span class="o">*</span> <span class="n">image</span> <span class="o">=</span> <span class="p">[[</span><span class="n">AAPLImage</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">initWithTGAFileAtLocation</span><span class="o">:</span><span class="n">url</span><span class="p">];</span>
+    <span class="n">NSAssert</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="err">@</span><span class="s">"Failed to create the image from %@"</span><span class="p">,</span> <span class="n">url</span><span class="p">.</span><span class="n">absoluteString</span><span class="p">);</span>
+    <span class="n">MTLTextureDescriptor</span> <span class="o">*</span><span class="n">textureDescriptor</span> <span class="o">=</span> <span class="p">[[</span><span class="n">MTLTextureDescriptor</span> <span class="n">alloc</span><span class="p">]</span> <span class="n">init</span><span class="p">];</span>
+    <span class="c1">// Indicate that each pixel has a blue, green, red, and alpha channel, where each channel is</span>
+    <span class="c1">// an 8-bit unsigned normalized value (i.e. 0 maps to 0.0 and 255 maps to 1.0)</span>
+    <span class="n">textureDescriptor</span><span class="p">.</span><span class="n">pixelFormat</span> <span class="o">=</span> <span class="n">MTLPixelFormatBGRA8Unorm</span><span class="p">;</span>
+    
+    <span class="c1">// Set the pixel dimensions of the texture</span>
+    <span class="n">textureDescriptor</span><span class="p">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">image</span><span class="p">.</span><span class="n">width</span><span class="p">;</span>
+    <span class="n">textureDescriptor</span><span class="p">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">image</span><span class="p">.</span><span class="n">height</span><span class="p">;</span>
+    
+    <span class="c1">// Create the texture from the device by using the descriptor</span>
+    <span class="n">id</span><span class="o">&lt;</span><span class="n">MTLTexture</span><span class="o">&gt;</span> <span class="n">texture</span> <span class="o">=</span> <span class="p">[</span><span class="n">_device</span> <span class="n">newTextureWithDescriptor</span><span class="o">:</span><span class="n">textureDescriptor</span><span class="p">];</span>
+    
+    <span class="c1">// Calculate the number of bytes per row in the image.</span>
+    <span class="n">NSUInteger</span> <span class="n">bytesPerRow</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">image</span><span class="p">.</span><span class="n">width</span><span class="p">;</span>
+    
+    <span class="n">MTLRegion</span> <span class="n">region</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="p">{</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span> <span class="p">},</span>                   <span class="c1">// MTLOrigin</span>
+        <span class="p">{</span><span class="n">image</span><span class="p">.</span><span class="n">width</span><span class="p">,</span> <span class="n">image</span><span class="p">.</span><span class="n">height</span><span class="p">,</span> <span class="mi">1</span><span class="p">}</span> <span class="c1">// MTLSize</span>
+    <span class="p">};</span>
+    
+    <span class="c1">// Copy the bytes from the data object into the texture</span>
+    <span class="p">[</span><span class="n">texture</span> <span class="n">replaceRegion</span><span class="o">:</span><span class="n">region</span>
+                <span class="nl">mipmapLevel:</span><span class="mi">0</span>
+                  <span class="nl">withBytes:</span><span class="n">image</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">bytes</span>
+                <span class="nl">bytesPerRow:</span><span class="n">bytesPerRow</span><span class="p">];</span>
+    <span class="k">return</span> <span class="n">texture</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+<p>上面是纹理数据配置的代码，我们讲下纹理坐标位置，纹理本质就是贴图，因为图片都是2D的，所以一般都是用 float2 向量定义的。float2 这种变量是 SIMD （单指令多数据结构）代表的就是2维的平面向量(x,y)。下图就是纹理坐标的定义。
+<img src="https://oss-ata.alibaba.com/article/2024/09/bb468dac-1a0d-4d92-afdc-50fe7e90f247.png" alt="Description" style="width:600px; height:400px;" />
+纹理坐标都是用相对位置计算的，这样着色时方便和顶点向量位置进行计算，尤其涉及到缩放和位移时，相对位置的优势体现出来。</p>
+
+<h2 id="34-着色器的编写">3.4 着色器的编写</h2>
+<p>下面就是顶点着色器和片段着色器代码编写了。</p>
+<ol>
+  <li>我们就可以看下顶点着色器如何工作了，下面是顶点着色器代码。</li>
+</ol>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+      <span class="n">float2</span> <span class="n">position</span><span class="p">;</span>
+      <span class="n">float2</span> <span class="n">texcoord</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">Vertex</span><span class="p">;</span>
+
+<span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+      <span class="n">float4</span> <span class="n">position</span><span class="p">[[</span><span class="n">position</span><span class="p">]];</span>
+      <span class="n">float2</span> <span class="n">texcoord</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">RasterizerData</span><span class="p">;</span>
+
+ <span class="n">vertex</span> <span class="n">RasterizerData</span> <span class="nf">vertexPassthrough</span><span class="p">(</span><span class="k">const</span> <span class="n">device</span> <span class="n">Vertex</span> <span class="o">*</span> <span class="n">verticies</span><span class="p">[[</span><span class="n">buffer</span><span class="p">(</span><span class="mi">0</span><span class="p">)]],</span>
+                                   <span class="kt">unsigned</span> <span class="kt">int</span> <span class="n">vid</span><span class="p">[[</span><span class="n">vertex_id</span><span class="p">]])</span> <span class="p">{</span>
+      <span class="n">RasterizerData</span> <span class="n">out</span><span class="p">;</span>
+      <span class="k">const</span> <span class="n">device</span> <span class="n">Vertex</span> <span class="o">&amp;</span><span class="n">v</span> <span class="o">=</span> <span class="n">verticies</span><span class="p">[</span><span class="n">vid</span><span class="p">];</span>
+
+      <span class="c1">// Get the viewport size and cast to float.</span>
+      <span class="n">float2</span> <span class="n">viewportSize</span> <span class="o">=</span> <span class="n">float2</span><span class="p">(</span><span class="o">*</span><span class="n">viewportSizePointer</span><span class="p">);</span>
+
+       <span class="c1">// To convert from positions in pixel space to positions in clip-space,</span>
+       <span class="c1">//  divide the pixel coordinates by half the size of the viewport.</span>
+       <span class="c1">// Z is set to 0.0 and w to 1.0 because this is 2D sample.</span>
+      <span class="n">out</span><span class="p">.</span><span class="n">position</span> <span class="o">=</span> <span class="n">vector_float4</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+      <span class="n">out</span><span class="p">.</span><span class="n">position</span><span class="p">.</span><span class="n">xy</span> <span class="o">=</span> <span class="n">pixelSpacePosition</span> <span class="o">/</span> <span class="p">(</span><span class="n">viewportSize</span> <span class="o">/</span> <span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+      <span class="n">out</span><span class="p">.</span><span class="n">texcoord</span> <span class="o">=</span> <span class="n">v</span><span class="p">.</span><span class="n">texcoord</span><span class="p">;</span>
+
+      <span class="k">return</span> <span class="n">out</span><span class="p">;</span>
+ <span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>先来看几个概念，<code class="highlighter-rouge">float4 position [[position]];</code> 这个是属性限定的语法结构，顾名思义就是这个属性限定它的使用方式。position 代表就是从顶点向量中获取到的裁剪空间位置，用来输出裁剪空间的位置信息给片段着色器。如何理解裁剪空间位置，裁剪的过程其实就是把我们定义好的顶点向量构成三角形，然后根据传递的视图实际像素大小，进行像素插值裁剪，然后计算出相应的位置。例如下面这个顶点着色器函数 vertexPassthrough ，其中定义的变换输出的结构 Varyings out; 这个变量的值赋值是通过 <code class="highlighter-rouge">const device Vertex &amp;v = verticies[vid];</code> 而这里面的 vid 本质上就是实际屏幕的像素位置，比如你的屏幕是320 px，采样的时候就会从 0 到 320 计算三角形实际的位置，然后赋值给 out。这里也可以看到实际像素都做了相对位置的变换，方便之后使用。</p>
+
+<ol>
+  <li>顶点着色器的输出，就是片段着色器的输入。VertexIn in [[stage_in]]; 表示该变量是顶点着色器的输出，传入已经插值裁剪好的像素点位，给片段着色器使用，以便于给每个点位分配颜色值。</li>
+</ol>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="n">fragment</span> <span class="n">float4</span>
+<span class="nf">samplingShader</span><span class="p">(</span><span class="n">RasterizerData</span> <span class="n">in</span> <span class="p">[[</span><span class="n">stage_in</span><span class="p">]],</span>
+               <span class="n">texture2d</span><span class="o">&lt;</span><span class="n">half</span><span class="o">&gt;</span> <span class="n">colorTexture</span> <span class="p">[[</span> <span class="n">texture</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="p">]])</span>
+<span class="p">{</span>
+    <span class="n">constexpr</span> <span class="n">sampler</span> <span class="n">textureSampler</span> <span class="p">(</span><span class="n">mag_filter</span><span class="o">::</span><span class="n">linear</span><span class="p">,</span>
+                                      <span class="n">min_filter</span><span class="o">::</span><span class="n">linear</span><span class="p">);</span>
+
+    <span class="c1">// Sample the texture to obtain a color</span>
+    <span class="k">const</span> <span class="n">half4</span> <span class="n">colorSample</span> <span class="o">=</span> <span class="n">colorTexture</span><span class="p">.</span><span class="n">sample</span><span class="p">(</span><span class="n">textureSampler</span><span class="p">,</span> <span class="n">in</span><span class="p">.</span><span class="n">textureCoordinate</span><span class="p">);</span>
+
+    <span class="n">float4</span> <span class="n">out</span> <span class="o">=</span> <span class="n">float4</span><span class="p">(</span><span class="n">colorSample</span><span class="p">);</span>
+    <span class="c1">// return the color of the texture</span>
+    <span class="k">return</span> <span class="n">out</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+<p>上面 texture2d<half> colorTexture [[ texture(0) ]] 这个属性限定符的作用，从我们在管道中配置的片段着色器数据的索引，例如：``` [renderEncoder setFragmentBuffer:_kernelSizeBuffer offset:0 atIndex:0];  ``` 这个就是获取我们这个配置的纹理数据。然后读取纹理中颜色值渲染到相应的顶点坐标位置。至此整个渲染过程就完成了。</half></p>
+
+<h1 id="4-视频流混合的过程">4. 视频流混合的过程</h1>
+
+<p>渲染的基本流程梳理完成后，那我们看下鼠标纹理数据如何渲染到视频上的，其中核心就是设置鼠标的顶点坐标和纹理数据，以及在 Shader 中融合鼠标纹理和视图画面的纹理。我们先看下 WebRTC 视频帧顶点向量的定义。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="kt">float</span> <span class="n">values</span><span class="p">[</span><span class="mi">16</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span>
+<span class="o">-</span><span class="n">coordX</span><span class="p">,</span> <span class="o">-</span><span class="n">coordY</span><span class="p">,</span> <span class="n">cropLeft</span><span class="p">,</span> <span class="n">cropBottom</span><span class="p">,</span>
+<span class="n">coordX</span><span class="p">,</span> <span class="o">-</span><span class="n">coordY</span><span class="p">,</span> <span class="n">cropRight</span><span class="p">,</span> <span class="n">cropBottom</span><span class="p">,</span>
+<span class="o">-</span><span class="n">coordX</span><span class="p">,</span>  <span class="n">coordY</span><span class="p">,</span> <span class="n">cropLeft</span><span class="p">,</span> <span class="n">cropTop</span><span class="p">,</span>
+<span class="n">coordX</span><span class="p">,</span>  <span class="n">coordY</span><span class="p">,</span> <span class="n">cropRight</span><span class="p">,</span> <span class="n">cropTop</span><span class="p">};</span>
+
+</code></pre></div></div>
+
+<p>其中 coordX ，coordY 这些都是裁剪过的视频帧的坐标位置，在 WebRTC 中这些顶点向量都是用相对位置来表示。所以我们在设置鼠标的顶点位置时，也用相对位置如下：</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="o">-</span> <span class="p">(</span><span class="n">BOOL</span><span class="p">)</span><span class="n">setupTexturesForMouseFrame</span><span class="o">:</span><span class="p">(</span><span class="n">nonnull</span> <span class="n">RTCMouseCursorFrame</span> <span class="o">*</span><span class="p">)</span><span class="n">incomingFrame</span> <span class="p">{</span>
+  <span class="n">MTLTextureDescriptor</span> <span class="o">*</span><span class="n">textureDescriptor</span> <span class="o">=</span> <span class="p">[</span><span class="n">MTLTextureDescriptor</span> <span class="n">new</span><span class="p">];</span>
+    <span class="n">textureDescriptor</span><span class="p">.</span><span class="n">textureType</span> <span class="o">=</span> <span class="n">MTLTextureType2D</span><span class="p">;</span>
+    <span class="n">textureDescriptor</span><span class="p">.</span><span class="n">width</span> <span class="o">=</span> <span class="n">width</span><span class="p">;</span>
+    <span class="n">textureDescriptor</span><span class="p">.</span><span class="n">height</span> <span class="o">=</span> <span class="n">height</span><span class="p">;</span>
+    <span class="n">textureDescriptor</span><span class="p">.</span><span class="n">pixelFormat</span> <span class="o">=</span> <span class="n">MTLPixelFormatBGRA8Unorm</span><span class="p">;</span>
+    <span class="n">textureDescriptor</span><span class="p">.</span><span class="n">usage</span> <span class="o">=</span> <span class="n">MTLTextureUsageShaderRead</span><span class="p">;</span>
+    <span class="n">_cursorTexture</span> <span class="o">=</span> <span class="p">[</span><span class="n">_device</span> <span class="n">newTextureWithDescriptor</span><span class="o">:</span><span class="n">texDescriptor</span><span class="p">];</span>
+    <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="n">_cursorTexture</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">RTCLogError</span><span class="p">(</span><span class="err">@</span><span class="s">"[RND]MTLRender:%p Failed to create cursor texture"</span><span class="p">,</span> <span class="n">self</span><span class="p">);</span>
+      <span class="k">return</span> <span class="n">NO</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="c1">// 纹理数据</span>
+    <span class="p">[</span><span class="n">_cursorTexture</span> <span class="n">replaceRegion</span><span class="o">:</span><span class="n">MTLRegionMake2D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">)</span>
+                      <span class="nl">mipmapLevel:</span><span class="mi">0</span>
+                        <span class="nl">withBytes:</span><span class="p">[</span><span class="n">mouseFrameBuffer</span><span class="p">.</span><span class="n">rgbaData</span> <span class="n">bytes</span><span class="p">]</span>
+                      <span class="nl">bytesPerRow:</span><span class="n">mouseFrameBuffer</span><span class="p">.</span><span class="n">stride</span><span class="p">];</span>
+    
+    <span class="c1">// 顶点数据的相对位置</span>
+    <span class="kt">float</span> <span class="n">blendRect</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">left</span><span class="p">,</span><span class="n">top</span><span class="p">,</span><span class="n">right</span><span class="p">,</span><span class="n">bottom</span><span class="p">};</span>
+    <span class="n">memcpy</span><span class="p">((</span><span class="kt">float</span> <span class="o">*</span><span class="p">)</span><span class="n">_cursorBlendRectBuffer</span><span class="p">.</span><span class="n">contents</span><span class="p">,</span> <span class="n">blendRect</span><span class="p">,</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">blendRect</span><span class="p">));</span>
+    <span class="k">return</span> <span class="n">YES</span><span class="p">;</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>然后下面就是融合的片段着色器。</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="n">fragment</span> <span class="n">half4</span> <span class="nf">fragmentColorBlend</span><span class="p">(</span>
+        <span class="n">Varyings</span> <span class="n">in</span><span class="p">[[</span><span class="n">stage_in</span><span class="p">]],</span> <span class="n">texture2d</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span> <span class="n">access</span><span class="o">::</span><span class="n">sample</span><span class="o">&gt;</span> <span class="n">textureY</span><span class="p">[[</span><span class="n">texture</span><span class="p">(</span><span class="mi">0</span><span class="p">)]],</span>
+        <span class="n">texture2d</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span> <span class="n">access</span><span class="o">::</span><span class="n">sample</span><span class="o">&gt;</span> <span class="n">textureCbCr</span><span class="p">[[</span><span class="n">texture</span><span class="p">(</span><span class="mi">1</span><span class="p">)]],</span>
+        <span class="n">texture2d</span><span class="o">&lt;</span><span class="kt">float</span><span class="p">,</span> <span class="n">access</span><span class="o">::</span><span class="n">sample</span><span class="o">&gt;</span> <span class="n">textureBlend</span><span class="p">[[</span><span class="n">texture</span><span class="p">(</span><span class="mi">3</span><span class="p">)]],</span>
+        <span class="n">constant</span> <span class="n">float4</span> <span class="o">&amp;</span><span class="n">blendRect</span> <span class="p">[[</span><span class="n">buffer</span><span class="p">(</span><span class="mi">2</span><span class="p">)]],</span> <span class="c1">// (left, top, right, bottom)</span>
+        <span class="n">constant</span> <span class="kt">int</span> <span class="o">&amp;</span><span class="n">enableBlend</span> <span class="p">[[</span><span class="n">buffer</span><span class="p">(</span><span class="mi">3</span><span class="p">)]])</span> <span class="p">{</span>
+      <span class="n">constexpr</span> <span class="n">sampler</span> <span class="n">s</span><span class="p">(</span><span class="n">address</span><span class="o">::</span><span class="n">clamp_to_edge</span><span class="p">,</span> <span class="n">filter</span><span class="o">::</span><span class="n">linear</span><span class="p">);</span>
+      <span class="n">constexpr</span> <span class="n">sampler</span> <span class="n">blendSampler</span><span class="p">(</span><span class="n">address</span><span class="o">::</span><span class="n">clamp_to_edge</span><span class="p">,</span>
+                                             <span class="n">filter</span><span class="o">::</span><span class="n">linear</span><span class="p">);</span>
+      <span class="kt">float</span> <span class="n">y</span><span class="p">;</span>
+      <span class="n">float2</span> <span class="n">uv</span><span class="p">;</span>
+      <span class="n">y</span> <span class="o">=</span> <span class="n">textureY</span><span class="p">.</span><span class="n">sample</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">in</span><span class="p">.</span><span class="n">texcoord</span><span class="p">).</span><span class="n">r</span><span class="p">;</span>
+      <span class="n">uv</span> <span class="o">=</span> <span class="n">textureCbCr</span><span class="p">.</span><span class="n">sample</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">in</span><span class="p">.</span><span class="n">texcoord</span><span class="p">).</span><span class="n">rg</span> <span class="o">-</span> <span class="n">float2</span><span class="p">(</span><span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="mi">5</span><span class="p">);</span>
+
+      <span class="n">float4</span> <span class="n">video</span> <span class="o">=</span> <span class="n">float4</span><span class="p">(</span><span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">.</span><span class="mi">403</span> <span class="o">*</span> <span class="n">uv</span><span class="p">.</span><span class="n">y</span><span class="p">,</span> <span class="n">y</span> <span class="o">-</span> <span class="mi">0</span><span class="p">.</span><span class="mi">344</span> <span class="o">*</span> <span class="n">uv</span><span class="p">.</span><span class="n">x</span> <span class="o">-</span> <span class="mi">0</span><span class="p">.</span><span class="mi">714</span> <span class="o">*</span> <span class="n">uv</span><span class="p">.</span><span class="n">y</span><span class="p">,</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">1</span><span class="p">.</span><span class="mi">770</span> <span class="o">*</span> <span class="n">uv</span><span class="p">.</span><span class="n">x</span><span class="p">,</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+      <span class="n">float4</span> <span class="n">out</span><span class="p">;</span>
+      <span class="k">if</span> <span class="p">(</span><span class="n">enableBlend</span> <span class="o">==</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">in</span><span class="p">.</span><span class="n">texcoord</span><span class="p">.</span><span class="n">x</span> <span class="o">&gt;=</span> <span class="n">blendRect</span><span class="p">.</span><span class="n">x</span> <span class="o">&amp;&amp;</span> <span class="n">in</span><span class="p">.</span><span class="n">texcoord</span><span class="p">.</span><span class="n">x</span> <span class="o">&lt;=</span> <span class="n">blendRect</span><span class="p">.</span><span class="n">z</span> <span class="o">&amp;&amp;</span> <span class="n">in</span><span class="p">.</span><span class="n">texcoord</span><span class="p">.</span><span class="n">y</span> <span class="o">&gt;=</span> <span class="n">blendRect</span><span class="p">.</span><span class="n">y</span> <span class="o">&amp;&amp;</span> <span class="n">in</span><span class="p">.</span><span class="n">texcoord</span><span class="p">.</span><span class="n">y</span> <span class="o">&lt;=</span> <span class="n">blendRect</span><span class="p">.</span><span class="n">w</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">float</span> <span class="n">factorW</span> <span class="o">=</span> <span class="n">blendRect</span><span class="p">.</span><span class="n">z</span> <span class="o">-</span> <span class="n">blendRect</span><span class="p">.</span><span class="n">x</span><span class="p">;</span>
+        <span class="kt">float</span> <span class="n">factorH</span> <span class="o">=</span> <span class="n">blendRect</span><span class="p">.</span><span class="n">w</span> <span class="o">-</span> <span class="n">blendRect</span><span class="p">.</span><span class="n">y</span><span class="p">;</span>
+        <span class="n">float2</span> <span class="n">blendTextureCoordinate</span> <span class="o">=</span> <span class="n">float2</span><span class="p">((</span><span class="n">in</span><span class="p">.</span><span class="n">texcoord</span><span class="p">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">blendRect</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">/</span><span class="n">factorW</span><span class="p">,(</span><span class="n">in</span><span class="p">.</span><span class="n">texcoord</span><span class="p">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">blendRect</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">/</span><span class="n">factorH</span><span class="p">);</span>
+        <span class="n">float4</span> <span class="n">blendResult</span> <span class="o">=</span> <span class="n">textureBlend</span><span class="p">.</span><span class="n">sample</span><span class="p">(</span><span class="n">blendSampler</span><span class="p">,</span> <span class="n">blendTextureCoordinate</span><span class="p">);</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">float4</span><span class="p">(</span><span class="n">mix</span><span class="p">(</span><span class="n">video</span><span class="p">.</span><span class="n">rgb</span><span class="p">,</span> <span class="n">blendResult</span><span class="p">.</span><span class="n">rgb</span><span class="p">,</span> <span class="n">blendResult</span><span class="p">.</span><span class="n">a</span><span class="p">),</span> <span class="mi">1</span><span class="p">.</span><span class="mi">0</span><span class="p">);</span>
+      <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">video</span><span class="p">;</span>
+      <span class="p">}</span>
+      <span class="k">return</span> <span class="n">half4</span><span class="p">(</span><span class="n">out</span><span class="p">);</span>
+  <span class="p">}</span>
+
+</code></pre></div></div>
+
+<p>融合的方法很简单。这里我们用了个取巧的方式，直接把鼠标的顶点相对位置存储到了片段着色器的 buffer  中。然后在片段着色器执行时，从 buffer 读取鼠标上下左右的顶点 blendRect，只要判断鼠标的顶点落入到了 blendRect 区域中。就从鼠标纹理中 textureBlend 获取相应的颜色值，通过向量运算返回融合的纹理数据。这里需要注意是纹理采样的数据都是2维的向量。但是片段着色器输出的是4维的向量分别表示 (r,g,b,a)，这个过程中要注意向量的定义，避免赋值造成的错误。</p>
+
+<h1 id="5-总结">5. 总结</h1>
+
+<p>通过上面的分享基本可以了解用 Metal 如何把画面渲染上屏了。可以看到正是 Metal 框架的封装，才让我们很容易的利用 GPU 的资源渲染画面。虽然视频处理 Metal 渲染往往是 2D，但是了解其工作原理，对于我们做 3D 方面的渲染还是很有借鉴意义。当然如果要做 3D 渲染工作，其实还有很多复杂的工作要做，例如配置顶点向量的法线，光照以及纹理材质的深度的融合等等。这个过程往往会交给 3D 引擎来做，建模师只需要把模型配置好，加载模型后引擎来解析这些数据配置给 GPU。</p>
+
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="https://cdn.jsdelivr.net/gh/animeng/animeng.github.com/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.0/dist/mermaid.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script>  
+$(document).ready(function () {
+  window.mermaid.initialize({
+    startOnLoad: true,
+    theme: "default",
+  });
+  window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+});
+</script>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="https://cdn.jsdelivr.net/gh/animeng/animeng.github.com/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+gitment.uploadIp();
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>
