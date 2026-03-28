@@ -1,0 +1,238 @@
+<h1 id="webrtc-弱网优化">WebRTC 弱网优化</h1>
+
+<h2 id="流程总览图">流程总览图</h2>
+
+<pre><code class="language-mermaid">flowchart LR
+    A[媒体采集] --&gt; B[预处理 AEC/NS/AGC]
+    B --&gt; C[编码器: Opus / VP8 / VP9 / H.264 / AV1]
+    C --&gt; D[RTP打包 + SRTP加密]
+    D --&gt; E[发送模块]
+    E --&gt; F[网络传输: UDP / STUN / TURN]
+    F --&gt; G[接收端解包]
+    G --&gt; H[解码器]
+    H --&gt; I[播放模块]
+    subgraph 优化策略
+        X1[带宽探测 GCC / Transport-CC / REMB]
+        X2[码率分辨率自适应]
+        X3[FEC / NACK / RTX]
+        X4[JitterBuffer 调整]
+        X5[ICE/TURN 优化]
+    end
+    E --&gt; 优化策略
+</code></pre>
+
+<h1 id="webrtc-弱网优化面试速记卡">WebRTC 弱网优化面试速记卡</h1>
+
+<h2 id="1-webrtc-基本架构">1. WebRTC 基本架构</h2>
+
+<h3 id="11-核心流程">1.1 核心流程</h3>
+
+<p>捕获 → 预处理 → 编码 → RTP打包 → SRTP加密 → 网络传输 → 接收解包 → 解码 → 播放</p>
+
+<h3 id="12-重要模块">1.2 重要模块</h3>
+<ul>
+  <li><strong>Signaling</strong>：SDP Offer/Answer</li>
+  <li><strong>ICE/STUN/TURN</strong>：连接建立与穿透</li>
+  <li><strong>RTP/RTCP</strong>：音视频包传输及控制信息</li>
+  <li><strong>Congestion Control</strong>：带宽估计与码率调整</li>
+  <li><strong>Jitter Buffer</strong>：防抖动</li>
+  <li><strong>FEC/NACK/RTX</strong>：丢包恢复</li>
+  <li><strong>Opus/VP8/VP9/H.264/AV1</strong>：编码器</li>
+</ul>
+
+<hr />
+
+<h2 id="2-弱网特征与影响">2. 弱网特征与影响</h2>
+
+<p><strong>指标</strong>：</p>
+<ul>
+  <li>RTT（延时）</li>
+  <li>Packet Loss（丢包率）</li>
+  <li>Jitter（抖动）</li>
+  <li>Bandwidth Fluctuation（带宽波动）</li>
+</ul>
+
+<p><strong>表现</strong>：</p>
+<ul>
+  <li>视频卡顿 / 花屏 / 模糊</li>
+  <li>音频断续 / 延迟</li>
+  <li>A/V不同步</li>
+  <li>通话中断</li>
+</ul>
+
+<hr />
+
+<h2 id="3-弱网优化策略">3. 弱网优化策略</h2>
+
+<h3 id="31-网络连接优化">3.1 网络连接优化</h3>
+<ul>
+  <li>ICE 优先直连 + 快速切换</li>
+  <li>TURN relay 优化（QoS）</li>
+  <li>保持 UDP NAT 映射（心跳）</li>
+</ul>
+
+<h3 id="32-链路质量探测">3.2 链路质量探测</h3>
+<ul>
+  <li><strong>GCC</strong>：延迟趋势 + 丢包趋势</li>
+  <li><strong>Transport-CC</strong>：精确包到达时间</li>
+  <li><strong>REMB</strong>：接收端带宽估计</li>
+</ul>
+
+<h3 id="33-编码自适应">3.3 编码自适应</h3>
+<p><strong>视频</strong>：</p>
+<ul>
+  <li>动态码率（CBR / VBR）</li>
+  <li>降分辨率：1080p→720p→480p</li>
+  <li>降帧率：30fps→15fps</li>
+  <li>SVC 分层编码（Base layer on weak network）</li>
+  <li>缩短关键帧间隔（Gop size）</li>
+</ul>
+
+<p><strong>音频</strong>：</p>
+<ul>
+  <li>Opus 自适应码率（6kbps–510kbps）</li>
+  <li>内置 FEC</li>
+  <li>Narrowband→Wideband 切换</li>
+  <li>PLC（丢包隐藏）</li>
+</ul>
+
+<h3 id="34-丢包恢复">3.4 丢包恢复</h3>
+<ul>
+  <li><strong>FEC</strong>：
+    <ul>
+      <li>FlexFEC 视频</li>
+      <li>Opus FEC 音频</li>
+    </ul>
+  </li>
+  <li><strong>NACK</strong>：重传丢失包</li>
+  <li><strong>RTX</strong>：单独的重传流</li>
+</ul>
+
+<h3 id="35-播放端优化">3.5 播放端优化</h3>
+<ul>
+  <li>JitterBuffer 动态调整</li>
+  <li>Audio/Video 同步调整</li>
+  <li>延迟与卡顿的平衡</li>
+</ul>
+
+<hr />
+
+<h2 id="4-调试与分析">4. 调试与分析</h2>
+
+<h3 id="41-工具">4.1 工具</h3>
+<ul>
+  <li><code class="highlighter-rouge">chrome://webrtc-internals</code></li>
+  <li><code class="highlighter-rouge">getStats()</code> API</li>
+  <li>Wireshark RTP 分析</li>
+  <li><code class="highlighter-rouge">tc/netem</code> 弱网模拟</li>
+</ul>
+
+<h3 id="42-关键统计字段">4.2 关键统计字段</h3>
+<ul>
+  <li><code class="highlighter-rouge">rtt</code> / <code class="highlighter-rouge">roundTripTime</code></li>
+  <li><code class="highlighter-rouge">packetLoss</code> / <code class="highlighter-rouge">packetsLost</code></li>
+  <li><code class="highlighter-rouge">jitter</code></li>
+  <li><code class="highlighter-rouge">framesPerSecond</code> / <code class="highlighter-rouge">frameWidth</code> / <code class="highlighter-rouge">frameHeight</code></li>
+  <li><code class="highlighter-rouge">pliCount</code> / <code class="highlighter-rouge">nackCount</code></li>
+  <li><code class="highlighter-rouge">availableIncomingBitrate</code> / <code class="highlighter-rouge">availableOutgoingBitrate</code></li>
+</ul>
+
+<hr />
+
+<h2 id="5-理论与算法">5. 理论与算法</h2>
+<ul>
+  <li><strong>拥塞控制</strong>：GCC、BBR、SCReAM</li>
+  <li><strong>FEC编码</strong>：冗余比与延迟的权衡</li>
+  <li><strong>编码原理</strong>：H.264/VP8/VP9/AV1 结构</li>
+  <li><strong>音频处理</strong>：
+    <ul>
+      <li>AEC（回声消除）</li>
+      <li>NS（噪声抑制）</li>
+      <li>AGC（自动增益）</li>
+    </ul>
+  </li>
+  <li><strong>RTP/RTCP 扩展头</strong>
+    <ul>
+      <li>Transport-CC</li>
+      <li>AbsoluteSendTime</li>
+    </ul>
+  </li>
+</ul>
+
+<hr />
+
+<h2 id="6-高频面试题--思路">6. 高频面试题 &amp; 思路</h2>
+
+<h3 id="q1-弱网下-webrtc-如何保证音视频质量">Q1: 弱网下 WebRTC 如何保证音视频质量？</h3>
+<p><strong>A</strong>：</p>
+<ol>
+  <li>带宽探测（GCC / Transport-CC）</li>
+  <li>编码自适应（降码率 / 分辨率 / 帧率）</li>
+  <li>丢包恢复（FEC / NACK）</li>
+  <li>JitterBuffer 调整</li>
+  <li>优化 ICE/TURN 链接</li>
+</ol>
+
+<h3 id="q2-nack-与-fec-区别">Q2: NACK 与 FEC 区别？</h3>
+<p><strong>A</strong>：</p>
+<ul>
+  <li>NACK：丢包后重传，低延迟网络适用</li>
+  <li>FEC：预发冗余数据，高丢包+无法重传时适用</li>
+  <li>可组合使用：音频Opus FEC + NACK</li>
+</ul>
+
+<h3 id="q3-opus-在弱网的优势">Q3: Opus 在弱网的优势？</h3>
+<p><strong>A</strong>：</p>
+<ul>
+  <li>广泛码率自适应能力</li>
+  <li>内置 FEC 与 PLC</li>
+  <li>窄带到全带宽无缝切换</li>
+</ul>
+
+<h3 id="q4-webrtc-带宽控制工作流程">Q4: WebRTC 带宽控制工作流程？</h3>
+<p><strong>A</strong>：</p>
+<ul>
+  <li>接收端估计带宽（REMB/Transport-CC）</li>
+  <li>RTCP 回传</li>
+  <li>发送端调整编码参数</li>
+</ul>
+
+<h3 id="q5-如何调试弱网表现">Q5: 如何调试弱网表现？</h3>
+<p><strong>A</strong>：</p>
+<ul>
+  <li>getStats() 查看关键指标</li>
+  <li>webrtc-internals 曲线分析</li>
+  <li>netem 模拟丢包/延迟</li>
+  <li>对比码率变化与分辨率调整</li>
+</ul>
+
+<hr />
+
+<h2 id="7-学习实践建议">7. 学习实践建议</h2>
+
+<ol>
+  <li><strong>源码阅读</strong>
+    <ul>
+      <li><code class="highlighter-rouge">modules/congestion_controller/goog_cc</code></li>
+      <li><code class="highlighter-rouge">modules/video_coding</code></li>
+      <li><code class="highlighter-rouge">modules/audio_coding/codecs/opus</code></li>
+      <li><code class="highlighter-rouge">modules/rtp_rtcp</code></li>
+    </ul>
+  </li>
+  <li><strong>实验</strong>
+    <ul>
+      <li><code class="highlighter-rouge">tc/netem</code> 模拟不同网络条件</li>
+      <li>收集 <code class="highlighter-rouge">getStats()</code> 数据</li>
+      <li>调编码器配置验证弱网效果</li>
+    </ul>
+  </li>
+  <li><strong>面试准备</strong>
+    <ul>
+      <li>手画 WebRTC 传输架构图</li>
+      <li>准备弱网优化案例</li>
+      <li>熟悉算法与参数用途</li>
+    </ul>
+  </li>
+</ol>
+
+<hr />

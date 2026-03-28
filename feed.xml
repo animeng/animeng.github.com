@@ -1,4 +1,241 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2024-10-30T05:42:26+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">如何用 Metal 做视频帧合流渲染</title><link href="https://mengtnt.com/2024/10/01/metal-render.html" rel="alternate" type="text/html" title="如何用 Metal 做视频帧合流渲染" /><published>2024-10-01T02:00:19+00:00</published><updated>2024-10-01T02:00:19+00:00</updated><id>https://mengtnt.com/2024/10/01/metal-render</id><content type="html" xml:base="https://mengtnt.com/2024/10/01/metal-render.html">&lt;h1 id=&quot;背景&quot;&gt;背景&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2026-03-28T10:52:57+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">WebRTC 弱网优化</title><link href="https://mengtnt.com/2026/03/28/10-38.html" rel="alternate" type="text/html" title="WebRTC 弱网优化" /><published>2026-03-28T10:38:00+00:00</published><updated>2026-03-28T10:38:00+00:00</updated><id>https://mengtnt.com/2026/03/28/10-38</id><content type="html" xml:base="https://mengtnt.com/2026/03/28/10-38.html">&lt;h1 id=&quot;webrtc-弱网优化&quot;&gt;WebRTC 弱网优化&lt;/h1&gt;
+
+&lt;h2 id=&quot;流程总览图&quot;&gt;流程总览图&lt;/h2&gt;
+
+&lt;pre&gt;&lt;code class=&quot;language-mermaid&quot;&gt;flowchart LR
+    A[媒体采集] --&amp;gt; B[预处理 AEC/NS/AGC]
+    B --&amp;gt; C[编码器: Opus / VP8 / VP9 / H.264 / AV1]
+    C --&amp;gt; D[RTP打包 + SRTP加密]
+    D --&amp;gt; E[发送模块]
+    E --&amp;gt; F[网络传输: UDP / STUN / TURN]
+    F --&amp;gt; G[接收端解包]
+    G --&amp;gt; H[解码器]
+    H --&amp;gt; I[播放模块]
+    subgraph 优化策略
+        X1[带宽探测 GCC / Transport-CC / REMB]
+        X2[码率分辨率自适应]
+        X3[FEC / NACK / RTX]
+        X4[JitterBuffer 调整]
+        X5[ICE/TURN 优化]
+    end
+    E --&amp;gt; 优化策略
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h1 id=&quot;webrtc-弱网优化面试速记卡&quot;&gt;WebRTC 弱网优化面试速记卡&lt;/h1&gt;
+
+&lt;h2 id=&quot;1-webrtc-基本架构&quot;&gt;1. WebRTC 基本架构&lt;/h2&gt;
+
+&lt;h3 id=&quot;11-核心流程&quot;&gt;1.1 核心流程&lt;/h3&gt;
+
+&lt;p&gt;捕获 → 预处理 → 编码 → RTP打包 → SRTP加密 → 网络传输 → 接收解包 → 解码 → 播放&lt;/p&gt;
+
+&lt;h3 id=&quot;12-重要模块&quot;&gt;1.2 重要模块&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Signaling&lt;/strong&gt;：SDP Offer/Answer&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;ICE/STUN/TURN&lt;/strong&gt;：连接建立与穿透&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;RTP/RTCP&lt;/strong&gt;：音视频包传输及控制信息&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Congestion Control&lt;/strong&gt;：带宽估计与码率调整&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Jitter Buffer&lt;/strong&gt;：防抖动&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;FEC/NACK/RTX&lt;/strong&gt;：丢包恢复&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Opus/VP8/VP9/H.264/AV1&lt;/strong&gt;：编码器&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;2-弱网特征与影响&quot;&gt;2. 弱网特征与影响&lt;/h2&gt;
+
+&lt;p&gt;&lt;strong&gt;指标&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;RTT（延时）&lt;/li&gt;
+  &lt;li&gt;Packet Loss（丢包率）&lt;/li&gt;
+  &lt;li&gt;Jitter（抖动）&lt;/li&gt;
+  &lt;li&gt;Bandwidth Fluctuation（带宽波动）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;表现&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;视频卡顿 / 花屏 / 模糊&lt;/li&gt;
+  &lt;li&gt;音频断续 / 延迟&lt;/li&gt;
+  &lt;li&gt;A/V不同步&lt;/li&gt;
+  &lt;li&gt;通话中断&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;3-弱网优化策略&quot;&gt;3. 弱网优化策略&lt;/h2&gt;
+
+&lt;h3 id=&quot;31-网络连接优化&quot;&gt;3.1 网络连接优化&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;ICE 优先直连 + 快速切换&lt;/li&gt;
+  &lt;li&gt;TURN relay 优化（QoS）&lt;/li&gt;
+  &lt;li&gt;保持 UDP NAT 映射（心跳）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;32-链路质量探测&quot;&gt;3.2 链路质量探测&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;GCC&lt;/strong&gt;：延迟趋势 + 丢包趋势&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Transport-CC&lt;/strong&gt;：精确包到达时间&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;REMB&lt;/strong&gt;：接收端带宽估计&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;33-编码自适应&quot;&gt;3.3 编码自适应&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;视频&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;动态码率（CBR / VBR）&lt;/li&gt;
+  &lt;li&gt;降分辨率：1080p→720p→480p&lt;/li&gt;
+  &lt;li&gt;降帧率：30fps→15fps&lt;/li&gt;
+  &lt;li&gt;SVC 分层编码（Base layer on weak network）&lt;/li&gt;
+  &lt;li&gt;缩短关键帧间隔（Gop size）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;strong&gt;音频&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Opus 自适应码率（6kbps–510kbps）&lt;/li&gt;
+  &lt;li&gt;内置 FEC&lt;/li&gt;
+  &lt;li&gt;Narrowband→Wideband 切换&lt;/li&gt;
+  &lt;li&gt;PLC（丢包隐藏）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;34-丢包恢复&quot;&gt;3.4 丢包恢复&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;FEC&lt;/strong&gt;：
+    &lt;ul&gt;
+      &lt;li&gt;FlexFEC 视频&lt;/li&gt;
+      &lt;li&gt;Opus FEC 音频&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;NACK&lt;/strong&gt;：重传丢失包&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;RTX&lt;/strong&gt;：单独的重传流&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;35-播放端优化&quot;&gt;3.5 播放端优化&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;JitterBuffer 动态调整&lt;/li&gt;
+  &lt;li&gt;Audio/Video 同步调整&lt;/li&gt;
+  &lt;li&gt;延迟与卡顿的平衡&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;4-调试与分析&quot;&gt;4. 调试与分析&lt;/h2&gt;
+
+&lt;h3 id=&quot;41-工具&quot;&gt;4.1 工具&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;chrome://webrtc-internals&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;getStats()&lt;/code&gt; API&lt;/li&gt;
+  &lt;li&gt;Wireshark RTP 分析&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;tc/netem&lt;/code&gt; 弱网模拟&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;42-关键统计字段&quot;&gt;4.2 关键统计字段&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;rtt&lt;/code&gt; / &lt;code class=&quot;highlighter-rouge&quot;&gt;roundTripTime&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;packetLoss&lt;/code&gt; / &lt;code class=&quot;highlighter-rouge&quot;&gt;packetsLost&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;jitter&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;framesPerSecond&lt;/code&gt; / &lt;code class=&quot;highlighter-rouge&quot;&gt;frameWidth&lt;/code&gt; / &lt;code class=&quot;highlighter-rouge&quot;&gt;frameHeight&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;pliCount&lt;/code&gt; / &lt;code class=&quot;highlighter-rouge&quot;&gt;nackCount&lt;/code&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;availableIncomingBitrate&lt;/code&gt; / &lt;code class=&quot;highlighter-rouge&quot;&gt;availableOutgoingBitrate&lt;/code&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;5-理论与算法&quot;&gt;5. 理论与算法&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;拥塞控制&lt;/strong&gt;：GCC、BBR、SCReAM&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;FEC编码&lt;/strong&gt;：冗余比与延迟的权衡&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;编码原理&lt;/strong&gt;：H.264/VP8/VP9/AV1 结构&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;音频处理&lt;/strong&gt;：
+    &lt;ul&gt;
+      &lt;li&gt;AEC（回声消除）&lt;/li&gt;
+      &lt;li&gt;NS（噪声抑制）&lt;/li&gt;
+      &lt;li&gt;AGC（自动增益）&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;RTP/RTCP 扩展头&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;Transport-CC&lt;/li&gt;
+      &lt;li&gt;AbsoluteSendTime&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;6-高频面试题--思路&quot;&gt;6. 高频面试题 &amp;amp; 思路&lt;/h2&gt;
+
+&lt;h3 id=&quot;q1-弱网下-webrtc-如何保证音视频质量&quot;&gt;Q1: 弱网下 WebRTC 如何保证音视频质量？&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;A&lt;/strong&gt;：&lt;/p&gt;
+&lt;ol&gt;
+  &lt;li&gt;带宽探测（GCC / Transport-CC）&lt;/li&gt;
+  &lt;li&gt;编码自适应（降码率 / 分辨率 / 帧率）&lt;/li&gt;
+  &lt;li&gt;丢包恢复（FEC / NACK）&lt;/li&gt;
+  &lt;li&gt;JitterBuffer 调整&lt;/li&gt;
+  &lt;li&gt;优化 ICE/TURN 链接&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;q2-nack-与-fec-区别&quot;&gt;Q2: NACK 与 FEC 区别？&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;A&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;NACK：丢包后重传，低延迟网络适用&lt;/li&gt;
+  &lt;li&gt;FEC：预发冗余数据，高丢包+无法重传时适用&lt;/li&gt;
+  &lt;li&gt;可组合使用：音频Opus FEC + NACK&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;q3-opus-在弱网的优势&quot;&gt;Q3: Opus 在弱网的优势？&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;A&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;广泛码率自适应能力&lt;/li&gt;
+  &lt;li&gt;内置 FEC 与 PLC&lt;/li&gt;
+  &lt;li&gt;窄带到全带宽无缝切换&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;q4-webrtc-带宽控制工作流程&quot;&gt;Q4: WebRTC 带宽控制工作流程？&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;A&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;接收端估计带宽（REMB/Transport-CC）&lt;/li&gt;
+  &lt;li&gt;RTCP 回传&lt;/li&gt;
+  &lt;li&gt;发送端调整编码参数&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;q5-如何调试弱网表现&quot;&gt;Q5: 如何调试弱网表现？&lt;/h3&gt;
+&lt;p&gt;&lt;strong&gt;A&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;getStats() 查看关键指标&lt;/li&gt;
+  &lt;li&gt;webrtc-internals 曲线分析&lt;/li&gt;
+  &lt;li&gt;netem 模拟丢包/延迟&lt;/li&gt;
+  &lt;li&gt;对比码率变化与分辨率调整&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;7-学习实践建议&quot;&gt;7. 学习实践建议&lt;/h2&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;源码阅读&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;modules/congestion_controller/goog_cc&lt;/code&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;modules/video_coding&lt;/code&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;modules/audio_coding/codecs/opus&lt;/code&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;modules/rtp_rtcp&lt;/code&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;实验&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;tc/netem&lt;/code&gt; 模拟不同网络条件&lt;/li&gt;
+      &lt;li&gt;收集 &lt;code class=&quot;highlighter-rouge&quot;&gt;getStats()&lt;/code&gt; 数据&lt;/li&gt;
+      &lt;li&gt;调编码器配置验证弱网效果&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;面试准备&lt;/strong&gt;
+    &lt;ul&gt;
+      &lt;li&gt;手画 WebRTC 传输架构图&lt;/li&gt;
+      &lt;li&gt;准备弱网优化案例&lt;/li&gt;
+      &lt;li&gt;熟悉算法与参数用途&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;hr /&gt;</content><author><name>mengtnt</name></author><summary type="html">WebRTC 弱网优化</summary></entry><entry><title type="html">如何用 Metal 做视频帧合流渲染</title><link href="https://mengtnt.com/2024/10/01/metal-render.html" rel="alternate" type="text/html" title="如何用 Metal 做视频帧合流渲染" /><published>2024-10-01T02:00:19+00:00</published><updated>2024-10-01T02:00:19+00:00</updated><id>https://mengtnt.com/2024/10/01/metal-render</id><content type="html" xml:base="https://mengtnt.com/2024/10/01/metal-render.html">&lt;h1 id=&quot;背景&quot;&gt;背景&lt;/h1&gt;
 
 &lt;p&gt;最近在做远程控制的功能，使用的技术方案是远程控制的鼠标数据流和桌面画面视频流分开传输。这样观看端就需要把鼠标的画面和桌面的画面进行合并渲染。如果在数据层面做利用 FFmpeg 框架就可以实现两路视频流的合并。这个可能在直播场景比较适合，由于视频会议对实时性要就比较高，用户在远程控制时，延时忍受度较低，所以为了体验就采用了客户端端在渲染时，来合并两路流进行显示。&lt;/p&gt;
 
@@ -2311,305 +2548,4 @@ do {                                    \
 
 &lt;p&gt;从云计算的发展中也可以看出现在市场经济，往往价值最高的产品就是市面上没有统一的标准，需要给用户特殊定制的(这里的价值是说对提供的企业赚钱的多少，并不代表对整个行业的价值很高)。一旦一个行业形成了标准，大家都可以按照这个标准产出东西的时候，就意味着这个行业的利润已经基本回归到价值本身了。其实本质上这更利于行业的蓬勃发展，就跟现在的建筑、硬件制造、汽车制造行业，大家可以百家争鸣，同时消费者也能享受到更好的服务。这才是健康有利的发展。&lt;/p&gt;
 
-&lt;p&gt;所以所谓红海市场，本质上是行业还处于标准不统一的节点，同时也是企业最能赚到原始资本的地方，一旦行业形成标准，最终市场都会归于冷静，也就回归到理性的价格。不仅想起一句俗语”尘归尘,土归土,及尽繁华,不过一掬细沙”。所以云原生现在蓬勃的发展也是印证了这个道理。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">2022年即将到来之际，收到腾讯云服务器友好的提醒：“尊敬的用户，你xxxx云服务器资源将于2021.12.30号到期，到期后将在一天后停止服务，停服后数据为你保留7天，逾期未续费资源将被释放”。我想着企业都不容易，毕竟年底了续个费吧。一打开续费页面，续费的话一年将近2000RMB，虽然自己知道续费肯定会贵一些，但是着实还是震惊了下。毕竟当时买的腾讯云服务器3年也就300多块钱。</summary></entry><entry><title type="html">异常和错误处理</title><link href="https://mengtnt.com/2021/11/09/idempotence.html" rel="alternate" type="text/html" title="异常和错误处理" /><published>2021-11-09T02:25:11+00:00</published><updated>2021-11-09T02:25:11+00:00</updated><id>https://mengtnt.com/2021/11/09/idempotence</id><content type="html" xml:base="https://mengtnt.com/2021/11/09/idempotence.html">&lt;p&gt;异常和错误，咋一看往往都会以为是一个事情。这里首先要定义下本文异常和错误的概念，以便于可以区分通用的概念。在程序运行中如果发生了问题，但是这个问题如果通过增加相应的程序逻辑可以恢复的叫做异常。如果因为程序逻辑问题引起的不可恢复的异常叫错误，也就是通常所说的程序的BUG。&lt;/p&gt;
-
-&lt;p&gt;定义好了这两个概念后，可能会有疑问为什么要这样定义，异常和错误在我们通用理解的意义上是一个同义词，没有本质的区别。其实在程序设计的发展过程中，最开始这两个概念也是没什么区别的，但是随着软件设计越来越复杂慢慢衍生出来这两个概念。&lt;/p&gt;
-
-&lt;h2 id=&quot;异常的演变&quot;&gt;异常的演变&lt;/h2&gt;
-
-&lt;p&gt;首先看下比较早期的C语言。&lt;code class=&quot;highlighter-rouge&quot;&gt; Assert &lt;/code&gt;这个关键字在C语言中很常见，本质上是处理程序设计的错误的，一旦出现断言执行，函数提供者是没有能力恢复这个问题的，需要调用方检查问题，后面如果程序继续运行下去，可能发生不可预知的问题。&lt;/p&gt;
-
-&lt;p&gt;一旦执行到&lt;code class=&quot;highlighter-rouge&quot;&gt; Assert &lt;/code&gt;，说明函数的调用方的程序是有bug的，没有正确的使用函数，显然是符合我们上面定义的错误概念。&lt;/p&gt;
-
-&lt;p&gt;再来说下异常，那么在C语言中如何处理异常的情况？在调用C函数的时候，如果可能发生异常，往往使用函数返回值表示如下。&lt;/p&gt;
-
-&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;n&quot;&gt;bool&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;createMap&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;// 返回值表示成功或者失败&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;num&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;调用者看到这种类型的API，往往需要增加&lt;code class=&quot;highlighter-rouge&quot;&gt; if-else &lt;/code&gt;的判断，来让程序正确的执行，其实这就是早期的异常处理的方式。现在很多语言也是用这种方式来处理的。但是缺点也很明显，程序中需要写大量的&lt;code class=&quot;highlighter-rouge&quot;&gt; if-else &lt;/code&gt;语句，不利于代码的阅读和维护。&lt;/p&gt;
-
-&lt;h2 id=&quot;异常的定义&quot;&gt;异常的定义&lt;/h2&gt;
-
-&lt;p&gt;为了保证程序的健壮性，同时保证代码书写的便捷性。很多高级语言开始定义了异常的概念，例如C++是很早就在语法中定义了exception。&lt;/p&gt;
-
-&lt;div class=&quot;language-c++ highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;k&quot;&gt;try&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-   &lt;span class=&quot;c1&quot;&gt;// protected code&lt;/span&gt;
-   &lt;span class=&quot;n&quot;&gt;createMap&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-   &lt;span class=&quot;n&quot;&gt;userMap&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-   &lt;span class=&quot;n&quot;&gt;releaseMap&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;catch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ExceptionName&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-  &lt;span class=&quot;c1&quot;&gt;// code to handle ExceptionName exception&lt;/span&gt;
-  &lt;span class=&quot;n&quot;&gt;handlerExcepiton&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;这样try模块中，所有可能异常的函数都可以一行代码调用，不用像C语言这样写大量的&lt;code class=&quot;highlighter-rouge&quot;&gt; if-else &lt;/code&gt;处理。这对于代码的阅读性自然很好，但是同样存在一个问题就是性能。为什么大量使用异常处理代码会引起性能问题哪？&lt;/p&gt;
-
-&lt;p&gt;这个就涉及到异常实现的逻辑了。函数中为了捕获异常，需要额外的开辟一些空间给异常对象使用。同时异常一旦发生需要中断函数的调用堆栈，指向异常处理函数。这个过程被称为堆栈展开。&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;当我们调用某些函数时，它将地址存储到调用堆栈中，从函数返回后，需要弹出该地址以开始其剩余的工作。堆栈展开是一个在运行时删除函数调用堆栈条目的过程。要删除堆栈元素，我们可以使用异常。 如果内部函数引发异常，则将删除堆栈的所有条目，并返回到主调用程序函数。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;并且不仅上面说的这个开销，因为异常出现的函数，可能很早就被调用了，但是很晚才开始使用catch捕获。这时候就需要把异常数据层层传递给需要处理的函数。所以从上面来看异常这个处理过程，对比一个&lt;code class=&quot;highlighter-rouge&quot;&gt; if else &lt;/code&gt;简单的语句，必然是很消耗性能的。对于C++这种性能要求比较高的程序语言，异常这个性能问题一直被诟病。所以C++在使用异常的时候有很多约束，也造成了异常处理在C++语法中，很难广泛的使用。下面列下微软对C++异常处理使用的建议：&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;使用断言来检查绝不应发生的错误。 使用异常来检查可能出现的错误，例如，公共函数参数的输入验证中的错误。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;当处理错误的代码与通过一个或多个干预函数调用检测到错误的代码分离时，使用异常。 当处理错误的代码与检测到错误的代码紧密耦合时，考虑是否使用错误代码而不是在性能关键循环中。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;对于可能引发或传播异常的每个函数，请提供以下三种异常保证之一：强保障、基本保证或 nothrow (noexcept) 保证。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;按值引发异常，按引用来捕获异常。 不要捕获无法处理的内容。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;不要使用 c + + 11 中已弃用的异常规范。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;应用使用标准库异常类型。 从 exception 类层次结构派生自定义异常类型。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;不允许对析构函数或内存释放函数进行异常捕获。&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;并且C++是兼容C语言的，C++里一些库是用C实现的，如果引入异常的语法，是需要兼容很多C的库。可以看出来异常在C++中使用的难处了。下面引用下C++创始人施特劳斯的原话，大家可以看下异常处理的难言之隐。&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;对于异常处理的性能问题，其实是一个很有争议的问题，有人觉得异常处理是多做了一些工作，肯定对性能是有影响的。但是也有人觉得异常处理的影响，和增加一个 if-else 属于同种量级，对性能的影响其实微乎其微，是在可以接受的范围内的。强大的错误处理对于任何编程语言都很有挑战性。 尽管异常提供了多个支持良好错误处理的功能，但它们无法为你完成所有工作。 若要实现异常机制的优点，请在设计代码时记住异常。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;h2 id=&quot;异常的晋级&quot;&gt;异常的晋级&lt;/h2&gt;
-
-&lt;p&gt;虽然通用的异常处理对于性能有一定消耗，但是它的优点还是很诱人的，尤其对于不依赖C语言的高级语言，没有了兼容性的负担，好处更是大于缺点。下面列出来对于很多高级语言，需要异常处理语法的理由。&lt;/p&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;
-    &lt;p&gt;代码的阅读更顺利。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;如果不用通用的异常处理，构造函数初始化异常必须要开发者处理。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;可以在运行时，减少错误崩溃的发生。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;没有通用异常处理，API需要写大量的处理函数返回值的逻辑，如果是异步的需要大量的callback。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;没有兼容C语言的负担。&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;p&gt;基于上面的优点像java，C#，swift这些强类型语言都有异常处理语法，其中java算是比较早的完善了异常处理的语法。但是各个语言异常处理的逻辑还是有细微的差别，这里拿java和swift语言对比下各自的异常处理。&lt;/p&gt;
-
-&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;k&quot;&gt;try&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[]&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;array&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;};&lt;/span&gt; 
-    &lt;span class=&quot;nc&quot;&gt;System&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;out&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;println&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;array&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;]);&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;catch&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Exception&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;printStackTrace&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;在java中如果执行这段代码会打印出&lt;code class=&quot;highlighter-rouge&quot;&gt; ArrayIndexOutOfBoundsException &lt;/code&gt;异常，异常可以被捕获不会崩溃。下面看下swift同样想捕获数组越界的异常。&lt;/p&gt;
-
-&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;arrayList&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;do&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;nf&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;arrayList&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;catch&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;nf&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Array out of bounds&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;编译时会抛出来 ` ‘catch’ block is unreachable because no errors are thrown in ‘do’ block ` 这个警告，本质上编译器是不处理这个异常的。然而运行时，会崩溃抛出&lt;code class=&quot;highlighter-rouge&quot;&gt; Fatal error: Index out of range &lt;/code&gt;。&lt;/p&gt;
-
-&lt;p&gt;因为swift语言的设计理念认为数组越界是程序编写的逻辑错误，一旦出现就无法恢复程序正常的逻辑，所以理应崩溃，便于开发者发现问题。而java语言是认为这个异常，如果程序捕获了就代表有能力处理恢复这个异常。所以相对来讲java的异常定义的范围更广泛，而swift相对比较苛刻。&lt;/p&gt;
-
-&lt;p&gt;从上面的对比可以看出，java语言设计更倾向于程序的开发便捷性和安全性，可以适当牺牲性能的开销。而swift语言相对来讲对性能要求还是比较苛刻的。还有一个明显的例子在java中，如果一个函数做了如下的异常定义。&lt;/p&gt;
-
-&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;createMap&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;throws&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Exception&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;throw&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Exception&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Map must be greater than zero&quot;&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;函数调用者必须使用如下的方式处理，否则编译会报错。&lt;/p&gt;
-
-&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;k&quot;&gt;try&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;createMap&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;catch&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Exception&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;nc&quot;&gt;System&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;out&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;println&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;);&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;本质上java语言设计者认为，如果函数抛出了异常，那么代表着调用者有能力去恢复这个异常，这保证了程序的健壮性。但是swift设计虽然和java这点类似，如果函数抛异常不处理会编译错误。但是可以使用&lt;code class=&quot;highlighter-rouge&quot;&gt; try! &lt;/code&gt; 这个便捷的语法忽略异常，这就代表swift还是要考虑异常性能的开销。不过事物都有两面性，一旦使用了&lt;code class=&quot;highlighter-rouge&quot;&gt; try! &lt;/code&gt;出了异常程序就要崩溃，这会对程序员的代码质量进行严格考验。&lt;/p&gt;
-
-&lt;p&gt;最后想说下Rust语言异常处理的逻辑，和大多数&lt;code class=&quot;highlighter-rouge&quot;&gt; try-catch &lt;/code&gt;设计方式还是不一样的，下面是官方的解释:&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;Rust 有一套独特的处理异常情况的机制，它并不像其它语言中的 try 机制那样简单。首先，程序中一般会出现两种错误：可恢复错误和不可恢复错误。可恢复错误的典型案例是文件访问错误，如果访问一个文件失败，有可能是因为它正在被占用，是正常的，我们可以通过等待来解决。但还有一种错误是由编程中无法解决的逻辑错误导致的，例如访问数组末尾以外的位置。大多数编程语言不区分这两种错误，并用 Exception （异常）类来表示错误。在 Rust 中没有 Exception。对于可恢复错误用 Result&amp;lt;T, E&amp;gt; 类来处理，对于不可恢复错误使用 panic! 宏来处理。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;所以rust语言对异常处理感觉更符合异常定义的本质，只是对于开发者来讲可能会麻烦些，不能无脑的写&lt;code class=&quot;highlighter-rouge&quot;&gt; try-catch &lt;/code&gt;了，写之前要分清楚异常和错误这个概念了。不过这样也会让你的程序的安全性、健壮性、性能开销，这几个方面更加优秀。&lt;/p&gt;
-
-&lt;h2 id=&quot;异常的使用&quot;&gt;异常的使用&lt;/h2&gt;
-
-&lt;p&gt;所以我们在写代码的时候，尤其是写对外使用的API时，一定要先搞清楚这个API的使用过程中可能产生的异常和错误。这里我列出来几个日常设计的点。&lt;/p&gt;
-
-&lt;h3 id=&quot;1-函数的入参要做合理的检测如果不符合的参数及时用异常处理&quot;&gt;1. 函数的入参要做合理的检测，如果不符合的参数及时用异常处理&lt;/h3&gt;
-
-&lt;p&gt;因为接口设设计时，往往对数据的要求是宽进严出，以方便其他程序将输出作为输入，说白了就是“把复杂留给自己，把简单留给别人”。但是哪些参数是需要处理为异常的？这里拿个简单的例子。&lt;/p&gt;
-
-&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;answerCall&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Person&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;person&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// 如果接收的对象不符合函数的定义，抛出错误。&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;person&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;isNot&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Person&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;Assert&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;error&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;person&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;iscomming&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// 处理接听的状态&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;...&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;可以看出来上面的接听电话的逻辑，首先如果接收的参数不符合函数的定义那肯定是调用方的bug，应该抛出错误。不过现在很多编程语言基本都会做类型检测，如果不符合就会编译出错或者警告，所以这种防御不太会写。&lt;/p&gt;
-
-&lt;p&gt;再看第二个条件判断，就是如果接听的电话不是正在来电的用户，那说明这个参数也是有问题的，需要告诉调用者这个异常。所以如果在这里&lt;code class=&quot;highlighter-rouge&quot;&gt; return &lt;/code&gt;就显得不是很合理，因为这个异常其实被隐藏了，上层感知不到就无法排查错误。如果按照C的异常的常用写法就需要给answerCall增加一个是否成功的返回值。如果是java等高级语言只要如下写。&lt;/p&gt;
-
-&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;answerCall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Person&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;person&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;throws&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Exception&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;person&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;iscomming&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;throw&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Exception&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// 处理接听的状态&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h3 id=&quot;2-api设计不增加无用的输出尽量做成事务的操作&quot;&gt;2. API设计不增加无用的输出，尽量做成事务的操作。&lt;/h3&gt;
-
-&lt;p&gt;这个原则说白了，就是为了保证出现异常后所有的状态恢复成原始状态，不要出现中间状态。&lt;/p&gt;
-
-&lt;p&gt;我们继续看上面的例子。接听的参数检测成功后，进入接听状态，首先改变接听者本地的状态，然后请求网络，最后接听成功。假如说上层的API连续调用两次，为了防止频繁做网络请求做了下面的防御编程。&lt;/p&gt;
-
-&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;answerCall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Person&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;person&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;throws&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Exception&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;person&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;iscomming&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;throw&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Exception&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// 处理接听的状态&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;changeStatus&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;c1&quot;&gt;// 如果已经正在接听就返回，防止多次请求。&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;isAnsering&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;requestAccept&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;reportAccept&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;这种方式其实就违背了刚才说的，不要增加无用的输出原则。因为changeStatus()被调用了两次，一旦有地方监听这个状态变化可能就造成未知的问题。这时候最好的选择，就是和参数拦截一样在最开始的位置就抛出异常。&lt;/p&gt;
-
-&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;answerCall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Person&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;person&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;throws&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Exception&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;person&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;iscomming&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;throw&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Exception&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// 如果已经正在接听就返回，防止多次请求。&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;isAnsering&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;throw&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Exception&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// 处理接听的状态&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;changeStatus&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;requestAccept&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;reportAccept&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;如果说函数的提供方，认为多次调用这种异常，自己可以处理，比如直接返回就代表处理了这个异常，上层可以不感知。&lt;/p&gt;
-
-&lt;div class=&quot;language-java highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;answerCall&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Person&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;person&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;throws&lt;/span&gt; &lt;span class=&quot;nc&quot;&gt;Exception&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(!&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;person&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;iscomming&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;throw&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;new&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;Exception&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// 如果已经正在接听就返回，防止多次请求。&lt;/span&gt;
-    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;self&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;na&quot;&gt;isAnsering&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;;&lt;/span&gt;
-    &lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-
-    &lt;span class=&quot;c1&quot;&gt;// 处理接听的状态&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;changeStatus&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;requestAccept&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;reportAccept&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;();&lt;/span&gt;
-&lt;span class=&quot;o&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;其实函数的幂等性要求，本质上就是对多次输入这种异常处理的过程。这种写法代表接收方处理了这种错误，不需要调用方关心，并且保证每次调用都返回同样的结果。假如一些程序由于特殊状态的原因，无法应用幂等性原理就应该及时抛出异常。告诉上层的调用者出了问题，让上层调用者来恢复这个操作。&lt;/p&gt;
-
-&lt;h3 id=&quot;3-记住错误是让程序以最低成本恢复正常的一种方式如果你定义的api有严格的状态维护让程序及时的崩溃比抛出异常更容易发现问题&quot;&gt;3. 记住错误是让程序以最低成本恢复正常的一种方式。如果你定义的API有严格的状态维护，让程序及时的崩溃比抛出异常更容易发现问题&lt;/h3&gt;
-
-&lt;p&gt;断言是一种出现严重错误才会使用的方式，一旦使用断言就代表调用方的程序一定是出了bug，不正常的逻辑，并且接收方无法处理这种情况，需要及时的终止程序以便于调用方修改此处的bug。&lt;/p&gt;
-
-&lt;p&gt;不过现在很多软件为了用户体验，减少闪退的次数，往往断言在release版本中会移除掉。带来的后果是出问题的代码被隐藏了，一些奇怪的问题就很难及时发现。所以经常有开发者在争论断言是否应该使用在release版本。&lt;/p&gt;
-
-&lt;p&gt;据说NASA和很多银行系统的软件，断言都会在release版本中，因为这些系统对安全性要求极高，一旦出了bug需要立即终止，否则可能造成不可估量的灾难。而对于安全性要求不高的系统，为了获得更高的用户体验往往release版本会移除断言。不过孰对孰错怕是永远没有完美的答案。&lt;/p&gt;
-
-&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
-
-&lt;p&gt;上面分析了这么多，那我们实际编码中，如何对异常处理哪？是否需要写大量的&lt;code class=&quot;highlighter-rouge&quot;&gt; if-else &lt;/code&gt;或 &lt;code class=&quot;highlighter-rouge&quot;&gt;try-catch&lt;/code&gt;语句哪？其实本质上来讲，按照下面的判断原则来做就可以了。&lt;/p&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;
-    &lt;p&gt;首要要看产生的问题是因为调用者不正确的使用API造成的么？如果是就用断言拦截。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;如果调用一个API，某些异常无法避免(比如很多IO设备的读取，很可能因为硬件不可用的问题造成。这种往往无法避免)这个时候遵循的原则就是,看是否应该让调用者来感知这个异常，并有能力恢复这个问题，如果是就果断抛出异常。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;如果异常，函数提供者本身可以处理，那么就处理掉，不用再抛给上层。比如接口幂等性的设计，就是处理这种异常。&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;</content><author><name>mengtnt</name></author><summary type="html">异常和错误，咋一看往往都会以为是一个事情。这里首先要定义下本文异常和错误的概念，以便于可以区分通用的概念。在程序运行中如果发生了问题，但是这个问题如果通过增加相应的程序逻辑可以恢复的叫做异常。如果因为程序逻辑问题引起的不可恢复的异常叫错误，也就是通常所说的程序的BUG。</summary></entry></feed>
+&lt;p&gt;所以所谓红海市场，本质上是行业还处于标准不统一的节点，同时也是企业最能赚到原始资本的地方，一旦行业形成标准，最终市场都会归于冷静，也就回归到理性的价格。不仅想起一句俗语”尘归尘,土归土,及尽繁华,不过一掬细沙”。所以云原生现在蓬勃的发展也是印证了这个道理。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">2022年即将到来之际，收到腾讯云服务器友好的提醒：“尊敬的用户，你xxxx云服务器资源将于2021.12.30号到期，到期后将在一天后停止服务，停服后数据为你保留7天，逾期未续费资源将被释放”。我想着企业都不容易，毕竟年底了续个费吧。一打开续费页面，续费的话一年将近2000RMB，虽然自己知道续费肯定会贵一些，但是着实还是震惊了下。毕竟当时买的腾讯云服务器3年也就300多块钱。</summary></entry></feed>
