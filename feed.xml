@@ -1,4 +1,103 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2026-03-28T15:37:40+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">OpenClaw 效率提升实战</title><link href="https://mengtnt.com/2026/03/28/15-03.html" rel="alternate" type="text/html" title="OpenClaw 效率提升实战" /><published>2026-03-28T07:37:12+00:00</published><updated>2026-03-28T07:37:12+00:00</updated><id>https://mengtnt.com/2026/03/28/15-03</id><content type="html" xml:base="https://mengtnt.com/2026/03/28/15-03.html">&lt;h1 id=&quot;告别繁琐我是如何利用-openclaw-打造个人博客发布自动驾驶系统的&quot;&gt;告别繁琐：我是如何利用 OpenClaw 打造个人博客发布“自动驾驶”系统的&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2026-03-31T23:25:54+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">Harness 设计</title><link href="https://mengtnt.com/2026/03/31/Harness-Design.html" rel="alternate" type="text/html" title="Harness 设计" /><published>2026-03-31T08:28:18+00:00</published><updated>2026-03-31T08:28:18+00:00</updated><id>https://mengtnt.com/2026/03/31/Harness-Design</id><content type="html" xml:base="https://mengtnt.com/2026/03/31/Harness-Design.html">&lt;h1 id=&quot;harness-设计构建长时间运行的应用程序开发框架&quot;&gt;Harness 设计：构建长时间运行的应用程序开发框架&lt;/h1&gt;
+
+&lt;p&gt;本文是阅读 Harness 框架这篇文章后，做的一些简单的摘要总结，再配合着最近泄漏的 claud code 源码，Anthropics 真是给广大开发者送福利了。&lt;/p&gt;
+
+&lt;p&gt;过去几个月里，我们一直在研究两个相互关联的问题：如何让 Claude 产出高质量的前端设计，以及如何让它在无需人工干预的情况下构建完整的应用程序。这项工作源于我们早期在&lt;a href=&quot;https://github.com/anthropics/claude-code/blob/main/plugins/frontend-design/skills/frontend-design/SKILL.md&quot;&gt;前端设计技能&lt;/a&gt;和&lt;a href=&quot;https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents&quot;&gt;长时运行编码 Agent 框架&lt;/a&gt;上的努力。通过提示词工程和框架（Harness）设计，我们能够将 Claude 的性能提升到远超基准线的水平，但这两者最终都遇到了瓶颈。&lt;/p&gt;
+
+&lt;p&gt;为了突破瓶颈，我们寻求了一种新颖的 AI 工程方法，该方法横跨了两个完全不同的领域：一个由主观审美定义，另一个由可验证的正确性和可用性定义。受&lt;a href=&quot;https://en.wikipedia.org/wiki/Generative_adversarial_network&quot;&gt;生成对抗网络&lt;/a&gt;（GANs）的启发，我们设计了一个由 &lt;strong&gt;生成器(Generator)&lt;/strong&gt; 和 &lt;strong&gt;评估器(Evaluator)&lt;/strong&gt;  Agent 组成的多智能体结构。构建一个能够可靠且具备审美能力地对输出进行评分的评估器，意味着首先要开发一套标准，将诸如“这个设计好吗？”之类的主观判断转化为具体的、可量化的术语。
+随后，我们将这些技术应用到了长时运行的自主编码中，并借鉴了早期框架工作的两个教训：将构建任务分解为可处理的代码块，以及使用结构化的“成品”在不同 Session 之间传递上下文。最终结果是一个三智能体架构——计划者（Planner）、生成器（Generator）和评估器（Evaluator）——它能在长达数小时的自主编码 Session 中构建出功能丰富、视觉精美的全栈应用。&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“框架（Harness）的设计对长时运行的 Agent 编码有效性有着实质性影响。”&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;为什么-agent-的实现会失败&quot;&gt;为什么 Agent 的实现会失败？&lt;/h2&gt;
+
+&lt;p&gt;我们之前已经证明，Harness 的设计对长时运行 Agent 编码的有效性有着实质性影响。在早期的&lt;a href=&quot;https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents&quot;&gt;实验&lt;/a&gt;中，我们使用一个初始 Agent 将产品规格书分解为任务列表，再由一个编码 Agent 逐一实现功能，最后通过转移成品来跨 Session 携带状态。开发者社区也得出了类似的见解，例如使用钩子或脚本让 Agent 处于持续迭代循环中的方法。&lt;/p&gt;
+
+&lt;p&gt;但一些核心问题依然存在。对于更复杂的任务，Agent 随着时间的推移仍容易“跑偏”。在分析这个问题时，我们观察到了两种常见的失败模式。&lt;/p&gt;
+
+&lt;h3 id=&quot;1-连贯性丢失与上下文焦虑&quot;&gt;1. 连贯性丢失与“上下文焦虑”&lt;/h3&gt;
+
+&lt;p&gt;首先是模型在长任务中往往会丧失连贯性。随着上下文窗口被填满，一些模型还会表现出“上下文焦虑”——当它们认为接近上下文限制时，会过早地试图收尾工作。&lt;strong&gt;上下文重置（Context Resets）&lt;/strong&gt;——即完全清空上下文窗口并启动一个全新的 Agent，配合携带前序状态和后续计划的结构化移交——可以同时解决这两个问题。&lt;/p&gt;
+
+&lt;p&gt;这与单纯的“压缩”（Compaction）不同。压缩保留了连贯性，但没有提供“干净的底板”，这意味着上下文焦虑依然可能存在。重置则提供了一个干净的起点，代价是移交制品必须包含足够的信息，以便下一个 Agent 能够无缝接手。&lt;/p&gt;
+
+&lt;h3 id=&quot;2-自我评价的盲目性&quot;&gt;2. 自我评价的盲目性&lt;/h3&gt;
+
+&lt;p&gt;第二个问题是自我评价。当被要求评价自己产出的工作时，Agent 往往会自信地赞美自己——即使在人类观察者看来，质量明显平庸。这在设计等主观任务中尤为严重，因为这里不存在像软件测试那样的二进制校验。&lt;/p&gt;
+
+&lt;p&gt;将“干活的 Agent”与“评价的 Agent”分开，是解决这一问题的强力杠杆。这种分离本身并不能立即消除各种宽容；评估器依然是一个倾向于对 LLM 生成内容表现慷慨的大模型。但将一个独立的评估器调校得“挑剔且多疑”，要比让一个生成器批判自己的工作容易得多。一旦这种外部反馈存在，生成器就有了一个具体的迭代目标。&lt;/p&gt;
+
+&lt;h2 id=&quot;前端设计让主观质量变得可量化&quot;&gt;前端设计：让主观质量变得可量化&lt;/h2&gt;
+
+&lt;p&gt;我们首先在前端设计上做了实验，因为自我评价问题在这里最为明显。如果没有干预，Claude 通常会倾向于安全、可预测的布局，这些布局在技术上可行，但在视觉上平庸。&lt;/p&gt;
+
+&lt;p&gt;我为前端设计编写了四个评估标准：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;设计质量&lt;/strong&gt;：设计是否感觉是一个连贯的整体而非零件的堆砌？色彩、排版、布局、意向等细节是否结合并创造了独特的氛围和身份？&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;原创性&lt;/strong&gt;：是否有自定义决策的证据？人类设计师应该能识别出刻意的创意选择。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;精致性&lt;/strong&gt;：技术执行力，包括层级、间距一致性、色彩和谐度、对比度。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;功能性&lt;/strong&gt;：独立于审美的可用性。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;我们特别强调了设计质量和原创性，因为 Claude 本身在工艺和功能性上的得分通常很高。标准中明确惩罚了高度通用的“AI 垃圾（AI slop）”模式，迫使模型在审美上进行更多冒险。&lt;/p&gt;
+
+&lt;h2 id=&quot;扩展到全栈编码三智能体协作&quot;&gt;扩展到全栈编码：三智能体协作&lt;/h2&gt;
+
+&lt;p&gt;基于这些发现，我将这种受 GAN 启发的模式应用到了全栈开发中。系统包含以下三种角色：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;计划者 (Planner)&lt;/strong&gt;：将模糊的指令（1-4 句话）扩展为完整的产品规格（Spec）。它专注于产品背景和高层技术设计，而不是详细的实现细节。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;生成器 (Generator)&lt;/strong&gt;：采用“冲刺（Sprint）”模式，每次只根据 Spec 开发一个特定功能。它还拥有 Git 权限用于版本控制。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;评估器 (Evaluator)&lt;/strong&gt;：这是核心。它使用 Playwright MCP 像真实用户一样点击运行中的应用，测试 UI、API 端点和数据库状态。如果任何一项标准低于阈值，冲刺即宣告失败，生成器会收到详细的 Bug 反馈。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;在每次执行前，生成器和评估器会协商一份 &lt;strong&gt;冲刺合约&lt;/strong&gt; ：在写代码前双方便达成共识，确定“完成”的定义。&lt;/p&gt;
+
+&lt;h2 id=&quot;实验从-20-分钟到-6-小时的质变&quot;&gt;实验：从 20 分钟到 6 小时的质变&lt;/h2&gt;
+
+&lt;p&gt;我们让模型尝试创建一个“2D 复古游戏制作工具”。&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th style=&quot;text-align: left&quot;&gt;框架&lt;/th&gt;
+      &lt;th style=&quot;text-align: left&quot;&gt;运行时间&lt;/th&gt;
+      &lt;th style=&quot;text-align: left&quot;&gt;总成本&lt;/th&gt;
+      &lt;th style=&quot;text-align: left&quot;&gt;结果质量&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;&lt;strong&gt;单模型 (Solo)&lt;/strong&gt;&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;20 分钟&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;$9&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;布局浪费空间，流程死板，且游戏引擎库是坏的。&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;&lt;strong&gt;全套 Harness&lt;/strong&gt;&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;6 小时&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;$200&lt;/td&gt;
+      &lt;td style=&quot;text-align: left&quot;&gt;极其精美，功能包含精灵编辑、动画系统、AI 辅助设计。最重要的是，真的可以玩。&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这种差异是立竿见影的。全套 Harness 构建的应用具备了一致的视觉特征和极高的完成度。评估器通过 Playwright 进行了极其细致的测试，例如：“矩形填充工具在鼠标抬起时未能触发”、“FastAPI 路由冲突”等细微 Bug 均被捕捉并修复。&lt;/p&gt;
+
+&lt;h2 id=&quot;简单化与未来演进&quot;&gt;简单化与未来演进&lt;/h2&gt;
+
+&lt;p&gt;随着 Claude Opus 4.6 等更强模型的推出，我们可以开始精简框架。每增加一层复杂度，其实都是对模型“在这个环节做不到”的假设。当模型变强，这些假设就会过期。&lt;/p&gt;
+
+&lt;p&gt;例如，Opus 4.6 已经可以原生处理长时间的连贯任务，不再需要强行切碎成多个子任务。但我们依然保留了计划者和评估器，因为它们能提供核心的价值提升。&lt;/p&gt;
+
+&lt;h2 id=&quot;结语工具的终极意义&quot;&gt;结语：工具的终极意义&lt;/h2&gt;
+
+&lt;p&gt;随着模型能力的提升，有趣的设计空间并不会因为模型变强而消失，而是向更高阶的自动化迈进。AI 工程师的挑战在于通过不断寻找新的组合，利用 Harness 突破模型本身的能力边界。&lt;/p&gt;
+
+&lt;p&gt;正如我们所看到的，它不是在替你写代码，它是在帮你构建属于你自己的生产力引擎。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">Harness 设计：构建长时间运行的应用程序开发框架</summary></entry><entry><title type="html">OpenClaw 效率提升实战</title><link href="https://mengtnt.com/2026/03/28/15-03.html" rel="alternate" type="text/html" title="OpenClaw 效率提升实战" /><published>2026-03-28T07:37:12+00:00</published><updated>2026-03-28T07:37:12+00:00</updated><id>https://mengtnt.com/2026/03/28/15-03</id><content type="html" xml:base="https://mengtnt.com/2026/03/28/15-03.html">&lt;h1 id=&quot;告别繁琐我是如何利用-openclaw-打造个人博客发布自动驾驶系统的&quot;&gt;告别繁琐：我是如何利用 OpenClaw 打造个人博客发布“自动驾驶”系统的&lt;/h1&gt;
 
 &lt;p&gt;在数字化写作的今天，博客发布依然是许多创作者的重要阵地。今天，我想深入分享一下我是如何利用 &lt;strong&gt;OpenClaw&lt;/strong&gt; 彻底重构我的博客发布流程，将原本需要一整天的开发调试工作，压缩到寥寥数次对话即可搞定的全过程。&lt;/p&gt;
 
@@ -2366,74 +2465,4 @@ do {                                    \
 
 &lt;p&gt;Linux是实现了操作系统这个复杂的业务的一种系统，我们平时做的业务可能远远没有这么复杂，也不会要求如此高的效率，但是从Linux的设计实践中，我们可以借鉴很多的理念和方法来提高我们业务的效率。如果再做10年的业务，回头看这本书，可能会有另外的感悟。&lt;/p&gt;
 
-&lt;p&gt;在感叹到Linux的精妙设计的同时。也会感受到其中的复杂，到现在很多设计理念我还是一知半解，可能大多数人都要花上很多年才能读懂这本书。可是Linux随着时间的发展，仍然在不定的迭代和进步。所以人类的知识体系只会越来越复杂，那么人类的进化速度是否可以赶上知识复杂演变的速度呢？之前记得读过一篇文章讲到，人类可能会因为构建过于复杂的世界而崩溃，因为没有一个人可以理解，所处系统的运行机制。这个哲学问题也留给大家来思考了。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近在读《深入理解LINUX内核》这本书让我想起来大学时代的《深入理解计算机系统》、《编译原理》、《操作系统》这几本红宝书。这种类型的书，由于设计的技术细节过于庞大，所以想读一遍了解其中的原理不太可能，在我看来读这种类型的书，一遍最多也就能理解其中10%的内容。现在已经工作了10多年，重新看了下看能不能再多懂10%。</summary></entry><entry><title type="html">云原生的思考</title><link href="https://mengtnt.com/2022/01/01/thinkcncf.html" rel="alternate" type="text/html" title="云原生的思考" /><published>2022-01-01T07:00:04+00:00</published><updated>2022-01-01T07:00:04+00:00</updated><id>https://mengtnt.com/2022/01/01/thinkcncf</id><content type="html" xml:base="https://mengtnt.com/2022/01/01/thinkcncf.html">&lt;p&gt;2022年即将到来之际，收到腾讯云服务器友好的提醒：“尊敬的用户，你xxxx云服务器资源将于2021.12.30号到期，到期后将在一天后停止服务，停服后数据为你保留7天，逾期未续费资源将被释放”。我想着企业都不容易，毕竟年底了续个费吧。一打开续费页面，续费的话一年将近2000RMB，虽然自己知道续费肯定会贵一些，但是着实还是震惊了下。毕竟当时买的腾讯云服务器3年也就300多块钱。&lt;/p&gt;
-
-&lt;h2 id=&quot;续费之路&quot;&gt;续费之路&lt;/h2&gt;
-
-&lt;p&gt;自己想着年底各种优惠活动应该有优惠券吧，就从腾讯云的官方看了下，果然有，然后美滋滋的领了老用户续费券一年就只要300多块钱了。正准备续费的时候，我思考了下，为啥服务器续费的价格涨的这么离谱，我这台服务器也就自己的博客和一个MySQL数据库，以及自己一些日常自动化的脚本在运行。不至于占用这么多资源吧。&lt;/p&gt;
-
-&lt;p&gt;同时我看了下腾讯云的销售政策，新用户注册同样的服务器一年只要79块钱，心里有些不平衡了。腾讯这不就是杀熟客行为，难道腾讯不怕客户跑路么？仔细想了下，这不就是典型的ToB行业的销售套路么？先用底价让你入坑，然后之后一行代码可能就是你原来入坑的几十倍。&lt;/p&gt;
-
-&lt;h2 id=&quot;迁移成本&quot;&gt;迁移成本&lt;/h2&gt;
-
-&lt;p&gt;其实ToB服务的企业，敢于这样干的本质原因，就是企业服务的迁移成本。典型的像给企业提供CRM服务，当你的企业客户数据都离不开他们的服务时，这时候企业就可以加价了，因为这时候他们在市场上已经没有对手了，被服务的企业也很无奈，因为迁移成本往往会很大，只要价格不要高的太离谱，他们自然会怪怪付费。这就是为什么说做SAAS服务的企业，往往收入相对稳定，比做ToC企业稳定性好很多。ToC的企业一个功能体验没做好，得罪了用户他们立马可能就转头去用另一个企业的产品了，用户花费的成本可能仅仅是重新下载一个新APP而已。&lt;/p&gt;
-
-&lt;p&gt;那么这样情况有没有破局那？尤其像云服务市场，如果一个企业的所有服务器都是通过一家公司购买的，想要迁移到另一个家公司成本会有多高哪？虽然自己服务器上也就5，8个服务在跑，和企业服务没发相提并论。不过自己想对比下迁移的成本到底有多高。然后就花了79块钱买了一个新的服务器。下面就描述下自己的迁移过程。&lt;/p&gt;
-
-&lt;h2 id=&quot;服务迁移&quot;&gt;服务迁移&lt;/h2&gt;
-
-&lt;ol&gt;
-  &lt;li&gt;
-    &lt;p&gt;新购买的服务器首先要配置服务器的秘钥，方便用ssh登陆管理服务器。以及修改sshd_config一些配置。大概花费了半小时时间。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;下载一些常用的软件，其实我这里主要是git和docker。git是因为要下载自己服务的源码而docker是要部署这些服务。这个就看网路了，10几分钟。（现在很多轻量级服务器都自带docker了）&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;下载源码开始编译构建所有基于docker的服务，这个构建过程可能比较久大概用了1个小时，自己服务用的环境主要是ruby、node、mysql、php、Nginx。这个过程全称都不需要我操作。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;修改防火墙的配置，开发端口让外面的服务器访问。几分钟左右。&lt;/p&gt;
-  &lt;/li&gt;
-  &lt;li&gt;
-    &lt;p&gt;修改域名解析，自己用的godaddy域名，解析使用的时间，10分钟左右。&lt;/p&gt;
-  &lt;/li&gt;
-&lt;/ol&gt;
-
-&lt;p&gt;总计自己晚上搞了2到3个小时，把所有的服务器迁移好了。然后自己心里美滋滋，毕竟省下了2000块钱。这么顺利的迁移其实自己还是很意外的。&lt;/p&gt;
-
-&lt;p&gt;犹记得2011年那时候，当时云计算百家争鸣，自己买过新浪的云服务SAE(新浪当时的服务对标Google App Engine（GAE))。然后部署了一个网站和几个接口的服务，用的环境是Python。新浪SAE可以选择服务器自带python环境，由于自己的服务时基于Python的web2py框架，用了SAE后，只要简单的增加一些和平台的相关的配置就很快可以运行了。&lt;/p&gt;
-
-&lt;p&gt;只有由于一些业务迭代，接入他们的MemCache已经使用了SAE的MySQL数据库。这个服务运行一年后，感觉费用成本方面已经远远超过了阿里云。所以就想迁移到阿里云服务器，买了阿里云服务器后，部署了自己的源码，发现各种各种报错和接口不同，改动这些问题，花了1，2天的时间才迁移成功。&lt;/p&gt;
-
-&lt;p&gt;从上面看出当时服务器迁移的成本还是挺高的，自己就一个简单的服务就迁移了这么久，可想如果是一个企业那肯定要更高的成本。其中迁移困难的本质原因，就是每个云服务器配置都有他们自己特殊定制的功能，虽然SAE有Python环境，但是要完全使用平台的环境，需要侵入自己的源码，增加一些平台相关的配置。阿里云的服务和新浪的这些标准都各不相同，就造成了迁移的成本非常的巨大。&lt;/p&gt;
-
-&lt;h2 id=&quot;云原生&quot;&gt;云原生&lt;/h2&gt;
-
-&lt;p&gt;正应了那句名言“天下大势合久必分，分久闭合”，自从云计算服务出来后，各家公司都在争夺这个领域，然后亚马逊、微软、谷歌、阿里云这几个厂商在各自的区域拔得头筹。但是云计算各个平台的标准并不统一，本质上很容易造成上面我说的局面，也因为这些弊端，一些中小企业并不是很乐意上云，毕竟迁移成本还是很大的问题。所以统一云服务的标准势在必得，云原生的概念顺势而出了。&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;云原生的概念，由来自Pivotal的MattStine于2013年首次提出，被一直延续使用至今。这个概念是Matt Stine根据其多年的架构和咨询经验总结出来的一个思想集合，并得到了社区的不断完善，内容非常多，包括DevOps、持续交付、微服务、敏捷基础设施和12要素等几大主题，是一套典型上云指导思想和方法论，同时提供具体的操作工具。采用基于云原生的技术和管理方法，可以更好地把业务生于“云”或迁移到云平台，从而享受“云”的高效和持续的服务能力。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;云原生的概念提出来以后。拥抱最多的企业就是谷歌。并且一直在推动和实践这个行为，谷歌这种做法也不无道理。为何要统一化云计算服务的标准哪？因为谷歌看到了亚马逊在云服务市场赚到盆满钵满。谷歌用的打法和当年的Android如初一辙，指定标准和开源，推出了k8s和docker这两种云原生的利器。&lt;/p&gt;
-
-&lt;p&gt;谷歌用这种方式对云服务市场进行的破局方式。当年的Android的套路很像通过统一标准，来降低企业依赖平台的系数。让企业可以更放心的选择迁移自己的云服务厂商。就跟Android一样，出来一个开源的标准所有厂商接入就行了。这样就消除了很多企业的顾虑，大家自然就都原因干这个事情，同时竞争也就会上来了。所以当时Android和微软、苹果的竞争中，才能后来居上。&lt;/p&gt;
-
-&lt;p&gt;不过谷歌的这种打法，必然会造成云计算行业厂商的利润下降，但是整体的云服务质量就会上升。其实长远来看还是很有利行业的发展。下面引用下云原生的常用概念。&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;其实从云原生概念上来看，云原生比上云更进一步，不再是一个方向或者指导思想，而是明确了上云的方式和最佳实践。CNCF TOC张磊分享他对云原生的理解：“云原生是一条最佳路径或者最佳实践。更详细的说，云原生为用户指定了一条低心智负担的、敏捷的、能够以可扩展、可复制的方式最大化地利用云的能力、发挥云的价值的最佳路径。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;从上面可以看出云原生本质上就是为了解决各家云厂商标准的问题，如果大家都遵循了这个原则，那么企业只要关注自己业务的代码。写完之后想从一个云上迁移到另一个都很容易，因为标准是统一的不会出现不兼容。&lt;/p&gt;
-
-&lt;h2 id=&quot;未来展望&quot;&gt;未来展望&lt;/h2&gt;
-
-&lt;p&gt;云计算服务行业是典型的ToB企业，ToB的企业价值做到最后，往往就像工业时代的水电煤一样，成本会回归到事物本身的价值。往往不像ToC的行业利润可以做到很高，很重要的一点就是Toc行业很难形成统一的服务标准。对于Toc行业来说，首先有庞大的用户群体，并且每个用户的需求都不一样，要各种定制化的需求，统一就很难。但是如果是服务企业的话，本身群体不会特别大，并且标准统一反而有利于企业做迁移，所以统一就相对容易一些。&lt;/p&gt;
-
-&lt;p&gt;其实这也是市场发展的必然过程。任何行业想要降低成本的过程中，提供更好的服务，一定是大家形成统一的标准，可以自由的竞争，然后回归到价值本身了。这也是为什么很多国家会有垄断法，因为一旦一个行业被垄断了，用户迁移成本无限大的时候，垄断的企业就可以漫天要价。&lt;/p&gt;
-
-&lt;p&gt;从云计算的发展中也可以看出现在市场经济，往往价值最高的产品就是市面上没有统一的标准，需要给用户特殊定制的(这里的价值是说对提供的企业赚钱的多少，并不代表对整个行业的价值很高)。一旦一个行业形成了标准，大家都可以按照这个标准产出东西的时候，就意味着这个行业的利润已经基本回归到价值本身了。其实本质上这更利于行业的蓬勃发展，就跟现在的建筑、硬件制造、汽车制造行业，大家可以百家争鸣，同时消费者也能享受到更好的服务。这才是健康有利的发展。&lt;/p&gt;
-
-&lt;p&gt;所以所谓红海市场，本质上是行业还处于标准不统一的节点，同时也是企业最能赚到原始资本的地方，一旦行业形成标准，最终市场都会归于冷静，也就回归到理性的价格。不仅想起一句俗语”尘归尘,土归土,及尽繁华,不过一掬细沙”。所以云原生现在蓬勃的发展也是印证了这个道理。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">2022年即将到来之际，收到腾讯云服务器友好的提醒：“尊敬的用户，你xxxx云服务器资源将于2021.12.30号到期，到期后将在一天后停止服务，停服后数据为你保留7天，逾期未续费资源将被释放”。我想着企业都不容易，毕竟年底了续个费吧。一打开续费页面，续费的话一年将近2000RMB，虽然自己知道续费肯定会贵一些，但是着实还是震惊了下。毕竟当时买的腾讯云服务器3年也就300多块钱。</summary></entry></feed>
+&lt;p&gt;在感叹到Linux的精妙设计的同时。也会感受到其中的复杂，到现在很多设计理念我还是一知半解，可能大多数人都要花上很多年才能读懂这本书。可是Linux随着时间的发展，仍然在不定的迭代和进步。所以人类的知识体系只会越来越复杂，那么人类的进化速度是否可以赶上知识复杂演变的速度呢？之前记得读过一篇文章讲到，人类可能会因为构建过于复杂的世界而崩溃，因为没有一个人可以理解，所处系统的运行机制。这个哲学问题也留给大家来思考了。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近在读《深入理解LINUX内核》这本书让我想起来大学时代的《深入理解计算机系统》、《编译原理》、《操作系统》这几本红宝书。这种类型的书，由于设计的技术细节过于庞大，所以想读一遍了解其中的原理不太可能，在我看来读这种类型的书，一遍最多也就能理解其中10%的内容。现在已经工作了10多年，重新看了下看能不能再多懂10%。</summary></entry></feed>

@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Harness 设计 </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2026/03/31/Harness-Design.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Harness 设计">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2026/03/31/Harness-Design.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">Harness 设计</h1>
+  
+  <span class="post-meta">03月 31日, 2026</span><br>
+  
+  <span class="post-meta small">1 minute read</span>
+</div>
+
+<article class="post-content">
+  <h1 id="harness-设计构建长时间运行的应用程序开发框架">Harness 设计：构建长时间运行的应用程序开发框架</h1>
+
+<p>本文是阅读 Harness 框架这篇文章后，做的一些简单的摘要总结，再配合着最近泄漏的 claud code 源码，Anthropics 真是给广大开发者送福利了。</p>
+
+<p>过去几个月里，我们一直在研究两个相互关联的问题：如何让 Claude 产出高质量的前端设计，以及如何让它在无需人工干预的情况下构建完整的应用程序。这项工作源于我们早期在<a href="https://github.com/anthropics/claude-code/blob/main/plugins/frontend-design/skills/frontend-design/SKILL.md">前端设计技能</a>和<a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents">长时运行编码 Agent 框架</a>上的努力。通过提示词工程和框架（Harness）设计，我们能够将 Claude 的性能提升到远超基准线的水平，但这两者最终都遇到了瓶颈。</p>
+
+<p>为了突破瓶颈，我们寻求了一种新颖的 AI 工程方法，该方法横跨了两个完全不同的领域：一个由主观审美定义，另一个由可验证的正确性和可用性定义。受<a href="https://en.wikipedia.org/wiki/Generative_adversarial_network">生成对抗网络</a>（GANs）的启发，我们设计了一个由 <strong>生成器(Generator)</strong> 和 <strong>评估器(Evaluator)</strong>  Agent 组成的多智能体结构。构建一个能够可靠且具备审美能力地对输出进行评分的评估器，意味着首先要开发一套标准，将诸如“这个设计好吗？”之类的主观判断转化为具体的、可量化的术语。
+随后，我们将这些技术应用到了长时运行的自主编码中，并借鉴了早期框架工作的两个教训：将构建任务分解为可处理的代码块，以及使用结构化的“成品”在不同 Session 之间传递上下文。最终结果是一个三智能体架构——计划者（Planner）、生成器（Generator）和评估器（Evaluator）——它能在长达数小时的自主编码 Session 中构建出功能丰富、视觉精美的全栈应用。</p>
+
+<blockquote>
+  <p>“框架（Harness）的设计对长时运行的 Agent 编码有效性有着实质性影响。”</p>
+</blockquote>
+
+<h2 id="为什么-agent-的实现会失败">为什么 Agent 的实现会失败？</h2>
+
+<p>我们之前已经证明，Harness 的设计对长时运行 Agent 编码的有效性有着实质性影响。在早期的<a href="https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents">实验</a>中，我们使用一个初始 Agent 将产品规格书分解为任务列表，再由一个编码 Agent 逐一实现功能，最后通过转移成品来跨 Session 携带状态。开发者社区也得出了类似的见解，例如使用钩子或脚本让 Agent 处于持续迭代循环中的方法。</p>
+
+<p>但一些核心问题依然存在。对于更复杂的任务，Agent 随着时间的推移仍容易“跑偏”。在分析这个问题时，我们观察到了两种常见的失败模式。</p>
+
+<h3 id="1-连贯性丢失与上下文焦虑">1. 连贯性丢失与“上下文焦虑”</h3>
+
+<p>首先是模型在长任务中往往会丧失连贯性。随着上下文窗口被填满，一些模型还会表现出“上下文焦虑”——当它们认为接近上下文限制时，会过早地试图收尾工作。<strong>上下文重置（Context Resets）</strong>——即完全清空上下文窗口并启动一个全新的 Agent，配合携带前序状态和后续计划的结构化移交——可以同时解决这两个问题。</p>
+
+<p>这与单纯的“压缩”（Compaction）不同。压缩保留了连贯性，但没有提供“干净的底板”，这意味着上下文焦虑依然可能存在。重置则提供了一个干净的起点，代价是移交制品必须包含足够的信息，以便下一个 Agent 能够无缝接手。</p>
+
+<h3 id="2-自我评价的盲目性">2. 自我评价的盲目性</h3>
+
+<p>第二个问题是自我评价。当被要求评价自己产出的工作时，Agent 往往会自信地赞美自己——即使在人类观察者看来，质量明显平庸。这在设计等主观任务中尤为严重，因为这里不存在像软件测试那样的二进制校验。</p>
+
+<p>将“干活的 Agent”与“评价的 Agent”分开，是解决这一问题的强力杠杆。这种分离本身并不能立即消除各种宽容；评估器依然是一个倾向于对 LLM 生成内容表现慷慨的大模型。但将一个独立的评估器调校得“挑剔且多疑”，要比让一个生成器批判自己的工作容易得多。一旦这种外部反馈存在，生成器就有了一个具体的迭代目标。</p>
+
+<h2 id="前端设计让主观质量变得可量化">前端设计：让主观质量变得可量化</h2>
+
+<p>我们首先在前端设计上做了实验，因为自我评价问题在这里最为明显。如果没有干预，Claude 通常会倾向于安全、可预测的布局，这些布局在技术上可行，但在视觉上平庸。</p>
+
+<p>我为前端设计编写了四个评估标准：</p>
+
+<ul>
+  <li><strong>设计质量</strong>：设计是否感觉是一个连贯的整体而非零件的堆砌？色彩、排版、布局、意向等细节是否结合并创造了独特的氛围和身份？</li>
+  <li><strong>原创性</strong>：是否有自定义决策的证据？人类设计师应该能识别出刻意的创意选择。</li>
+  <li><strong>精致性</strong>：技术执行力，包括层级、间距一致性、色彩和谐度、对比度。</li>
+  <li><strong>功能性</strong>：独立于审美的可用性。</li>
+</ul>
+
+<p>我们特别强调了设计质量和原创性，因为 Claude 本身在工艺和功能性上的得分通常很高。标准中明确惩罚了高度通用的“AI 垃圾（AI slop）”模式，迫使模型在审美上进行更多冒险。</p>
+
+<h2 id="扩展到全栈编码三智能体协作">扩展到全栈编码：三智能体协作</h2>
+
+<p>基于这些发现，我将这种受 GAN 启发的模式应用到了全栈开发中。系统包含以下三种角色：</p>
+
+<ol>
+  <li><strong>计划者 (Planner)</strong>：将模糊的指令（1-4 句话）扩展为完整的产品规格（Spec）。它专注于产品背景和高层技术设计，而不是详细的实现细节。</li>
+  <li><strong>生成器 (Generator)</strong>：采用“冲刺（Sprint）”模式，每次只根据 Spec 开发一个特定功能。它还拥有 Git 权限用于版本控制。</li>
+  <li><strong>评估器 (Evaluator)</strong>：这是核心。它使用 Playwright MCP 像真实用户一样点击运行中的应用，测试 UI、API 端点和数据库状态。如果任何一项标准低于阈值，冲刺即宣告失败，生成器会收到详细的 Bug 反馈。</li>
+</ol>
+
+<p>在每次执行前，生成器和评估器会协商一份 <strong>冲刺合约</strong> ：在写代码前双方便达成共识，确定“完成”的定义。</p>
+
+<h2 id="实验从-20-分钟到-6-小时的质变">实验：从 20 分钟到 6 小时的质变</h2>
+
+<p>我们让模型尝试创建一个“2D 复古游戏制作工具”。</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: left">框架</th>
+      <th style="text-align: left">运行时间</th>
+      <th style="text-align: left">总成本</th>
+      <th style="text-align: left">结果质量</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: left"><strong>单模型 (Solo)</strong></td>
+      <td style="text-align: left">20 分钟</td>
+      <td style="text-align: left">$9</td>
+      <td style="text-align: left">布局浪费空间，流程死板，且游戏引擎库是坏的。</td>
+    </tr>
+    <tr>
+      <td style="text-align: left"><strong>全套 Harness</strong></td>
+      <td style="text-align: left">6 小时</td>
+      <td style="text-align: left">$200</td>
+      <td style="text-align: left">极其精美，功能包含精灵编辑、动画系统、AI 辅助设计。最重要的是，真的可以玩。</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>这种差异是立竿见影的。全套 Harness 构建的应用具备了一致的视觉特征和极高的完成度。评估器通过 Playwright 进行了极其细致的测试，例如：“矩形填充工具在鼠标抬起时未能触发”、“FastAPI 路由冲突”等细微 Bug 均被捕捉并修复。</p>
+
+<h2 id="简单化与未来演进">简单化与未来演进</h2>
+
+<p>随着 Claude Opus 4.6 等更强模型的推出，我们可以开始精简框架。每增加一层复杂度，其实都是对模型“在这个环节做不到”的假设。当模型变强，这些假设就会过期。</p>
+
+<p>例如，Opus 4.6 已经可以原生处理长时间的连贯任务，不再需要强行切碎成多个子任务。但我们依然保留了计划者和评估器，因为它们能提供核心的价值提升。</p>
+
+<h2 id="结语工具的终极意义">结语：工具的终极意义</h2>
+
+<p>随着模型能力的提升，有趣的设计空间并不会因为模型变强而消失，而是向更高阶的自动化迈进。AI 工程师的挑战在于通过不断寻找新的组合，利用 Harness 突破模型本身的能力边界。</p>
+
+<p>正如我们所看到的，它不是在替你写代码，它是在帮你构建属于你自己的生产力引擎。</p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="https://cdn.jsdelivr.net/gh/animeng/animeng.github.com/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.0/dist/mermaid.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script>  
+$(document).ready(function () {
+  window.mermaid.initialize({
+    startOnLoad: true,
+    theme: "default",
+  });
+  window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+});
+</script>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="https://cdn.jsdelivr.net/gh/animeng/animeng.github.com/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>
