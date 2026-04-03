@@ -1,4 +1,199 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2026-03-31T23:25:54+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">Harness 设计</title><link href="https://mengtnt.com/2026/03/31/Harness-Design.html" rel="alternate" type="text/html" title="Harness 设计" /><published>2026-03-31T08:28:18+00:00</published><updated>2026-03-31T08:28:18+00:00</updated><id>https://mengtnt.com/2026/03/31/Harness-Design</id><content type="html" xml:base="https://mengtnt.com/2026/03/31/Harness-Design.html">&lt;h1 id=&quot;harness-设计构建长时间运行的应用程序开发框架&quot;&gt;Harness 设计：构建长时间运行的应用程序开发框架&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2026-04-03T16:10:17+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">Sora 退场，Seedance 进场：中美 AI 视频大模型商业化路径对比分析</title><link href="https://mengtnt.com/2026/04/03/15-45.html" rel="alternate" type="text/html" title="Sora 退场，Seedance 进场：中美 AI 视频大模型商业化路径对比分析" /><published>2026-04-03T07:45:35+00:00</published><updated>2026-04-03T07:45:35+00:00</updated><id>https://mengtnt.com/2026/04/03/15-45</id><content type="html" xml:base="https://mengtnt.com/2026/04/03/15-45.html">&lt;h1 id=&quot;sora-退场seedance-进场中美-ai-视频大模型商业化路径对比分析&quot;&gt;Sora 退场，Seedance 进场：中美 AI 视频大模型商业化路径对比分析&lt;/h1&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;摘要&lt;/strong&gt;：2026 年初，OpenAI 宣布暂停 Sora 的公开服务，而字节跳动旗下的 Seedance 2.0 却正式开启企业级公测。这一”一退一进”的背后，折射出中美两国在 AI 视频生成领域的不同战略选择。本文从技术瓶颈与成本、版权合规、地缘竞争三个维度，深度剖析两种商业化路径的底层逻辑。&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;引言冰火两重天的-2026&quot;&gt;引言：冰火两重天的 2026&lt;/h2&gt;
+
+&lt;p&gt;2026 年 3 月，AI 视频生成赛道上演了一幕颇具戏剧性的”换角戏”。&lt;/p&gt;
+
+&lt;p&gt;一边是曾被寄予厚望的 &lt;strong&gt;OpenAI Sora&lt;/strong&gt; 悄然宣布”暂停服务”，官方声明中仅以”技术迭代与安全检查”为由，未透露复出时间表。另一边，字节跳动旗下的 &lt;strong&gt;Seedance 2.0&lt;/strong&gt; 在武汉高调宣布开启企业级公测，火山引擎”2026 Force Link AI 创新巡展”现场人头攒动，API 申请通道瞬间涌入数千家企业认证主体。&lt;/p&gt;
+
+&lt;p&gt;这一”一退一进”，绝非偶然。它背后折射出的是中美两国在 AI 视频生成领域的&lt;strong&gt;不同战略判断&lt;/strong&gt;、&lt;strong&gt;不同合规路径&lt;/strong&gt;，以及&lt;strong&gt;不同商业化节奏&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;本文将从三个核心维度展开分析：&lt;strong&gt;大模型视频能力的技术瓶颈与成本结构&lt;/strong&gt;、&lt;strong&gt;版权与肖像权的合规策略&lt;/strong&gt;、&lt;strong&gt;中美科技竞争背景下的产业博弈&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;一技术瓶颈与成本理想很丰满现实很骨感&quot;&gt;一、技术瓶颈与成本：理想很丰满，现实很骨感&lt;/h2&gt;
+
+&lt;h3 id=&quot;11-视频生成的算力黑洞&quot;&gt;1.1 视频生成的”算力黑洞”&lt;/h3&gt;
+
+&lt;p&gt;AI 视频生成被业内戏称为”算力黑洞”。与文本生成（LLM）和图像生成（Diffusion）不同，视频生成需要同时处理&lt;strong&gt;时间维度的一致性&lt;/strong&gt;和&lt;strong&gt;空间维度的细节&lt;/strong&gt;，这对算力提出了指数级增长的需求。&lt;/p&gt;
+
+&lt;p&gt;根据公开数据，生成一段&lt;strong&gt;60 秒 1080p&lt;/strong&gt; 的视频，Sora 需要消耗约&lt;strong&gt;12,000 个 A100 GPU 小时&lt;/strong&gt;的算力资源。即使按批发价计算，单次生成的算力成本也高达&lt;strong&gt;30-50 美元&lt;/strong&gt;。这还不包括模型训练、推理优化、存储带宽等隐性成本。&lt;/p&gt;
+
+&lt;p&gt;Seedance 2.0 的定价策略则更为”务实”。根据火山引擎公布的公测政策，企业用户生成一段&lt;strong&gt;2 分钟科幻短片&lt;/strong&gt;的成本约为&lt;strong&gt;330 元人民币（约 45 美元）&lt;/strong&gt;。看似与 Sora 相近，但 Seedance 提供了&lt;strong&gt;分层计费&lt;/strong&gt;和&lt;strong&gt;并发优化&lt;/strong&gt;机制：&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;计费维度&lt;/th&gt;
+      &lt;th&gt;Sora（暂停前）&lt;/th&gt;
+      &lt;th&gt;Seedance 2.0&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;基础生成&lt;/td&gt;
+      &lt;td&gt;按秒计费，无折扣&lt;/td&gt;
+      &lt;td&gt;按 Token 计费，量大从优&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;并发限制&lt;/td&gt;
+      &lt;td&gt;单账户 5 并发&lt;/td&gt;
+      &lt;td&gt;企业认证 10 并发，可扩容&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;定制功能&lt;/td&gt;
+      &lt;td&gt;不开放&lt;/td&gt;
+      &lt;td&gt;需 100 万保证金 + 保底协议&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;退款机制&lt;/td&gt;
+      &lt;td&gt;无&lt;/td&gt;
+      &lt;td&gt;保证金期满可返还&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;这种差异反映了两种不同的&lt;strong&gt;成本转嫁策略&lt;/strong&gt;：Sora 试图通过统一高价覆盖所有用户，而 Seedance 则通过”保证金 + 分层”将成本压力转移给有支付能力的企业客户。&lt;/p&gt;
+
+&lt;h3 id=&quot;12-技术瓶颈的天花板效应&quot;&gt;1.2 技术瓶颈的”天花板效应”&lt;/h3&gt;
+
+&lt;p&gt;2025 年下半年，多家 AI 实验室内部评估报告显示，当前视频生成模型在以下方面遭遇瓶颈：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;长视频一致性&lt;/strong&gt;：超过 3 分钟的视频，角色面部特征漂移率超过 15%&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;物理规律模拟&lt;/strong&gt;：复杂流体力学、光影反射等场景仍有明显瑕疵&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;多镜头叙事&lt;/strong&gt;：场景切换时的连贯性不足，需要人工后期修补&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;OpenAI 内部人士透露，Sora 暂停服务的核心原因之一是&lt;strong&gt;技术迭代遇到瓶颈&lt;/strong&gt;。在达到”工业可用”标准之前，继续开放服务只会消耗大量算力却无法产生商业回报。&lt;/p&gt;
+
+&lt;p&gt;反观字节跳动，其策略更为”渐进式”。Seedance 2.0 明确&lt;strong&gt;限制视频时长&lt;/strong&gt;（公测版单段不超过 5 分钟），并&lt;strong&gt;禁用真人人脸生成&lt;/strong&gt;，从而规避了最耗算力和最易引发争议的场景。这种”先做减法，再做加法”的策略，使得 Seedance 能够在可控成本下实现商业化闭环。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;二版权问题中美不同的合规护城河&quot;&gt;二、版权问题：中美不同的合规”护城河”&lt;/h2&gt;
+
+&lt;h3 id=&quot;21-美国的诉讼驱动模式&quot;&gt;2.1 美国的”诉讼驱动”模式&lt;/h3&gt;
+
+&lt;p&gt;Sora 的暂停，版权诉讼是重要诱因之一。&lt;/p&gt;
+
+&lt;p&gt;2025 年 12 月，好莱坞编剧工会（WGA）与美国演员工会（SAG-AFTRA）联合发起集体诉讼，指控 Sora 在训练过程中使用了&lt;strong&gt;未经授权的影视作品片段&lt;/strong&gt;。诉讼文件显示，OpenAI 无法提供完整的训练数据来源清单，这成为其”致命软肋”。&lt;/p&gt;
+
+&lt;p&gt;此外，多位知名导演（包括诺兰、卡梅隆等）公开表态，认为 AI 生成视频”侵犯了人类创作者的署名权与改编权”。在法律压力与舆论压力的双重夹击下，OpenAI 选择了”以退为进”。&lt;/p&gt;
+
+&lt;h3 id=&quot;22-中国的预审--水印模式&quot;&gt;2.2 中国的”预审 + 水印”模式&lt;/h3&gt;
+
+&lt;p&gt;相比之下，Seedance 2.0 的合规策略更为”前置化”：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;训练数据白名单&lt;/strong&gt;：字节跳动宣布其训练数据全部来自”已授权内容库”，包括抖音、西瓜视频、即梦平台等自有生态，以及与部分影视公司的合作协议。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;C2PA 水印技术&lt;/strong&gt;：所有生成视频自动嵌入&lt;strong&gt;不可见数字水印&lt;/strong&gt;，可追溯生成时间、生成主体、使用模型版本等信息。这符合欧盟《AI 法案》的透明度要求，也为未来可能的版权纠纷提供证据链。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;&lt;strong&gt;真人肖像”双锁”机制&lt;/strong&gt;：公测版默认禁用真人人脸生成。企业如需解锁，需缴纳&lt;strong&gt;100 万元保证金&lt;/strong&gt;并签署《肖像权合规承诺书》，一旦违规，保证金全额扣除并承担法律责任。&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;这种”预审 + 水印 + 保证金”的三重机制，实质上是将&lt;strong&gt;合规成本内部化&lt;/strong&gt;，让企业用户成为版权保护的”第一责任人”。&lt;/p&gt;
+
+&lt;h3 id=&quot;23-合规成本的隐性门槛&quot;&gt;2.3 合规成本的”隐性门槛”&lt;/h3&gt;
+
+&lt;p&gt;值得注意的是，Seedance 的合规策略虽然降低了法律风险，但也抬高了&lt;strong&gt;市场准入门槛&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;100 万元保证金对于大型影视公司而言可能只是”九牛一毛”，但对于中小微内容创作者、独立工作室而言，却是&lt;strong&gt;难以逾越的门槛&lt;/strong&gt;。这导致 Seedance 的公测用户结构呈现明显的”头部集中”特征——目前通过企业认证的客户中，超过 60% 为注册资本超过 1000 万元的企业。&lt;/p&gt;
+
+&lt;p&gt;这种策略的长期影响尚待观察：它可能促进内容产业的”集约化”，也可能抑制创新生态的”多样性”。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;三中美竞争ai-视频赛道的地缘博弈&quot;&gt;三、中美竞争：AI 视频赛道的”地缘博弈”&lt;/h2&gt;
+
+&lt;h3 id=&quot;31-技术封锁与去美化供应链&quot;&gt;3.1 技术封锁与”去美化”供应链&lt;/h3&gt;
+
+&lt;p&gt;2025 年以来，美国对华 AI 芯片出口管制持续收紧。NVIDIA A100/H100 等高端 GPU 的对华出口基本冻结，这直接影响了中国 AI 企业的&lt;strong&gt;训练效率&lt;/strong&gt;与&lt;strong&gt;推理成本&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;在此背景下，Seedance 2.0 选择了一条”差异化竞争”路线：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;模型架构优化&lt;/strong&gt;：采用华为昇腾 910B 等国产芯片进行推理加速，降低对 NVIDIA 生态的依赖。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;应用场景聚焦&lt;/strong&gt;：优先落地于短视频、电商营销、教育培训等”轻量级”场景，而非好莱坞级别的”重工业”制作。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;市场区域选择&lt;/strong&gt;：国际推广首选东南亚、拉美等”非敏感”市场，暂时避开欧美监管高压区。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;32-数据生态的护城河效应&quot;&gt;3.2 数据生态的”护城河效应”&lt;/h3&gt;
+
+&lt;p&gt;字节跳动的核心优势在于其&lt;strong&gt;庞大的内容生态&lt;/strong&gt;。抖音、今日头条、西瓜视频等平台每天产生&lt;strong&gt;数亿条视频内容&lt;/strong&gt;，这为 Seedance 提供了得天独厚的训练数据与应用场景。&lt;/p&gt;
+
+&lt;p&gt;相比之下，OpenAI 的数据来源更为”分散”。虽然其拥有 GPT 系列模型的文本数据优势，但在视频领域的”原生数据”积累远不如字节跳动。这也是 Sora 在”多镜头叙事一致性”上表现不如 Seedance 的原因之一。&lt;/p&gt;
+
+&lt;h3 id=&quot;33-商业化节奏的战略耐心&quot;&gt;3.3 商业化节奏的”战略耐心”&lt;/h3&gt;
+
+&lt;p&gt;OpenAI 作为私营公司，面临来自微软等投资方的&lt;strong&gt;盈利压力&lt;/strong&gt;。Sora 的高成本与低回报，使其在商业上难以持续。暂停服务，某种程度上是”止损”的理性选择。&lt;/p&gt;
+
+&lt;p&gt;字节跳动则展现出更强的”战略耐心”。Seedance 2.0 的公测政策明确表示，&lt;strong&gt;2026 年内不以盈利为目标&lt;/strong&gt;，而是以”生态培育”和”场景验证”为核心。这种”先占市场，再谈盈利”的策略，与中国互联网行业的传统打法一脉相承。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;四结论与展望谁能笑到最后&quot;&gt;四、结论与展望：谁能笑到最后？&lt;/h2&gt;
+
+&lt;p&gt;Sora 的退场与 Seedance 的进场，并非简单的”胜负之分”，而是两种&lt;strong&gt;不同发展阶段&lt;/strong&gt;、&lt;strong&gt;不同市场环境&lt;/strong&gt;、&lt;strong&gt;不同战略选择&lt;/strong&gt;的体现。&lt;/p&gt;
+
+&lt;h3 id=&quot;41-短期判断2026-2027&quot;&gt;4.1 短期判断（2026-2027）&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Seedance 将占据中国市场主导地位&lt;/strong&gt;，尤其在短视频、电商、教育等垂直场景。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Sora 可能在 2027 年以”企业版”形式回归&lt;/strong&gt;，但定价将大幅提高，面向高端影视制作市场。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;开源模型将填补中低端市场空白&lt;/strong&gt;，如 Stability AI 的 Stable Video、Meta 的 Movie Gen 等。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;42-长期展望2028-及以后&quot;&gt;4.2 长期展望（2028 及以后）&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;技术融合&lt;/strong&gt;：文本、图像、视频、音频的”多模态一体化”将成为标配，单一模态模型将被淘汰。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;监管趋同&lt;/strong&gt;：中美欧三方将在 AI 版权、水印、溯源等方面形成”最低共识”，跨境合规成本下降。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;成本下降&lt;/strong&gt;：随着芯片效率提升与模型优化，视频生成成本有望下降&lt;strong&gt;1-2 个数量级&lt;/strong&gt;，个人创作者将成为主力用户。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;43-给从业者的建议&quot;&gt;4.3 给从业者的建议&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;不要押注单一模型&lt;/strong&gt;：多模型冗余部署，降低供应链风险。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;关注合规前置&lt;/strong&gt;：版权、肖像、水印等合规成本应纳入预算。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;深耕垂直场景&lt;/strong&gt;：通用视频生成竞争惨烈，垂直场景（如医疗、法律、工业）仍有蓝海。&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;结语&quot;&gt;结语&lt;/h2&gt;
+
+&lt;p&gt;AI 视频生成的”黄金时代”才刚刚开始。Sora 的退场不是终点，Seedance 的进场也不是终点。真正的赢家，将是那些能够&lt;strong&gt;平衡技术、成本、合规&lt;/strong&gt;三者关系的玩家。&lt;/p&gt;
+
+&lt;p&gt;对于内容创作者而言，这是一个最好的时代——工具从未如此强大；这也是一个最坏的时代——规则从未如此复杂。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;唯有拥抱变化者，方能立于不败之地。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;strong&gt;参考资料&lt;/strong&gt;：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;火山引擎官方发布会（2026 年 4 月 2 日）&lt;/li&gt;
+  &lt;li&gt;OpenAI 官方声明（2026 年 3 月 15 日）&lt;/li&gt;
+  &lt;li&gt;好莱坞编剧工会诉讼文件（2025 年 12 月）&lt;/li&gt;
+  &lt;li&gt;欧盟《AI 法案》最终文本&lt;/li&gt;
+  &lt;li&gt;多家 AI 实验室内部评估报告（匿名来源）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;</content><author><name>mengtnt</name></author><summary type="html">Sora 退场，Seedance 进场：中美 AI 视频大模型商业化路径对比分析</summary></entry><entry><title type="html">Harness 设计</title><link href="https://mengtnt.com/2026/03/31/Harness-Design.html" rel="alternate" type="text/html" title="Harness 设计" /><published>2026-03-31T08:28:18+00:00</published><updated>2026-03-31T08:28:18+00:00</updated><id>https://mengtnt.com/2026/03/31/Harness-Design</id><content type="html" xml:base="https://mengtnt.com/2026/03/31/Harness-Design.html">&lt;h1 id=&quot;harness-设计构建长时间运行的应用程序开发框架&quot;&gt;Harness 设计：构建长时间运行的应用程序开发框架&lt;/h1&gt;
 
 &lt;p&gt;本文是阅读 Harness 框架这篇文章后，做的一些简单的摘要总结，再配合着最近泄漏的 claud code 源码，Anthropics 真是给广大开发者送福利了。&lt;/p&gt;
 
@@ -2384,85 +2579,4 @@ if let result = test {&lt;/code&gt; 。&lt;/p&gt;
   &lt;li&gt;
     &lt;p&gt;https://swiftgg.gitbook.io/swift/&lt;/p&gt;
   &lt;/li&gt;
-&lt;/ol&gt;</content><author><name>mengtnt</name></author><summary type="html">随着越来越多的应用在使用 Swift 语言开发iOS，学习 Swift 语言也很有必要。这个博客不是详细的 Swift 的教程，主要是为了 Swift 初学者，尤其之前使用 OC 开发 iOS 应用的人员，在转入 Swift 这门语言时，应该了解的一些基础知识，为方便进一步的学习做一些铺垫。</summary></entry><entry><title type="html">深入理解LINUX内核</title><link href="https://mengtnt.com/2022/03/16/readlinux.html" rel="alternate" type="text/html" title="深入理解LINUX内核" /><published>2022-03-16T07:05:06+00:00</published><updated>2022-03-16T07:05:06+00:00</updated><id>https://mengtnt.com/2022/03/16/readlinux</id><content type="html" xml:base="https://mengtnt.com/2022/03/16/readlinux.html">&lt;p&gt;最近在读《深入理解LINUX内核》这本书让我想起来大学时代的《深入理解计算机系统》、《编译原理》、《操作系统》这几本红宝书。这种类型的书，由于设计的技术细节过于庞大，所以想读一遍了解其中的原理不太可能，在我看来读这种类型的书，一遍最多也就能理解其中10%的内容。现在已经工作了10多年，重新看了下看能不能再多懂10%。&lt;/p&gt;
-
-&lt;p&gt;言归正传，本篇博客自己想记录下对书中一些原理的理解，感受下Linux系统的巧妙之处。再来可以借鉴下Linux很多的设计思想，也可以应用到平时工作中业务逻辑的设计。当然博客篇幅有限，仅仅记录下操作系统核心业务的某些思想以供借鉴。&lt;/p&gt;
-
-&lt;p&gt;说到操作系统核心业务，主要是进程和内存管理，本质是就是管理cpu和存储系统。所以下面的几点内容都是从进程和内存管理的章节中选取的知识点。&lt;/p&gt;
-
-&lt;h2 id=&quot;内存管理&quot;&gt;内存管理&lt;/h2&gt;
-
-&lt;p&gt;假如没有操作系统，程序如何操作内存呢？那就要管理每一个内存地址的读取和存储了，对于不同的硬件内存排布都各不相同，所以使用不同的硬件就要写一套不同的内存管理方法。操作系统本质上就是对内存这个硬件增加了一个抽象，上层程序只需要使用虚拟地址来访问就可以，底层如何分配物理地址交给操作系统来做。&lt;/p&gt;
-
-&lt;p&gt;由于操作系统抽象了一层虚拟内存，用户程序仅仅操作虚拟地址，那么虚拟地址如何转换成物理地址呢？这里就要从程序装载的过程说起了。如果程序不是运行在虚拟机上，本质上操作系统装载的都是机器码。写过汇编代码的都知道，在定义程序代码时，需要定义代码段(CS)、数据段(DS)、堆栈段(SS)，并且代码里面写的 &lt;code class=&quot;highlighter-rouge&quot;&gt;mov 0x8049509 exa &lt;/code&gt; 这里的地址都是逻辑地址。操作系统通过程序段定义段的逻辑地址，再转换出程序所需要的虚拟地址。可以看下图所示。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/readLinux-logic-1.jpg&quot; alt=&quot;图1&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;上图中最终的线性地址就是平时我们说的虚拟地址。其实Linux中逻辑地址等于虚拟地址。因为Linux所有的段（用户代码段、用户数据段、内核代码段、内核数据段）的线性地址都是从 0x00000000 开始，线性地址=0x00000000+逻辑地址(偏移量)，也就是说逻辑地址等于虚拟地址了。像Windows系统就会在加载程序时，会有逻辑地址转换虚拟地址的过程。Linux舍弃这一步的目的是为了高效，这样Linux就可以直接把所有的逻辑地址映射到我们下面要说的页表中了。&lt;/p&gt;
-
-&lt;p&gt;在写汇编代码时，会发现程序中所有操作的内存都是连续的，这样很方便我们管理内存的读取。那操作系统如何把程序中所有连续的虚拟地址，映射到物理地址中。这个过程就需要用到页表。页表
- 是分配物理内存的最小单元，有4K，16K等等，系统每次申请地址时，都是按照页的单元来的。这样可以保证硬件的最高效运作。&lt;/p&gt;
-
-&lt;p&gt;这里可能就有人疑问了，如果每个虚拟地址都要从页表中查找的话，存储页表是不是很浪费空间。如果是4K的页面，1G点内存，岂不是就要 &lt;code class=&quot;highlighter-rouge&quot;&gt;1024/4 = 256M&lt;/code&gt;。所以就产生了多级页面，多加几个目录不就可以了么？如下图:&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/readLinux-page-2.jpg&quot; alt=&quot;图2&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;上图就是Linux操作系统中常用的三级页表，1G内存也仅仅只需要4M的页表就可以完成寻址，提高寻址速度的同时，也大大节省了空间。&lt;/p&gt;
-
-&lt;p&gt;上面只是简单的介绍了Linux的分页系统，为了提高分页效率有很多种分页算法，这里限于篇幅也不再介绍。在看到这的时候，想到了平时在做业务时，遇到平台统一性问题上时，就可以借鉴下操作系统如何通过增加一层抽象来对内存管理，从而磨平了平台的差异。在解决业务效率的时候，也可以通过分表的思想提高访问的速度。&lt;/p&gt;
-
-&lt;h2 id=&quot;进程管理&quot;&gt;进程管理&lt;/h2&gt;
-
-&lt;p&gt;进程是操作系统系统基本的执行单元。在Linux操作系统中，有一个概念叫轻量级进程(lwp)。咋一看这不就是进程，其实不然。为啥Linux不按照操作系统的概念，老老实实的做一个进程的管理呢？我理解的本质上是为了更好的重用，进程其实是一个很复杂的概念，包含了cpu调度以及需要管理各种调度的资源。而lwp其实仅仅抽象了cpu的调度过程，主要包含了cpu中寄存器上下文切换的过程和一些必须的资源管理。&lt;/p&gt;
-
-&lt;p&gt;在Linux的top和ps命令中，默认看到最多的是pid (process ID)，也许你也能看到lwp (thread ID)和tgid (thread group ID for the thread group leader)等等。所以本质上Linux的进程是由lwp和一些共享资源组合而成的，并且lwp还可以作为内核的线程。另外这里我想说PThread其实是用户进程，通过一些库函数模拟线程的并发执行的效果，生效范围其实不在系统级别，不是lwp的级别。所以对于不同的操作系统来讲，进程和线程的实现方式并不相同，但是他们理念都大同小异，都是对cpu的调度和资源的管理。&lt;/p&gt;
-
-&lt;p&gt;下面我们来看下进程管理的一个核心函数，进程切换。下面我列下书中介绍的进程切换的核心代码如下:&lt;/p&gt;
-
-&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;cp&quot;&gt;#define switch_to(prev, next, last)                 \
-do {                                    \
-    prepare_switch_to(next);                    \
-                                    \
-    ((last) = __switch_to_asm((prev), (next)));         \
-} while (0)
-&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;里面专门介绍了为何A，B进程切换需要三个参数，last参数的作用。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/readLinux-switch-3.jpg&quot; alt=&quot;图2&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;假定3个进程A、B和C在系统上运行。在某个时间点，内核决定从进程A切换到进程B，然后从进程B切换到进程C，接下来再从进程C切换回进程A。在每个switch_to调用之前，next和prev指针位于各进程的内核栈上，prev指向当前运行的进程，而next指向将要运行的下一个进程。为执行从prev到next的切换，switch_to的前两个参数足够了。对进程A来说，prev指向进程A而next指向进程B。&lt;/p&gt;
-
-&lt;p&gt;在进程A被选中再次执行时，会出现一个问题，控制权返回至switch_to之后的点，如果栈准确地恢复到切换之前的状态，那么prev和next仍然指向切换之前的值，即next=B，而prev=A。在这种情况下，内核无法知道实际上在进程A之前运行的进程是C。&lt;/p&gt;
-
-&lt;p&gt;从上面的描述可以看出，switch_to这个函数非常特殊，在从C进程切回到A进程时，在切换的上半部分是在进程C中运行的，而下半部分是在进程A中运行的，所以A进程需要读取第三个参数last才能知道是从C切换过来的。&lt;/p&gt;
-
-&lt;p&gt;Linux为了提高进程切换的效率，才使用这种如此不好理解的方式。其实如果我们能引入一个进程管理的进程就会更加的清晰，但是效率自然也就牺牲了。我引用下一个网友对此问题的看法。&lt;/p&gt;
-
-&lt;blockquote&gt;
-  &lt;p&gt;Linux中没有专门的调度管理线程虽然咋一看很不美观，但是它毕竟不是微内核结构，大内核的 优点就是高效，直接让需要切换的进程自己调用切换代码另外别的进程就绪后告诉正运行的进程有切换需要然后着手调度，这种方式肯定最高效，如果设置了调度管 理线程，需要调度时还要通知这个管理器，很多切换很低效，但是却很美观。这一点上，Linux中的调度是和谐自发的抢占式协作，而带有调度管理器的内核对 于调度则是强行的管制。&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;所以我们平时在做一些业务时，为了提升效率，往往会采用一些很诡异(trick)的手段，虽然目的达到了，但是牺牲了代码的可读性。这也是Linux设计哲学的权衡，因为效率被看做Linux系统的最高优先级。&lt;/p&gt;
-
-&lt;h2 id=&quot;中断&quot;&gt;中断&lt;/h2&gt;
-
-&lt;p&gt;在内核的进程切换时，我们提到过上下文切换。其实中断本质上也是一种上下文切换。但是中断处理和进程切换有一个明显的差异: 由中断处理执行的代码并不是一个进程，我们常常用内核控制路径(kernel control path)来代表中断发生时，正在执行的程序。可以说中断处理的程序比lwp还要轻量级。&lt;/p&gt;
-
-&lt;p&gt;中断在cpu中经常发生，所以中断的效率异常重要。下图展示了中断请求发生时，数据处理的过程。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;/images/readLinux-int-4.jpg&quot; alt=&quot;图2&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;从上图中可以看出，分为上下两个部分。上部被称为硬中断处理，只有一些比较紧急的功能，它往往只是简单地读取寄存器中的中断状态并清除中断标志后就进行“登记中断”的工作。“登记中断”意味着将下半部处理程序，挂到后续的执行队列中去。下半部分是真正处理中断请求的程序逻辑。Linux下半部分处理有软中断、tasklet、工作队列。这里不过多介绍。&lt;/p&gt;
-
-&lt;p&gt;结合我们平时写代码时，用到的定时器，操作系统处理的过程是，根据cpu发出的时钟中断，达到用户设置定时器时间，就发生一个软中断，等待用户程序处理。但是何时处理，就跟整个系统的吞吐能力有关系了。所以平时的定时器中断，运行到处理程序时，时间并不是100%准确的。&lt;/p&gt;
-
-&lt;p&gt;从中可以看出，为了系统的可用性和吞吐能力，中断的设计就非常的巧妙，既解决了同时可以响应多个外设输入的问题，又解决了响应慢的问题。所以我们在处理一些业务的时候，不妨把业务的操作更加细分，就可以达到并发执行的效果，提高了业务的效率和吞吐率。&lt;/p&gt;
-
-&lt;h2 id=&quot;总结&quot;&gt;总结&lt;/h2&gt;
-
-&lt;p&gt;Linux是实现了操作系统这个复杂的业务的一种系统，我们平时做的业务可能远远没有这么复杂，也不会要求如此高的效率，但是从Linux的设计实践中，我们可以借鉴很多的理念和方法来提高我们业务的效率。如果再做10年的业务，回头看这本书，可能会有另外的感悟。&lt;/p&gt;
-
-&lt;p&gt;在感叹到Linux的精妙设计的同时。也会感受到其中的复杂，到现在很多设计理念我还是一知半解，可能大多数人都要花上很多年才能读懂这本书。可是Linux随着时间的发展，仍然在不定的迭代和进步。所以人类的知识体系只会越来越复杂，那么人类的进化速度是否可以赶上知识复杂演变的速度呢？之前记得读过一篇文章讲到，人类可能会因为构建过于复杂的世界而崩溃，因为没有一个人可以理解，所处系统的运行机制。这个哲学问题也留给大家来思考了。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近在读《深入理解LINUX内核》这本书让我想起来大学时代的《深入理解计算机系统》、《编译原理》、《操作系统》这几本红宝书。这种类型的书，由于设计的技术细节过于庞大，所以想读一遍了解其中的原理不太可能，在我看来读这种类型的书，一遍最多也就能理解其中10%的内容。现在已经工作了10多年，重新看了下看能不能再多懂10%。</summary></entry></feed>
+&lt;/ol&gt;</content><author><name>mengtnt</name></author><summary type="html">随着越来越多的应用在使用 Swift 语言开发iOS，学习 Swift 语言也很有必要。这个博客不是详细的 Swift 的教程，主要是为了 Swift 初学者，尤其之前使用 OC 开发 iOS 应用的人员，在转入 Swift 这门语言时，应该了解的一些基础知识，为方便进一步的学习做一些铺垫。</summary></entry></feed>
