@@ -1,6 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2026-04-03T16:10:17+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">Sora 退场，Seedance 进场：中美 AI 视频大模型商业化路径对比分析</title><link href="https://mengtnt.com/2026/04/03/15-45.html" rel="alternate" type="text/html" title="Sora 退场，Seedance 进场：中美 AI 视频大模型商业化路径对比分析" /><published>2026-04-03T07:45:35+00:00</published><updated>2026-04-03T07:45:35+00:00</updated><id>https://mengtnt.com/2026/04/03/15-45</id><content type="html" xml:base="https://mengtnt.com/2026/04/03/15-45.html">&lt;h1 id=&quot;sora-退场seedance-进场中美-ai-视频大模型商业化路径对比分析&quot;&gt;Sora 退场，Seedance 进场：中美 AI 视频大模型商业化路径对比分析&lt;/h1&gt;
-
-&lt;blockquote&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2026-04-04T01:41:05+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">Sora 退场，Seedance 进场</title><link href="https://mengtnt.com/2026/04/03/15-45.html" rel="alternate" type="text/html" title="Sora 退场，Seedance 进场" /><published>2026-04-03T07:45:35+00:00</published><updated>2026-04-03T07:45:35+00:00</updated><id>https://mengtnt.com/2026/04/03/15-45</id><content type="html" xml:base="https://mengtnt.com/2026/04/03/15-45.html">&lt;blockquote&gt;
   &lt;p&gt;&lt;strong&gt;摘要&lt;/strong&gt;：2026 年初，OpenAI 宣布暂停 Sora 的公开服务，而字节跳动旗下的 Seedance 2.0 却正式开启企业级公测。这一”一退一进”的背后，折射出中美两国在 AI 视频生成领域的不同战略选择。本文从技术瓶颈与成本、版权合规、地缘竞争三个维度，深度剖析两种商业化路径的底层逻辑。&lt;/p&gt;
 &lt;/blockquote&gt;
 
@@ -182,18 +180,7 @@
 
 &lt;p&gt;&lt;strong&gt;唯有拥抱变化者，方能立于不败之地。&lt;/strong&gt;&lt;/p&gt;
 
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;strong&gt;参考资料&lt;/strong&gt;：&lt;/p&gt;
-&lt;ul&gt;
-  &lt;li&gt;火山引擎官方发布会（2026 年 4 月 2 日）&lt;/li&gt;
-  &lt;li&gt;OpenAI 官方声明（2026 年 3 月 15 日）&lt;/li&gt;
-  &lt;li&gt;好莱坞编剧工会诉讼文件（2025 年 12 月）&lt;/li&gt;
-  &lt;li&gt;欧盟《AI 法案》最终文本&lt;/li&gt;
-  &lt;li&gt;多家 AI 实验室内部评估报告（匿名来源）&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;hr /&gt;</content><author><name>mengtnt</name></author><summary type="html">Sora 退场，Seedance 进场：中美 AI 视频大模型商业化路径对比分析</summary></entry><entry><title type="html">Harness 设计</title><link href="https://mengtnt.com/2026/03/31/Harness-Design.html" rel="alternate" type="text/html" title="Harness 设计" /><published>2026-03-31T08:28:18+00:00</published><updated>2026-03-31T08:28:18+00:00</updated><id>https://mengtnt.com/2026/03/31/Harness-Design</id><content type="html" xml:base="https://mengtnt.com/2026/03/31/Harness-Design.html">&lt;h1 id=&quot;harness-设计构建长时间运行的应用程序开发框架&quot;&gt;Harness 设计：构建长时间运行的应用程序开发框架&lt;/h1&gt;
+&lt;hr /&gt;</content><author><name>mengtnt</name></author><summary type="html">摘要：2026 年初，OpenAI 宣布暂停 Sora 的公开服务，而字节跳动旗下的 Seedance 2.0 却正式开启企业级公测。这一”一退一进”的背后，折射出中美两国在 AI 视频生成领域的不同战略选择。本文从技术瓶颈与成本、版权合规、地缘竞争三个维度，深度剖析两种商业化路径的底层逻辑。</summary></entry><entry><title type="html">Harness 设计</title><link href="https://mengtnt.com/2026/03/31/Harness-Design.html" rel="alternate" type="text/html" title="Harness 设计" /><published>2026-03-31T08:28:18+00:00</published><updated>2026-03-31T08:28:18+00:00</updated><id>https://mengtnt.com/2026/03/31/Harness-Design</id><content type="html" xml:base="https://mengtnt.com/2026/03/31/Harness-Design.html">&lt;h1 id=&quot;harness-设计构建长时间运行的应用程序开发框架&quot;&gt;Harness 设计：构建长时间运行的应用程序开发框架&lt;/h1&gt;
 
 &lt;p&gt;本文是阅读 Harness 框架这篇文章后，做的一些简单的摘要总结，再配合着最近泄漏的 claud code 源码，Anthropics 真是给广大开发者送福利了。&lt;/p&gt;
 
