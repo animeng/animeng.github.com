@@ -1,0 +1,798 @@
+<h1 id="claude-三种-agent-架构全解析sdk-vs-teams-vs-managed-如何选择">Claude 三种 Agent 架构全解析：SDK vs Teams vs Managed 如何选择</h1>
+
+<h2 id="引言">引言</h2>
+
+<p>Anthropic 最近连续发布了三个与 Agent 相关的重磅产品：<strong>Agent SDK</strong>、<strong>Agent Teams</strong> 和 <strong>Managed Agents</strong>。这一系列动作标志着 Claude 正式从”对话模型”进化为”Agent 平台”。</p>
+
+<p>对于开发者而言，这三个产品代表了三种截然不同的 Agent 构建范式。选择错误的架构可能导致数周的开发工作付诸东流。本文基于实际项目经验，深入剖析三种架构的技术细节、优缺点和适用场景，帮助你在项目中做出正确的选择。</p>
+
+<hr />
+
+<h2 id="一三种架构概览">一、三种架构概览</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>特性</th>
+      <th>Agent SDK</th>
+      <th>Agent Teams</th>
+      <th>Managed Agents</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>控制粒度</td>
+      <td>最高</td>
+      <td>中等</td>
+      <td>最低</td>
+    </tr>
+    <tr>
+      <td>开发工作量</td>
+      <td>最大</td>
+      <td>中等</td>
+      <td>最小</td>
+    </tr>
+    <tr>
+      <td>状态管理</td>
+      <td>自己实现</td>
+      <td>共享 Task List</td>
+      <td>平台托管</td>
+    </tr>
+    <tr>
+      <td>错误处理</td>
+      <td>自己实现</td>
+      <td>部分自动</td>
+      <td>平台自动</td>
+    </tr>
+    <tr>
+      <td>适合场景</td>
+      <td>核心业务</td>
+      <td>长任务协作</td>
+      <td>简单任务</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 id="二agent-sdk完全控制的代价">二、Agent SDK：完全控制的代价</h2>
+
+<h3 id="21-架构原理">2.1 架构原理</h3>
+
+<p>Agent SDK 是最早发布的方案，它提供了一套底层 API，让你自己编写完整的 agent loop。你需要处理：</p>
+
+<ul>
+  <li>Token 计数和截断</li>
+  <li>工具调用和结果解析</li>
+  <li>错误重试和回退</li>
+  <li>无限循环检测</li>
+  <li>中间状态持久化</li>
+</ul>
+
+<h3 id="22-代码示例">2.2 代码示例</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">anthropic</span> <span class="kn">import</span> <span class="n">Agent</span>
+
+<span class="k">class</span> <span class="nc">MyAgent</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">agent</span> <span class="o">=</span> <span class="n">Agent</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="s">"claude-sonnet-4-20260514"</span><span class="p">,</span>
+            <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">search_tool</span><span class="p">,</span> <span class="n">code_tool</span><span class="p">],</span>
+            <span class="n">max_iterations</span><span class="o">=</span><span class="mi">50</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state</span> <span class="o">=</span> <span class="p">{}</span>
+    
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">goal</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># 70% 的代码是防御性编程
+</span>        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Token 超限检测
+</span>            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">token_count</span> <span class="o">&gt;</span> <span class="mi">180000</span><span class="p">:</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">truncate_context</span><span class="p">()</span>
+            
+            <span class="c1"># 调用 Agent
+</span>            <span class="n">result</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">goal</span><span class="p">)</span>
+            
+            <span class="c1"># 无限循环检测
+</span>            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">iteration_count</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_iterations</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">AgentLoopError</span><span class="p">(</span><span class="s">"Too many iterations"</span><span class="p">)</span>
+            
+            <span class="c1"># 持久化中间结果
+</span>            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_state</span><span class="p">()</span>
+            
+            <span class="k">return</span> <span class="n">result</span>
+            
+        <span class="k">except</span> <span class="n">ToolError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># 工具失败重试
+</span>            <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">retry_with_backoff</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">TokenLimitError</span><span class="p">:</span>
+            <span class="c1"># Token 超限处理
+</span>            <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">compress_and_continue</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="23-实际踩坑经验">2.3 实际踩坑经验</h3>
+
+<p><strong>坑 1：Token 超限</strong></p>
+<ul>
+  <li>Claude 的 context window 虽然大，但复杂任务很容易超限</li>
+  <li>必须实现智能截断策略：优先保留最近的消息和关键工具结果</li>
+  <li>建议设置软限制（180k）而非硬限制（200k）</li>
+</ul>
+
+<p><strong>坑 2：工具调用失败</strong></p>
+<ul>
+  <li>网络波动、API 限流、工具超时都会导致失败</li>
+  <li>必须实现指数退避重试</li>
+  <li>对于幂等操作可以重试，非幂等操作需要补偿机制</li>
+</ul>
+
+<p><strong>坑 3：无限循环</strong></p>
+<ul>
+  <li>Agent 可能陷入”调用工具→失败→再调用”的死循环</li>
+  <li>需要检测重复的工具调用模式</li>
+  <li>设置最大迭代次数并强制终止</li>
+</ul>
+
+<h3 id="24-优缺点">2.4 优缺点</h3>
+
+<p><strong>优点：</strong></p>
+<ul>
+  <li>完全控制 Agent 行为</li>
+  <li>可以针对业务场景深度优化</li>
+  <li>不受平台配额限制</li>
+</ul>
+
+<p><strong>缺点：</strong></p>
+<ul>
+  <li>业务逻辑只占 30%，70% 是 harness 代码</li>
+  <li>开发周期长，维护成本高</li>
+  <li>需要深厚的工程经验</li>
+</ul>
+
+<hr />
+
+<h2 id="三agent-teams共享状态的协作范式">三、Agent Teams：共享状态的协作范式</h2>
+
+<h3 id="31-架构原理">3.1 架构原理</h3>
+
+<p>Agent Teams 的核心创新是<strong>共享 Task List</strong>。与传统子 Agent 的”fire-and-forget”模式不同：</p>
+
+<ul>
+  <li>所有 Agent 共享同一个任务列表</li>
+  <li>Agent A 发现的问题可以直接添加到 Task List</li>
+  <li>Agent B 实时看到并可以接手处理</li>
+  <li>任务状态对所有 Agent 可见</li>
+</ul>
+
+<h3 id="32-代码示例">3.2 代码示例</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">anthropic</span> <span class="kn">import</span> <span class="n">AgentTeam</span>
+
+<span class="c1"># 创建共享任务列表
+</span><span class="n">team</span> <span class="o">=</span> <span class="n">AgentTeam</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s">"claude-sonnet-4-20260514"</span><span class="p">,</span>
+    <span class="n">agents</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">Agent</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">"researcher"</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">search_tool</span><span class="p">]),</span>
+        <span class="n">Agent</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">"coder"</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">code_tool</span><span class="p">]),</span>
+        <span class="n">Agent</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">"reviewer"</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">review_tool</span><span class="p">])</span>
+    <span class="p">],</span>
+    <span class="n">shared_state</span><span class="o">=</span><span class="bp">True</span>  <span class="c1"># 关键：启用共享状态
+</span><span class="p">)</span>
+
+<span class="c1"># 所有 Agent 可以看到彼此的任务
+</span><span class="k">await</span> <span class="n">team</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s">"""
+完成以下项目：
+1. 调研最新的 Agent 框架
+2. 实现核心功能
+3. 代码审查和优化
+"""</span><span class="p">)</span>
+
+<span class="c1"># Agent A (researcher) 可以在任务列表中添加新任务：
+# "发现依赖库 X 有安全问题，需要升级到 Y 版本"
+# Agent B (coder) 会立即看到并处理
+</span></code></pre></div></div>
+
+<h3 id="33-与传统子-agent-的对比">3.3 与传统子 Agent 的对比</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>传统子 Agent 模式：
+主 Agent → 子 Agent A (独立执行，返回结果)
+        → 子 Agent B (独立执行，返回结果)
+        
+问题：子 Agent 之间无法通信，A 发现的问题 B 不知道
+
+Agent Teams 模式：
+共享 Task List:
+- [✓] 调研框架 (Agent A 完成)
+- [→] 实现功能 (Agent B 进行中)
+- [!] 发现安全问题 (Agent A 添加，等待处理)
+- [ ] 代码审查 (Agent C 待处理)
+
+优势：所有 Agent 实时看到完整上下文
+</code></pre></div></div>
+
+<h3 id="34-实际踩坑经验">3.4 实际踩坑经验</h3>
+
+<p><strong>坑 1：任务冲突</strong></p>
+<ul>
+  <li>多个 Agent 可能同时处理同一个任务</li>
+  <li>需要实现任务锁或状态标记</li>
+  <li>建议设置”认领”机制</li>
+</ul>
+
+<p><strong>坑 2：状态同步延迟</strong></p>
+<ul>
+  <li>共享状态不是完全实时的</li>
+  <li>关键决策前需要显式同步</li>
+  <li>避免依赖毫秒级一致性</li>
+</ul>
+
+<h3 id="35-优缺点">3.5 优缺点</h3>
+
+<p><strong>优点：</strong></p>
+<ul>
+  <li>适合长任务、多阶段项目</li>
+  <li>Agent 之间可以自然协作</li>
+  <li>人类可以随时介入查看进度</li>
+</ul>
+
+<p><strong>缺点：</strong></p>
+<ul>
+  <li>共享状态增加复杂度</li>
+  <li>不适合完全独立的并行任务</li>
+  <li>调试难度较高</li>
+</ul>
+
+<hr />
+
+<h2 id="四managed-agents企业级稳定-agent-的加速器">四、Managed Agents：企业级稳定 Agent 的加速器</h2>
+
+<h3 id="41-架构原理">4.1 架构原理</h3>
+
+<p>Managed Agents 不是为”简单任务”设计的玩具，而是<strong>为企业降低 Agent 开发成本、提升稳定性</strong>而生的生产级方案。</p>
+
+<p>核心理念：<strong>让企业专注于业务逻辑，而非基础设施</strong>。</p>
+
+<p>你需要做的：</p>
+<ol>
+  <li>定义业务 goal</li>
+  <li>提供领域 tools（API、数据库、内部系统）</li>
+  <li>平台处理所有工程复杂性</li>
+</ol>
+
+<p>harness、memory、子 Agent 编排、错误恢复、状态持久化全部由平台托管。</p>
+
+<h3 id="42-代码示例">4.2 代码示例</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">anthropic</span> <span class="kn">import</span> <span class="n">ManagedAgent</span>
+
+<span class="c1"># 企业级 Agent：客户服务自动化
+</span><span class="n">customer_agent</span> <span class="o">=</span> <span class="n">ManagedAgent</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s">"claude-sonnet-4-20260514"</span><span class="p">,</span>
+    <span class="n">goal</span><span class="o">=</span><span class="s">"""处理客户咨询，包括：
+    1. 查询订单状态
+    2. 处理退换货申请
+    3. 解答常见问题
+    4. 升级复杂问题到人工客服"""</span><span class="p">,</span>
+    <span class="n">tools</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">order_lookup_tool</span><span class="p">,</span>      <span class="c1"># 内部订单系统 API
+</span>        <span class="n">refund_tool</span><span class="p">,</span>            <span class="c1"># 退款系统 API
+</span>        <span class="n">knowledge_base_tool</span><span class="p">,</span>    <span class="c1"># 企业知识库
+</span>        <span class="n">ticket_escalation_tool</span>  <span class="c1"># 工单系统
+</span>    <span class="p">],</span>
+    <span class="n">memory_config</span><span class="o">=</span><span class="p">{</span>
+        <span class="s">"type"</span><span class="p">:</span> <span class="s">"persistent"</span><span class="p">,</span>  <span class="c1"># 持久化记忆
+</span>        <span class="s">"retention_days"</span><span class="p">:</span> <span class="mi">90</span>   <span class="c1"># 客户对话保留 90 天
+</span>    <span class="p">},</span>
+    <span class="n">compliance_config</span><span class="o">=</span><span class="p">{</span>
+        <span class="s">"data_residency"</span><span class="p">:</span> <span class="s">"EU"</span><span class="p">,</span>  <span class="c1"># 数据驻留要求
+</span>        <span class="s">"audit_logging"</span><span class="p">:</span> <span class="bp">True</span>    <span class="c1"># 审计日志
+</span>    <span class="p">}</span>
+<span class="p">)</span>
+
+<span class="c1"># 生产环境部署
+</span><span class="k">await</span> <span class="n">customer_agent</span><span class="o">.</span><span class="n">deploy</span><span class="p">(</span>
+    <span class="n">environment</span><span class="o">=</span><span class="s">"production"</span><span class="p">,</span>
+    <span class="n">scaling_policy</span><span class="o">=</span><span class="s">"auto"</span><span class="p">,</span>  <span class="c1"># 自动扩缩容
+</span>    <span class="n">sla_target</span><span class="o">=</span><span class="mf">99.9</span>         <span class="c1"># SLA 目标
+</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="43-企业级优势">4.3 企业级优势</h3>
+
+<p><strong>1. 稳定性保障</strong></p>
+<ul>
+  <li>平台级错误恢复：自动重试、fallback、熔断</li>
+  <li>状态持久化：Agent 崩溃后可从中断点恢复</li>
+  <li>版本管理：Agent 配置可版本化、回滚</li>
+  <li>监控告警：内置性能监控和异常告警</li>
+</ul>
+
+<p><strong>2. 开发成本大幅降低</strong></p>
+<ul>
+  <li>无需编写 harness 防御代码（节省 70% 开发量）</li>
+  <li>无需处理 token 管理、错误重试、无限循环检测</li>
+  <li>无需搭建监控、日志、追踪系统</li>
+  <li>小团队也能构建生产级 Agent</li>
+</ul>
+
+<p><strong>3. 企业合规支持</strong></p>
+<ul>
+  <li>数据驻留控制（GDPR 合规）</li>
+  <li>审计日志（金融、医疗行业要求）</li>
+  <li>访问控制和权限管理</li>
+  <li>PII 数据自动脱敏</li>
+</ul>
+
+<p><strong>4. 可扩展性</strong></p>
+<ul>
+  <li>自动扩缩容应对流量峰值</li>
+  <li>多区域部署降低延迟</li>
+  <li>与企业现有系统无缝集成</li>
+</ul>
+
+<h3 id="44-实际踩坑经验">4.4 实际踩坑经验</h3>
+
+<p><strong>坑 1：初期配置复杂度高</strong></p>
+<ul>
+  <li>企业级功能需要详细配置（合规、审计、权限）</li>
+  <li>建议：从最小可行配置开始，逐步迭代</li>
+</ul>
+
+<p><strong>坑 2：自定义逻辑受限</strong></p>
+<ul>
+  <li>核心循环逻辑由平台管理</li>
+  <li>非常规需求可能需要切换到 SDK</li>
+  <li>建议：80% 标准化流程用 Managed，20% 特殊场景用 SDK</li>
+</ul>
+
+<p><strong>坑 3：供应商锁定风险</strong></p>
+<ul>
+  <li>深度依赖平台特性后迁移成本高</li>
+  <li>建议：关键业务逻辑保持模型无关，tools 层抽象化</li>
+</ul>
+
+<h3 id="45-优缺点">4.5 优缺点</h3>
+
+<p><strong>优点：</strong></p>
+<ul>
+  <li>开发成本降低 70%+（无需 harness 代码）</li>
+  <li>生产级稳定性（平台级错误恢复、监控）</li>
+  <li>企业合规开箱即用</li>
+  <li>小团队也能构建复杂 Agent</li>
+</ul>
+
+<p><strong>缺点：</strong></p>
+<ul>
+  <li>核心逻辑控制力较弱</li>
+  <li>深度定制需求受限</li>
+  <li>存在供应商锁定风险</li>
+</ul>
+
+<h3 id="46-适用场景">4.6 适用场景</h3>
+
+<p><strong>强烈推荐：</strong></p>
+<ul>
+  <li>企业客户服务 Agent</li>
+  <li>内部知识库问答系统</li>
+  <li>标准化业务流程自动化</li>
+  <li>需要合规审计的场景（金融、医疗）</li>
+</ul>
+
+<p><strong>不推荐：</strong></p>
+<ul>
+  <li>需要完全控制 Agent 行为的场景</li>
+  <li>非常规、实验性 Agent 设计</li>
+  <li>预算极其有限的小项目</li>
+</ul>
+
+<hr />
+
+<h2 id="五选型建议实战中的混搭策略">五、选型建议：实战中的混搭策略</h2>
+
+<p>基于实际项目经验，推荐的架构选择策略：</p>
+
+<h3 id="51-核心业务--agent-sdk">5.1 核心业务 → Agent SDK</h3>
+
+<p><strong>场景：</strong> 支付处理、用户数据操作、关键业务流程</p>
+
+<p><strong>理由：</strong></p>
+<ul>
+  <li>需要完全控制错误处理</li>
+  <li>业务逻辑复杂，需要深度优化</li>
+  <li>不能接受平台配额限制</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 核心支付流程必须用 SDK
+</span><span class="k">class</span> <span class="nc">PaymentAgent</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># 自定义重试、补偿、审计日志
+</span>        <span class="bp">self</span><span class="o">.</span><span class="n">retry_policy</span> <span class="o">=</span> <span class="n">ExponentialBackoff</span><span class="p">(</span><span class="n">max_retries</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">audit_log</span> <span class="o">=</span> <span class="n">AuditLogger</span><span class="p">()</span>
+    
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">process_payment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
+        <span class="c1"># 100% 控制力
+</span>        <span class="k">pass</span>
+</code></pre></div></div>
+
+<h3 id="52-跨平台分发--传统子-agent-并行">5.2 跨平台分发 → 传统子 Agent 并行</h3>
+
+<p><strong>场景：</strong> 同时发布到微信公众号、Twitter、博客</p>
+
+<p><strong>理由：</strong></p>
+<ul>
+  <li>各平台完全独立</li>
+  <li>不需要共享状态</li>
+  <li>并行执行效率最高</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 完全独立的任务，用传统子 Agent
+</span><span class="n">tasks</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">publish_to_wechat</span><span class="p">(</span><span class="n">article</span><span class="p">),</span>
+    <span class="n">publish_to_twitter</span><span class="p">(</span><span class="n">article</span><span class="p">),</span>
+    <span class="n">publish_to_blog</span><span class="p">(</span><span class="n">article</span><span class="p">)</span>
+<span class="p">]</span>
+<span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">gather</span><span class="p">(</span><span class="o">*</span><span class="n">tasks</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="53-长任务复盘--agent-teams">5.3 长任务复盘 → Agent Teams</h3>
+
+<p><strong>场景：</strong> 项目开发、代码重构、内容创作</p>
+
+<p><strong>理由：</strong></p>
+<ul>
+  <li>任务周期长，需要多阶段协作</li>
+  <li>可能需要人类中途介入</li>
+  <li>共享状态便于追踪进度</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 长周期项目用 Teams
+</span><span class="n">project_team</span> <span class="o">=</span> <span class="n">AgentTeam</span><span class="p">(</span>
+    <span class="n">agents</span><span class="o">=</span><span class="p">[</span><span class="n">planner</span><span class="p">,</span> <span class="n">executor</span><span class="p">,</span> <span class="n">reviewer</span><span class="p">],</span>
+    <span class="n">shared_state</span><span class="o">=</span><span class="bp">True</span>
+<span class="p">)</span>
+<span class="k">await</span> <span class="n">project_team</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s">"重构用户认证模块"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="54-内部杂事--managed-agents">5.4 内部杂事 → Managed Agents</h3>
+
+<p><strong>场景：</strong> 数据清洗、日志分析、简单报告</p>
+
+<p><strong>理由：</strong></p>
+<ul>
+  <li>任务简单标准化</li>
+  <li>开发效率优先</li>
+  <li>可以接受平台限制</li>
+</ul>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 简单任务用 Managed
+</span><span class="k">await</span> <span class="n">ManagedAgent</span><span class="p">(</span>
+    <span class="n">goal</span><span class="o">=</span><span class="s">"整理昨天的错误日志"</span><span class="p">,</span>
+    <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">log_tool</span><span class="p">]</span>
+<span class="p">)</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</code></pre></div></div>
+
+<hr />
+
+<h2 id="六接入自定义模型能力">六、接入自定义模型能力</h2>
+
+<p>虽然 Anthropic 的三种架构默认使用 Claude 模型，但在实际生产中，你可能需要：</p>
+<ul>
+  <li>降低成本：用廉价模型处理简单任务</li>
+  <li>特定能力：某个模型在特定领域表现更好</li>
+  <li>数据合规：使用本地部署模型</li>
+  <li>避免供应商锁定：保持架构的模型无关性</li>
+</ul>
+
+<h3 id="61-sdk-架构完全灵活的模型接入">6.1 SDK 架构：完全灵活的模型接入</h3>
+
+<p>SDK 的最大优势是可以无缝切换任意模型提供商。</p>
+
+<h4 id="方案-a通过-openrouter-统一接入">方案 A：通过 OpenRouter 统一接入</h4>
+
+<p>OpenRouter 提供统一的 API 格式，支持 100+ 模型：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">openai</span> <span class="kn">import</span> <span class="n">OpenAI</span>
+
+<span class="c1"># OpenRouter 兼容 OpenAI SDK
+</span><span class="n">client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">(</span>
+    <span class="n">base_url</span><span class="o">=</span><span class="s">"https://openrouter.ai/api/v1"</span><span class="p">,</span>
+    <span class="n">api_key</span><span class="o">=</span><span class="s">"YOUR_OPENROUTER_KEY"</span>
+<span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">MultiModelAgent</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">model_router</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">"complex"</span><span class="p">:</span> <span class="s">"anthropic/claude-sonnet-4"</span><span class="p">,</span>
+            <span class="s">"simple"</span><span class="p">:</span> <span class="s">"google/gemini-3-flash-preview"</span><span class="p">,</span>
+            <span class="s">"code"</span><span class="p">:</span> <span class="s">"deepseek/deepseek-coder-v2"</span><span class="p">,</span>
+            <span class="s">"local"</span><span class="p">:</span> <span class="s">"local/llama-3-70b"</span>  <span class="c1"># 本地模型
+</span>        <span class="p">}</span>
+    
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">goal</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">complexity</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s">"medium"</span><span class="p">):</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">model_router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">complexity</span><span class="p">,</span> <span class="s">"complex"</span><span class="p">)</span>
+        
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="n">model</span><span class="p">,</span>
+            <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s">"role"</span><span class="p">:</span> <span class="s">"user"</span><span class="p">,</span> <span class="s">"content"</span><span class="p">:</span> <span class="n">goal</span><span class="p">}],</span>
+            <span class="n">tools</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">tools</span><span class="p">,</span>
+            <span class="n">tool_choice</span><span class="o">=</span><span class="s">"auto"</span>
+        <span class="p">)</span>
+        
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parse_agent_response</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><strong>优点：</strong></p>
+<ul>
+  <li>一个 API 接入所有模型</li>
+  <li>按实际使用付费，无需预充值</li>
+  <li>自动 fallback 机制</li>
+</ul>
+
+<p><strong>成本对比（每 1M tokens）：</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>模型</th>
+      <th>输入</th>
+      <th>输出</th>
+      <th>适用场景</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Claude Sonnet 4</td>
+      <td>$3</td>
+      <td>$15</td>
+      <td>核心业务</td>
+    </tr>
+    <tr>
+      <td>Gemini 3 Flash</td>
+      <td>$0.075</td>
+      <td>$0.3</td>
+      <td>简单任务</td>
+    </tr>
+    <tr>
+      <td>DeepSeek Coder</td>
+      <td>$0.14</td>
+      <td>$0.28</td>
+      <td>代码生成</td>
+    </tr>
+    <tr>
+      <td>Llama 3 70B (本地)</td>
+      <td>$0</td>
+      <td>$0</td>
+      <td>数据敏感</td>
+    </tr>
+  </tbody>
+</table>
+
+<h4 id="方案-b本地模型部署ollamavllm">方案 B：本地模型部署（Ollama/vLLM）</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">openai</span> <span class="kn">import</span> <span class="n">OpenAI</span>
+
+<span class="c1"># 本地 Ollama 服务
+</span><span class="n">local_client</span> <span class="o">=</span> <span class="n">OpenAI</span><span class="p">(</span>
+    <span class="n">base_url</span><span class="o">=</span><span class="s">"http://localhost:11434/v1"</span><span class="p">,</span>
+    <span class="n">api_key</span><span class="o">=</span><span class="s">"ollama"</span>
+<span class="p">)</span>
+
+<span class="k">class</span> <span class="nc">HybridAgent</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># 云端 Claude 处理复杂任务
+</span>        <span class="bp">self</span><span class="o">.</span><span class="n">cloud_client</span> <span class="o">=</span> <span class="n">Anthropic</span><span class="p">(</span><span class="n">api_key</span><span class="o">=</span><span class="s">"..."</span><span class="p">)</span>
+        <span class="c1"># 本地模型处理敏感数据
+</span>        <span class="bp">self</span><span class="o">.</span><span class="n">local_client</span> <span class="o">=</span> <span class="n">local_client</span>
+    
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">process_sensitive_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="c1"># 敏感数据不出本地
+</span>        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">local_client</span><span class="o">.</span><span class="n">chat</span><span class="o">.</span><span class="n">completions</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="s">"llama3:70b"</span><span class="p">,</span>
+            <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s">"role"</span><span class="p">:</span> <span class="s">"user"</span><span class="p">,</span> <span class="s">"content"</span><span class="p">:</span> <span class="n">data</span><span class="p">}]</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span>
+    
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">complex_reasoning</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">goal</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="c1"># 复杂推理用 Claude
+</span>        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">cloud_client</span><span class="o">.</span><span class="n">messages</span><span class="o">.</span><span class="n">create</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="s">"claude-sonnet-4-20260514"</span><span class="p">,</span>
+            <span class="n">max_tokens</span><span class="o">=</span><span class="mi">4096</span><span class="p">,</span>
+            <span class="n">messages</span><span class="o">=</span><span class="p">[{</span><span class="s">"role"</span><span class="p">:</span> <span class="s">"user"</span><span class="p">,</span> <span class="s">"content"</span><span class="p">:</span> <span class="n">goal</span><span class="p">}]</span>
+        <span class="p">)</span>
+</code></pre></div></div>
+
+<h4 id="方案-c模型路由策略">方案 C：模型路由策略</h4>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">SmartRouter</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">models</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">"claude"</span><span class="p">:</span> <span class="n">AnthropicClient</span><span class="p">(),</span>
+            <span class="s">"gemini"</span><span class="p">:</span> <span class="n">GeminiClient</span><span class="p">(),</span>
+            <span class="s">"local"</span><span class="p">:</span> <span class="n">OllamaClient</span><span class="p">()</span>
+        <span class="p">}</span>
+    
+    <span class="k">def</span> <span class="nf">select_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="c1"># 根据任务特征选择模型
+</span>        <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">"sensitive"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s">"local"</span>
+        <span class="k">elif</span> <span class="n">task</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">"complexity"</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">0.8</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">"claude"</span>
+        <span class="k">elif</span> <span class="n">task</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">"type"</span><span class="p">)</span> <span class="o">==</span> <span class="s">"code"</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">"claude"</span>  <span class="c1"># 或 deepseek
+</span>        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s">"gemini"</span>  <span class="c1"># 便宜够用
+</span>    
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">select_model</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">model</span><span class="p">]</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h3 id="62-agent-teams有限的模型自定义">6.2 Agent Teams：有限的模型自定义</h3>
+
+<p>Agent Teams 目前<strong>仅支持 Claude 模型</strong>，但可以通过以下方式变通：</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># 变通方案：外部模型作为"工具"
+</span><span class="kn">from</span> <span class="nn">anthropic</span> <span class="kn">import</span> <span class="n">AgentTeam</span>
+<span class="kn">import</span> <span class="nn">requests</span>
+
+<span class="k">def</span> <span class="nf">call_local_model</span><span class="p">(</span><span class="n">query</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="s">"""作为工具调用的本地模型"""</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">requests</span><span class="o">.</span><span class="n">post</span><span class="p">(</span>
+        <span class="s">"http://localhost:11434/api/generate"</span><span class="p">,</span>
+        <span class="n">json</span><span class="o">=</span><span class="p">{</span><span class="s">"model"</span><span class="p">:</span> <span class="s">"llama3"</span><span class="p">,</span> <span class="s">"prompt"</span><span class="p">:</span> <span class="n">query</span><span class="p">}</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">json</span><span class="p">()[</span><span class="s">"response"</span><span class="p">]</span>
+
+<span class="n">team</span> <span class="o">=</span> <span class="n">AgentTeam</span><span class="p">(</span>
+    <span class="n">model</span><span class="o">=</span><span class="s">"claude-sonnet-4-20260514"</span><span class="p">,</span>
+    <span class="n">agents</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">Agent</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">"researcher"</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">search_tool</span><span class="p">]),</span>
+        <span class="c1"># 本地模型作为工具被 Claude 调用
+</span>        <span class="n">Agent</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">"local_processor"</span><span class="p">,</span> <span class="n">tools</span><span class="o">=</span><span class="p">[</span><span class="n">call_local_model</span><span class="p">])</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+</code></pre></div></div>
+
+<p><strong>限制：</strong></p>
+<ul>
+  <li>主模型必须是 Claude</li>
+  <li>其他模型只能作为工具被调用</li>
+  <li>无法让某个 Agent 完全使用非 Claude 模型</li>
+</ul>
+
+<h3 id="63-managed-agents不支持自定义模型">6.3 Managed Agents：不支持自定义模型</h3>
+
+<p>Managed Agents <strong>完全绑定 Claude 模型</strong>，无法切换。</p>
+
+<p><strong>应对策略：</strong></p>
+<ul>
+  <li>简单任务用 Managed + Claude（省心）</li>
+  <li>需要自定义模型的任务降级为 SDK 架构</li>
+  <li>在 SDK 层实现模型路由，Managed 层只处理标准化流程</li>
+</ul>
+
+<h3 id="64-实战建议混合模型架构">6.4 实战建议：混合模型架构</h3>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">class</span> <span class="nc">ProductionAgentSystem</span><span class="p">:</span>
+    <span class="s">"""生产环境的混合模型架构"""</span>
+    
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># 1. SDK 层：核心业务，支持任意模型
+</span>        <span class="bp">self</span><span class="o">.</span><span class="n">core_agent</span> <span class="o">=</span> <span class="n">SmartRouter</span><span class="p">()</span>
+        
+        <span class="c1"># 2. Teams 层：协作任务，用 Claude
+</span>        <span class="bp">self</span><span class="o">.</span><span class="n">project_team</span> <span class="o">=</span> <span class="n">AgentTeam</span><span class="p">(</span>
+            <span class="n">model</span><span class="o">=</span><span class="s">"claude-sonnet-4-20260514"</span><span class="p">,</span>
+            <span class="n">agents</span><span class="o">=</span><span class="p">[</span><span class="o">...</span><span class="p">]</span>
+        <span class="p">)</span>
+        
+        <span class="c1"># 3. Managed 层：简单任务，用 Claude
+</span>        <span class="bp">self</span><span class="o">.</span><span class="n">simple_tasks</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">ManagedAgent</span><span class="p">(</span><span class="n">goal</span><span class="o">=</span><span class="s">"日志分析"</span><span class="p">,</span> <span class="o">...</span><span class="p">),</span>
+            <span class="n">ManagedAgent</span><span class="p">(</span><span class="n">goal</span><span class="o">=</span><span class="s">"数据清洗"</span><span class="p">,</span> <span class="o">...</span><span class="p">)</span>
+        <span class="p">]</span>
+    
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">dispatch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">task</span><span class="p">:</span> <span class="nb">dict</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">task</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">"requires_custom_model"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">core_agent</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">task</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">"long_running"</span><span class="p">):</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">project_team</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">task</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">simple_tasks</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p><strong>成本优化效果（月处理 100 万 tokens）：</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>策略</th>
+      <th>纯 Claude</th>
+      <th>混合模型</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>月成本</td>
+      <td>~$10</td>
+      <td>~$3</td>
+    </tr>
+    <tr>
+      <td>性能</td>
+      <td>100%</td>
+      <td>95%+</td>
+    </tr>
+    <tr>
+      <td>灵活性</td>
+      <td>低</td>
+      <td>高</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 id="七架构对比总结">七、架构对比总结</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th>维度</th>
+      <th>SDK</th>
+      <th>Teams</th>
+      <th>Managed</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>开发时间</td>
+      <td>2-4 周</td>
+      <td>1-2 周</td>
+      <td>1-2 天</td>
+    </tr>
+    <tr>
+      <td>控制力</td>
+      <td>★★★★★</td>
+      <td>★★★☆☆</td>
+      <td>★☆☆☆☆</td>
+    </tr>
+    <tr>
+      <td>维护成本</td>
+      <td>高</td>
+      <td>中</td>
+      <td>低</td>
+    </tr>
+    <tr>
+      <td>适合团队</td>
+      <td>资深工程师</td>
+      <td>中级工程师</td>
+      <td>任何开发者</td>
+    </tr>
+    <tr>
+      <td>配额限制</td>
+      <td>无</td>
+      <td>中等</td>
+      <td>严格</td>
+    </tr>
+  </tbody>
+</table>
+
+<hr />
+
+<h2 id="结语">结语</h2>
+
+<p>Anthropic 发布的三个 Agent 产品，不是让你三选一，而是提供了一套完整的工具箱：</p>
+
+<ul>
+  <li><strong>SDK</strong> 是手术刀——精确、强大，但需要高超技艺</li>
+  <li><strong>Teams</strong> 是协作平台——适合团队作战的长周期项目</li>
+  <li><strong>Managed</strong> 是自动化工具——简单任务的首选</li>
+</ul>
+
+<p>明智的开发者会根据场景混搭使用：核心业务用 SDK 保证控制力，跨平台任务用并行子 Agent 提升效率，长周期项目用 Teams 便于协作，日常杂事用 Managed 节省精力。</p>
+
+<p>记住：<strong>架构没有银弹，只有取舍</strong>。选择最适合你当前场景的方案，而不是最酷的方案。</p>
+
+<hr />
+
+<p><em>本文基于实际项目经验总结，欢迎交流讨论。</em></p>
