@@ -1,17 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2026-04-16T14:59:02+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">wechat_xiaolongxia_openclaw</title><link href="https://mengtnt.com/2026/04/16/14-04.html" rel="alternate" type="text/html" title="wechat_xiaolongxia_openclaw" /><published>2026-04-16T06:57:51+00:00</published><updated>2026-04-16T06:57:51+00:00</updated><id>https://mengtnt.com/2026/04/16/14-04</id><content type="html" xml:base="https://mengtnt.com/2026/04/16/14-04.html">&lt;h1 id=&quot;普通人用小龙虾可以做什么&quot;&gt;普通人用”小龙虾”可以做什么&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2026-04-16T15:05:22+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">普通人用小龙虾可以做什么</title><link href="https://mengtnt.com/2026/04/16/14-04.html" rel="alternate" type="text/html" title="普通人用小龙虾可以做什么" /><published>2026-04-16T06:57:51+00:00</published><updated>2026-04-16T06:57:51+00:00</updated><id>https://mengtnt.com/2026/04/16/14-04</id><content type="html" xml:base="https://mengtnt.com/2026/04/16/14-04.html">&lt;h2 id=&quot;开场白&quot;&gt;开场白&lt;/h2&gt;
 
-&lt;blockquote&gt;
-  &lt;p&gt;花 3000 字，带你看看 Hacker News 上的技术极客们都在用 OpenClaw 做什么&lt;/p&gt;
-&lt;/blockquote&gt;
-
-&lt;p&gt;&lt;strong&gt;文 / 小般子&lt;/strong&gt;&lt;br /&gt;
-&lt;strong&gt;2026 年 4 月 16 日&lt;/strong&gt;&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;h2 id=&quot;开场白&quot;&gt;开场白&lt;/h2&gt;
-
-&lt;p&gt;昨天 Hacker News 上有个挺火的讨论，80 多条评论，一群人围着 OpenClaw 这个 AI Agent 工具聊得热火朝天。&lt;/p&gt;
+&lt;p&gt;Hacker News 上有个挺火的讨论，80 多条评论，一群人围着 OpenClaw 这个 AI Agent 工具聊得热火朝天。&lt;/p&gt;
 
 &lt;p&gt;我花了一晚上爬完了所有评论，发现一个有意思的现象：&lt;strong&gt;同样是 AI 助手，有人拿它当管家，有人拿它当秘书，还有人拿它当学习伴侣。&lt;/strong&gt;&lt;/p&gt;
 
@@ -375,11 +364,7 @@
 
 &lt;p&gt;这只小龙虾能帮你干啥，最终取决于你想让它干啥。&lt;/p&gt;
 
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;strong&gt;参考资料&lt;/strong&gt;: Hacker News 讨论 https://news.ycombinator.com/item?id=47783940&lt;br /&gt;
-&lt;strong&gt;编译整理&lt;/strong&gt;: 小般子&lt;br /&gt;
-&lt;strong&gt;日期&lt;/strong&gt;: 2026 年 4 月 16 日&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">普通人用”小龙虾”可以做什么</summary></entry><entry><title type="html">Claude 三种 Agent 架构全解析：SDK vs Teams vs Managed 如何选择</title><link href="https://mengtnt.com/2026/04/12/01-04.html" rel="alternate" type="text/html" title="Claude 三种 Agent 架构全解析：SDK vs Teams vs Managed 如何选择" /><published>2026-04-12T00:00:00+00:00</published><updated>2026-04-12T00:00:00+00:00</updated><id>https://mengtnt.com/2026/04/12/01-04</id><content type="html" xml:base="https://mengtnt.com/2026/04/12/01-04.html">&lt;h1 id=&quot;claude-三种-agent-架构全解析sdk-vs-teams-vs-managed-如何选择&quot;&gt;Claude 三种 Agent 架构全解析：SDK vs Teams vs Managed 如何选择&lt;/h1&gt;
+&lt;hr /&gt;</content><author><name>mengtnt</name></author><summary type="html">开场白</summary></entry><entry><title type="html">Claude 三种 Agent 架构全解析：SDK vs Teams vs Managed 如何选择</title><link href="https://mengtnt.com/2026/04/12/01-04.html" rel="alternate" type="text/html" title="Claude 三种 Agent 架构全解析：SDK vs Teams vs Managed 如何选择" /><published>2026-04-12T00:00:00+00:00</published><updated>2026-04-12T00:00:00+00:00</updated><id>https://mengtnt.com/2026/04/12/01-04</id><content type="html" xml:base="https://mengtnt.com/2026/04/12/01-04.html">&lt;h1 id=&quot;claude-三种-agent-架构全解析sdk-vs-teams-vs-managed-如何选择&quot;&gt;Claude 三种 Agent 架构全解析：SDK vs Teams vs Managed 如何选择&lt;/h1&gt;
 
 &lt;h2 id=&quot;引言&quot;&gt;引言&lt;/h2&gt;
 
