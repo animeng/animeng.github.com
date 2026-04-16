@@ -1,4 +1,385 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2026-04-12T06:34:25+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">Claude 三种 Agent 架构全解析：SDK vs Teams vs Managed 如何选择</title><link href="https://mengtnt.com/2026/04/12/01-04.html" rel="alternate" type="text/html" title="Claude 三种 Agent 架构全解析：SDK vs Teams vs Managed 如何选择" /><published>2026-04-12T00:00:00+00:00</published><updated>2026-04-12T00:00:00+00:00</updated><id>https://mengtnt.com/2026/04/12/01-04</id><content type="html" xml:base="https://mengtnt.com/2026/04/12/01-04.html">&lt;h1 id=&quot;claude-三种-agent-架构全解析sdk-vs-teams-vs-managed-如何选择&quot;&gt;Claude 三种 Agent 架构全解析：SDK vs Teams vs Managed 如何选择&lt;/h1&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2026-04-16T14:59:02+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">wechat_xiaolongxia_openclaw</title><link href="https://mengtnt.com/2026/04/16/14-04.html" rel="alternate" type="text/html" title="wechat_xiaolongxia_openclaw" /><published>2026-04-16T06:57:51+00:00</published><updated>2026-04-16T06:57:51+00:00</updated><id>https://mengtnt.com/2026/04/16/14-04</id><content type="html" xml:base="https://mengtnt.com/2026/04/16/14-04.html">&lt;h1 id=&quot;普通人用小龙虾可以做什么&quot;&gt;普通人用”小龙虾”可以做什么&lt;/h1&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;花 3000 字，带你看看 Hacker News 上的技术极客们都在用 OpenClaw 做什么&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;&lt;strong&gt;文 / 小般子&lt;/strong&gt;&lt;br /&gt;
+&lt;strong&gt;2026 年 4 月 16 日&lt;/strong&gt;&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;开场白&quot;&gt;开场白&lt;/h2&gt;
+
+&lt;p&gt;昨天 Hacker News 上有个挺火的讨论，80 多条评论，一群人围着 OpenClaw 这个 AI Agent 工具聊得热火朝天。&lt;/p&gt;
+
+&lt;p&gt;我花了一晚上爬完了所有评论，发现一个有意思的现象：&lt;strong&gt;同样是 AI 助手，有人拿它当管家，有人拿它当秘书，还有人拿它当学习伴侣。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;今天这篇文章，我就把 HN 上大家讨论最热烈的使用场景整理出来，挑出&lt;strong&gt;TOP 3 最佳场景&lt;/strong&gt;，每个场景都给你分析清楚利弊。&lt;/p&gt;
+
+&lt;p&gt;看完你就知道，这只”小龙虾”到底能帮你干啥。&lt;/p&gt;
+
+&lt;!-- [IMAGE: A cute red crayfish mascot wearing glasses, sitting in front of a computer screen displaying code and notes, digital art style, warm lighting, friendly and approachable] --&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;top-1obsidian-笔记自动化-&quot;&gt;TOP 1：Obsidian 笔记自动化 ⭐⭐⭐⭐⭐&lt;/h2&gt;
+
+&lt;p&gt;这是 HN 上&lt;strong&gt;提及频率最高&lt;/strong&gt;的场景，没有之一。&lt;/p&gt;
+
+&lt;h3 id=&quot;场景长什么样&quot;&gt;场景长什么样？&lt;/h3&gt;
+
+&lt;p&gt;想象一下这个工作流：&lt;/p&gt;
+
+&lt;p&gt;你白天在 Obsidian 里写了几篇笔记，可能是读书笔记、会议记录、或者学习笔记。晚上睡觉前，你什么都不用做，OpenClaw 会自动：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;拉取你私有 GitHub 仓库里的 Obsidian 更新&lt;/li&gt;
+  &lt;li&gt;解析新增的笔记内容&lt;/li&gt;
+  &lt;li&gt;用 LLM 提取关键知识点，生成闪卡（Flashcards）&lt;/li&gt;
+  &lt;li&gt;把闪卡自动导入 Anki 或你的间隔重复系统&lt;/li&gt;
+  &lt;li&gt;第二天早上，你打开闪卡 App，昨天学的内容已经变成可以复习的卡片了&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;!-- [IMAGE: A clean modern workspace with a laptop showing Obsidian notes on screen, flashcards floating above the keyboard like holograms, soft blue and white color scheme, minimalist tech illustration] --&gt;
+
+&lt;p&gt;有位叫 dsiegel2275 的用户是这么说的：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“我每晚让 OpenClaw 拉取私有 GitHub 仓库的 Obsidian 笔记更新，然后运行’创建闪卡’skill 提取有用的闪卡用于间隔重复练习。第二天打开闪卡 App 时，已经有昨天课程的新卡片可以复习了。”&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;更进阶的玩法是&lt;strong&gt;自动汇总&lt;/strong&gt;：日报 → 周报 → 月报，全自动生成。&lt;/p&gt;
+
+&lt;h3 id=&quot;技术实现&quot;&gt;技术实现&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Git 同步 + Markdown 解析 + LLM 提取知识点&lt;/li&gt;
+  &lt;li&gt;通过 API 将闪卡插入 Anki 或自定义系统&lt;/li&gt;
+  &lt;li&gt;可选：自动提醒复习&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;利-&quot;&gt;利 ✅&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;真正的”无感”学习&lt;/strong&gt;：你只管写笔记，剩下的交给它&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;知识沉淀自动化&lt;/strong&gt;：不再担心笔记写完就吃灰&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;间隔重复无缝衔接&lt;/strong&gt;：学习曲线更平滑&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;弊-&quot;&gt;弊 ❌&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;需要一定的技术基础&lt;/strong&gt;：得会配置 Git 仓库、API keys&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;闪卡质量依赖 LLM&lt;/strong&gt;：有时候提取的知识点不够精准&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;初期设置耗时&lt;/strong&gt;：有用户反馈配置需要 20~30 步&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;适合谁&quot;&gt;适合谁？&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;重度 Obsidian 用户&lt;/li&gt;
+  &lt;li&gt;有持续学习习惯的人&lt;/li&gt;
+  &lt;li&gt;愿意花时间搭建自动化工作流的技术爱好者&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;top-2信息摘要与每日简报-&quot;&gt;TOP 2：信息摘要与每日简报 ⭐⭐⭐⭐&lt;/h2&gt;
+
+&lt;p&gt;这是第二个热门场景，多位用户分享。&lt;/p&gt;
+
+&lt;h3 id=&quot;场景长什么样-1&quot;&gt;场景长什么样？&lt;/h3&gt;
+
+&lt;p&gt;你每天关心 Hacker News、Twitter 上的某些话题，但没时间一条条刷。OpenClaw 可以：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;定时抓取你指定的信息源（HN、Twitter、RSS 等）&lt;/li&gt;
+  &lt;li&gt;根据你的兴趣主题筛选内容&lt;/li&gt;
+  &lt;li&gt;用 LLM 生成摘要&lt;/li&gt;
+  &lt;li&gt;在固定时间（比如每天早上 8 点）把简报发送到你的 Telegram/Slack/Discord&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;用户 lizardking 说：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“我让它每晚扫描 Hacker News 和 Twitter 上我感兴趣的主题，摘要故事和讨论。这是一个很棒的每日摘要。”&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;还有个叫 jameson 的用户用它来：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“在预定时间总结 Top 10 Hacker News 或发送每日笑话。”&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;更智能的是，它可以&lt;strong&gt;条件触发&lt;/strong&gt;——只有当有重要内容时才通知你，避免信息过载。&lt;/p&gt;
+
+&lt;h3 id=&quot;技术实现-1&quot;&gt;技术实现&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;RSS/爬虫 + LLM 摘要 + 定时任务（Cron）&lt;/li&gt;
+  &lt;li&gt;支持条件触发（仅在有重要内容时通知）&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;利--1&quot;&gt;利 ✅&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;信息过载的解药&lt;/strong&gt;：你只看摘要，不用刷原始信息流&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;个性化筛选&lt;/strong&gt;：只关注你真正关心的话题&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;时间可控&lt;/strong&gt;：固定时间推送，不打断工作流&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;弊--1&quot;&gt;弊 ❌&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;可能错过上下文&lt;/strong&gt;：摘要再精准，也可能漏掉重要细节&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Token 消耗大&lt;/strong&gt;：处理大量文本，成本不低&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;误判风险&lt;/strong&gt;：AI 可能把重要内容判定为”不重要”&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;适合谁-1&quot;&gt;适合谁？&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;信息焦虑症患者&lt;/li&gt;
+  &lt;li&gt;需要追踪多个信息源的专业人士&lt;/li&gt;
+  &lt;li&gt;想节省刷社交媒体时间的任何人&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;top-3邮件管理与自动化-&quot;&gt;TOP 3：邮件管理与自动化 ⭐⭐⭐⭐&lt;/h2&gt;
+
+&lt;p&gt;第三个热门场景，尤其是对于商务人士。&lt;/p&gt;
+
+&lt;h3 id=&quot;场景长什么样-2&quot;&gt;场景长什么样？&lt;/h3&gt;
+
+&lt;p&gt;你的邮箱每天收到几十上百封邮件，OpenClaw 可以帮你：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;监控特定发件人或主题的邮件&lt;/li&gt;
+  &lt;li&gt;自动分类和整理到不同文件夹&lt;/li&gt;
+  &lt;li&gt;从发票 PDF 中提取数据，录入成本跟踪表&lt;/li&gt;
+  &lt;li&gt;草稿回复邮件（需要你确认后再发送）&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;用户 zsiddique 分享：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“我有自动化处理 incoming 邮件并执行任务。对于某些类型的邮件和问题，我已经有心理公式，现在交给 AI 处理。它可以快速回复，有时我会发现它偏离轨道（AI 数学还是有问题），但这些都是需要快速响应的事情。”&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;还有个很实用的场景是&lt;strong&gt;日历检查&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“我让它检查 Outlook 日历，告诉我是否有任何 1:1 会议对方已经拒绝（因为 Outlook 不清晰显示这个，我经常到会才发现对方取消了）。” — superfrank&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;技术实现-2&quot;&gt;技术实现&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;IMAP/邮件 API + 规则引擎 + LLM 分类&lt;/li&gt;
+  &lt;li&gt;PDF 解析（发票等）&lt;/li&gt;
+  &lt;li&gt;与日历 API 集成&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;利--2&quot;&gt;利 ✅&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;减少重复劳动&lt;/strong&gt;：分类、整理、提取数据，全自动&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;不错过重要邮件&lt;/strong&gt;：优先级排序，重要邮件优先处理&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;快速响应&lt;/strong&gt;：草稿自动写好，你只需要确认&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;弊--2&quot;&gt;弊 ❌&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;隐私风险&lt;/strong&gt;：邮件包含敏感信息，需谨慎授权&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;AI 可能理解偏差&lt;/strong&gt;：尤其是复杂语境下的邮件&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;配置复杂&lt;/strong&gt;：不同邮件服务商 API 不同，需要分别配置&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;适合谁-2&quot;&gt;适合谁？&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;邮件量大的商务人士&lt;/li&gt;
+  &lt;li&gt;需要处理大量发票/报销的创业者&lt;/li&gt;
+  &lt;li&gt;经常开会、需要日历管理的职场人&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;其他值得关注的场景&quot;&gt;其他值得关注的场景&lt;/h2&gt;
+
+&lt;p&gt;除了 TOP 3，还有一些场景也值得提一下：&lt;/p&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;场景&lt;/th&gt;
+      &lt;th&gt;热度&lt;/th&gt;
+      &lt;th&gt;一句话描述&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;个人任务管理&lt;/td&gt;
+      &lt;td&gt;⭐⭐⭐⭐&lt;/td&gt;
+      &lt;td&gt;语音消息添加待办，像对真人助理说话&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;家庭自动化&lt;/td&gt;
+      &lt;td&gt;⭐⭐⭐&lt;/td&gt;
+      &lt;td&gt;Home Assistant 崩溃了？让机器人重启它&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;代码开发部署&lt;/td&gt;
+      &lt;td&gt;⭐⭐⭐&lt;/td&gt;
+      &lt;td&gt;记下一个 App 想法，几分钟后就部署好了&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;语言学习&lt;/td&gt;
+      &lt;td&gt;⭐⭐⭐&lt;/td&gt;
+      &lt;td&gt;日语学习 + Obsidian + Anki 一体化&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;健康数据追踪&lt;/td&gt;
+      &lt;td&gt;⭐⭐&lt;/td&gt;
+      &lt;td&gt;卡路里追踪、天气监控、心理健康提醒&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;有个场景我觉得特别有意思——&lt;strong&gt;心理健康支持&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“一个记录你最近做的酷事的 agent，并主动提醒你，帮助你从更宏观的角度看问题，对我生活中因各种原因倾向于更负面认知模式的人很有帮助。” — piazz&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这只小龙虾，还能当你的情绪管家。&lt;/p&gt;
+
+&lt;!-- [IMAGE: A friendly AI robot assistant helping a person organize emails and calendar on a smartphone, warm orange and teal colors, modern flat design illustration, professional yet approachable] --&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;用户怎么说&quot;&gt;用户怎么说？&lt;/h2&gt;
+
+&lt;h3 id=&quot;正面评价&quot;&gt;正面评价&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“便利性是能够在购物时要求它做某事，并让它自动测试等。” — BeetleB&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“真正的解锁是保持在一个上下文中，不会迷失在琐碎细节的长尾中。” — ryanmcgarvey&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“我有 GitHub 和 Vercel 连接，这意味着我可以记下一个小生产力 App 的想法，几分钟后它就出现并部署好了。” — ryanmcgarvey&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h3 id=&quot;负面评价&quot;&gt;负面评价&lt;/h3&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“初始设置比我想象的要耗时。OpenClaw 设置和配置是 20~30 步的情况，需要很多 API keys。” — godot&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“潜力巨大。现实是令人沮丧和不可靠的。当它工作时，你真的很喜欢它。” — BeetleB&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“Token 使用量不合理。要么使用更聪明的模型（成本更高），要么使用更便宜的模型（有时会陷入循环）。” — jameson&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“OpenClaw 正好处于 prompt injection 致命三要素中。OpenClaw 实例能够重置你的账户密码听起来非常可怕。” — tcoff91&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;核心争议为什么不用脚本--cron&quot;&gt;核心争议：为什么不用脚本 + Cron？&lt;/h2&gt;
+
+&lt;p&gt;这是整个讨论里最核心的争议点。&lt;/p&gt;
+
+&lt;h3 id=&quot;支持-agent-的人说&quot;&gt;支持 Agent 的人说：&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;“写一个脚本和 crontab 条目需要更多努力，而 OpenClaw 开箱即用。”&lt;/li&gt;
+  &lt;li&gt;“老板可能甚至不知道 Bash 是什么，更不用说 crontab 了。”&lt;/li&gt;
+  &lt;li&gt;“是的，但我现在不需要问你（开发者）了。”&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;支持脚本的人说&quot;&gt;支持脚本的人说：&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;“如果我可以 prompt AI 在几分钟内写一个实际的确定性脚本来解决问题，然后永远运行它，为什么要把它委托给非确定性 AI？”&lt;/li&gt;
+  &lt;li&gt;“我更喜欢如果它不按预期工作时有东西可以调试。”&lt;/li&gt;
+  &lt;li&gt;“那将是有效的，如果设置定时 AI 任务真的需要任何技术知识，但它不需要。ChatGPT 让你在 UI 中原生安排任务。”&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;我的看法&quot;&gt;我的看法&lt;/h3&gt;
+
+&lt;p&gt;这其实不是二选一的问题。&lt;strong&gt;核心业务用脚本，边缘任务用 Agent&lt;/strong&gt;，可能是更务实的选择。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;总结小龙虾适合你吗&quot;&gt;总结：小龙虾适合你吗？&lt;/h2&gt;
+
+&lt;h3 id=&quot;适合使用-openclaw-的场景&quot;&gt;适合使用 OpenClaw 的场景&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;非技术用户&lt;/strong&gt;需要自动化但不想学习脚本&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;快速原型&lt;/strong&gt;和实验性项目&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;个人助理&lt;/strong&gt;类任务（提醒、摘要、简单查询）&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;学习/实验&lt;/strong&gt;Agent 技术和多 Agent 系统&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;不适合的场景&quot;&gt;不适合的场景&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;关键业务&lt;/strong&gt;流程（需要确定性）&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;高价值/高风险&lt;/strong&gt;操作（银行、密码等）&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;大规模生产&lt;/strong&gt;环境（成本不可控）&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;需要审计/合规&lt;/strong&gt;的场景&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;最佳实践建议&quot;&gt;最佳实践建议&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;&lt;strong&gt;沙箱运行&lt;/strong&gt;：在 VPS 或容器中运行，限制访问权限&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;渐进式授权&lt;/strong&gt;：从低风险任务开始，逐步增加权限&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;监控与审计&lt;/strong&gt;：记录所有操作，定期检查&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;混合架构&lt;/strong&gt;：核心业务用脚本，边缘任务用 Agent&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;成本控制&lt;/strong&gt;：设置 Token 预算，使用便宜模型处理简单任务&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;最后说两句&quot;&gt;最后说两句&lt;/h2&gt;
+
+&lt;p&gt;HN 上有位用户预测：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“我敢打赌几年后这将成为标准做法。” — bryan0&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;另一位说：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;“这是一个很棒的工具。想象一下拥有你自己的管家，除了可靠性与可负担性还没有达到做任何严肃事情的程度。” — jameson&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;AI Agent 还在早期阶段，但它已经在改变一些人的工作方式了。&lt;/p&gt;
+
+&lt;p&gt;&lt;strong&gt;关键是找到适合你的场景，从小处开始，逐步扩展。&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;这只小龙虾能帮你干啥，最终取决于你想让它干啥。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;strong&gt;参考资料&lt;/strong&gt;: Hacker News 讨论 https://news.ycombinator.com/item?id=47783940&lt;br /&gt;
+&lt;strong&gt;编译整理&lt;/strong&gt;: 小般子&lt;br /&gt;
+&lt;strong&gt;日期&lt;/strong&gt;: 2026 年 4 月 16 日&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">普通人用”小龙虾”可以做什么</summary></entry><entry><title type="html">Claude 三种 Agent 架构全解析：SDK vs Teams vs Managed 如何选择</title><link href="https://mengtnt.com/2026/04/12/01-04.html" rel="alternate" type="text/html" title="Claude 三种 Agent 架构全解析：SDK vs Teams vs Managed 如何选择" /><published>2026-04-12T00:00:00+00:00</published><updated>2026-04-12T00:00:00+00:00</updated><id>https://mengtnt.com/2026/04/12/01-04</id><content type="html" xml:base="https://mengtnt.com/2026/04/12/01-04.html">&lt;h1 id=&quot;claude-三种-agent-架构全解析sdk-vs-teams-vs-managed-如何选择&quot;&gt;Claude 三种 Agent 架构全解析：SDK vs Teams vs Managed 如何选择&lt;/h1&gt;
 
 &lt;h2 id=&quot;引言&quot;&gt;引言&lt;/h2&gt;
 
@@ -2701,89 +3082,4 @@ MemberListView *-- MemberListViewPlugin : 1..*
 
 &lt;p&gt;对比 ChatGPT 重构的总结，总体原则一样，但是会更加具体一点。最后我想讲下关于重构代码时，如何保证稳定性的一些原则。我总结起来就是小步快走，保证稳定。在重构的过程中允许一定的冗余代码，增加灰度能力，当发现问题时可以及时回滚，等待重构的代码测试没问题了再删除。&lt;/p&gt;
 
-&lt;p&gt;很多优秀的开源项目的代码不仅对代码的性能，也对代码的质量和可维护性要求很高，阅读起来就像欣赏优美的诗篇。屎山一样的代码从来不会有伟大的作品。我相信每个优秀的程序员，都不愿意把自己的代码变成屎山，但是罗马也不是一天能建成的，学会重构是必备的技能。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">重构是一个老生常谈的问题，并且也有大量的书籍介绍重构的方法。那如何重构代码？如何保证重构的代码不出问题？重构后的代码如何防止腐化？我先贴出来 ChatGPT 如何回答的，来感受下她的强大。</summary></entry><entry><title type="html">职责单一的重要性</title><link href="https://mengtnt.com/2022/09/18/architeche.html" rel="alternate" type="text/html" title="职责单一的重要性" /><published>2022-09-18T06:55:02+00:00</published><updated>2022-09-18T06:55:02+00:00</updated><id>https://mengtnt.com/2022/09/18/architeche</id><content type="html" xml:base="https://mengtnt.com/2022/09/18/architeche.html">&lt;p&gt;最近在做 iPad 改版功能，由于 iPad 的功能和 iPhone 功能上基本保持一致，除了 UI 要适配下 iPad 的屏幕以及分屏的情况外。在这个开发过程中，和同事讨论了一个很有意思的功能扩展的问题。虽然简单但是感觉很有必要记录下来，对于在软件开发中设计业务逻辑时很有启发。&lt;/p&gt;
-
-&lt;h2 id=&quot;故事的开始&quot;&gt;故事的开始&lt;/h2&gt;
-
-&lt;p&gt;iPad 的UI适配的代码写在 XXXiPadViewController 中，主要目的是不改变原有代码的逻辑，只需要添加适配代码即可。其实也是软件设计中经常用的一个特点开闭原则。&lt;/p&gt;
-
-&lt;p&gt;但是遇到的问题是，原来的XXXComponent的代码，但是业务代码都是继承在ViewController中的，了解iOS开发的都清楚，ViewController主要负责页面UI的添加和布局。由于适配 iPad 的视图，尤其是分屏的逻辑，一定需要更改布局，如果想使用原来的 XXXComponent 的代码逻辑，但是不想改动代码的布局，似乎不太可能。&lt;/p&gt;
-
-&lt;h2 id=&quot;解决方法&quot;&gt;解决方法&lt;/h2&gt;
-
-&lt;p&gt;如果熟悉软件设计的装饰器模式的话，这其实有点像装饰器。不改变原有对象的情况下动态地给一个对象扩展功能，即插即用。XXXiPadComponent，就是装饰器，用来装饰XXXComponent，让他具备iPad的布局能力，但是要把分屏布局都放到装饰器中，就需要父视图布局的能力暴露给 XXXiPadComponent。&lt;/p&gt;
-
-&lt;p&gt;下面就是解决这个问题的思路，通过写一个 iPad 的适配器，通过把 XXXiPadViewController 的布局能力暴露给 XXXiPadViewController，达到不改动原来 XXXViewController 的代码逻辑，同时增加了 iPad 布局的能力。要达到上面的目的 ，在 OC 里可以通过代理方法，把布局的动作交给 XXXiPadComponent，就使用了如下的设计，下面用伪代码演示下。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-// 布局的回调方法
-@protocol layoutDelegate
-
-- layoutViewInContainer(View *)
-
-// Component 增加如下能力
-- addPlugin(Component)
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;然后调用者使用的方式就很简单如下&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-oc&quot;&gt;
-let iPadComponet = XXXiPadComponent()
-XXXComponent.addPlugin(iPadComponet)
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;通过这种方式就是把布局代理给了 XXXiPadComponent，由于 XXXiPadComponent 基于于UIViewController，自然就想起来给UIViewController 加上能力扩展就行了。最终版本如下。这样父视图就不用关系childViewController的布局了，只要一行 ` addPlugin `调用就可以了，代码也可以节省很多。&lt;/p&gt;
-
-&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;- (void)addPlugin:(DTKViewController&amp;lt;ADTViewControllerPlugin&amp;gt;*)pluginVc {
-    pluginVc.overrideInterfaceOrientation = self.overrideInterfaceOrientation;
-    [self addChildViewController:pluginVc];
-    [self.view addSubview:[pluginVc pluginView]];
-    
-    if ([pluginVc respondsToSelector:@selector(layoutPluginInContainer:)]) {
-        [pluginVc layoutPluginInContainer:self.view];
-    }
-    
-    [pluginVc didMoveToParentViewController:self];
-}
-
-- (void)removePlugin:(DTKViewController&amp;lt;ADTViewControllerPlugin&amp;gt;*)pluginVc {
-    [pluginVc removeFromParentViewController];
-    [[pluginVc pluginView] removeFromSuperview];
-}
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;h2 id=&quot;问题的出现&quot;&gt;问题的出现&lt;/h2&gt;
-
-&lt;p&gt;从上面的过程来看，装饰器模式代码结构清晰，但是带来的问题是会增加程序复杂性，下面就说出现的问题。&lt;/p&gt;
-
-&lt;p&gt;对于iPad适配，这种方式似乎挺好基本不用改变原来的代码，只需要适配 iPadViewController 的代码就可以。但是有同事开始质疑这种方式。&lt;/p&gt;
-
-&lt;p&gt;最大的质疑就是为什么不用addChildViewController，不就是childViewController么？
-自己仔细想想确实是，为啥当时不用哪？很重要的一点就是 addChildViewController 的布局是需要父视图来写逻辑代码的，这样就和自己想要把iPad布局的适配代码都写在XXXiPadComponent中矛盾了。&lt;/p&gt;
-
-&lt;p&gt;尤其同事说的这句话让我记忆犹新，为什么你想要把SubViewController的布局交给本身那？SubViewController 就应该是父视图来布局，这样才符合UIViewController逻辑，别人看代码才看的懂。&lt;/p&gt;
-
-&lt;p&gt;如果从UIKit框架来看，确实这样写才是容易理解的代码。但是假如说一个从来没学习过苹果UIKit布局的程序员，想设计一个组件，然后父组件添加子组件他会怎么写哪？最便捷的方法就是直接通过 addPlugin 完成就行，然后子组件布局的代码也很可能写在组件中，因为这样封装性更好，其实很多VUE的组件很多都是一行代码，不用关心布局，一行代码就可以加载插件，除非调用者需要动态改变布局，否则默认就不再暴露出来。&lt;/p&gt;
-
-&lt;p&gt;所以矛盾就出现了 苹果 UIKit 框架设计就是给了UIViewController太多的权利，既可以添加各种视图，又要负责各种视图的布局。当然和刚才说的组件思想有很大的差别，所以自己如果给 UIViewController 添加plugin就会让其他开发者感到困惑。&lt;/p&gt;
-
-&lt;h2 id=&quot;解决方式&quot;&gt;解决方式&lt;/h2&gt;
-
-&lt;p&gt;既然UIKi 框架的设计理念和业务插件的理念有冲突，怎么解决？其实本质上就是我们定义的Plugin暴露出了UIViewController，让这个plugin具备了过多的无用的能力，所以我们的plugin完全可以用下面的方式。&lt;/p&gt;
-
-&lt;pre&gt;&lt;code class=&quot;language-oc&quot;&gt;
-id&amp;lt;ADTPluginProtocol&amp;gt;
-
-- registerPlugin:(id&amp;lt;ADTPluginProtocol&amp;gt;)plugin
-
-&lt;/code&gt;&lt;/pre&gt;
-
-&lt;p&gt;plugin定义的协议接口不要和UIViewController关联，自然调用者就不会想到这个是UIViewController。所以我们设计某些功能时，发现和系统框架的理念不太一样的话，尽量还是要区分开自己的业务逻辑的功能。说白了就是要职责单一，不要把各种职责都给与一个类，这样就会变成看似功能强大，但是代码无比臃肿。&lt;/p&gt;
-
-&lt;h2 id=&quot;思考总结&quot;&gt;思考总结&lt;/h2&gt;
-
-&lt;p&gt;软件设计中其实比较忌讳的是鱼与熊掌兼得，既想要代码可复用性强，又想要代码功能多扩展强，就很容易陷入到上面说的困境中。其实上面plugin的设计完全没有必要基于 UIViewController，看起来这个plugin功能很强大，既有UIViewController布局子视图的能力，又具备了子视图可以在父视图上布局的能，这样改变了UIKit框架原本定义的UIViewController能力，会让使用开发者非常困惑。
-解决方案就是可以自己定义一个Plugin的对象，这样在使用plugin时，开发者就不会联想到这个就是ViewController，而只会知道Plugin可以让自己获得布局到父视图的能力。
-这也提醒了平台框架层和业务逻辑的能力尽量分离清晰，不要混合在一起，否则开发者理解起来也很容易歧义。说白了还是软件设计的重要原则职责单一，不要给设计的功能分配太多没用的权利，仅仅给需要完成的权利就可以。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">最近在做 iPad 改版功能，由于 iPad 的功能和 iPhone 功能上基本保持一致，除了 UI 要适配下 iPad 的屏幕以及分屏的情况外。在这个开发过程中，和同事讨论了一个很有意思的功能扩展的问题。虽然简单但是感觉很有必要记录下来，对于在软件开发中设计业务逻辑时很有启发。</summary></entry></feed>
+&lt;p&gt;很多优秀的开源项目的代码不仅对代码的性能，也对代码的质量和可维护性要求很高，阅读起来就像欣赏优美的诗篇。屎山一样的代码从来不会有伟大的作品。我相信每个优秀的程序员，都不愿意把自己的代码变成屎山，但是罗马也不是一天能建成的，学会重构是必备的技能。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">重构是一个老生常谈的问题，并且也有大量的书籍介绍重构的方法。那如何重构代码？如何保证重构的代码不出问题？重构后的代码如何防止腐化？我先贴出来 ChatGPT 如何回答的，来感受下她的强大。</summary></entry></feed>
