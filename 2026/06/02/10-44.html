@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="shortcut icon" href="">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Bun + Tauri + Rust：AI Agent 时代的桌面应用"新铁三角" </title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="走自己的路，让别人说去吧">
+    <meta name="author" content="mengtnt">
+    <meta name="keywords" content="">
+    <link rel="canonical" href="https://mengtnt.com/2026/06/02/10-44.html">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/pixyll.css" type="text/css">
+
+    <!-- Fonts -->
+    <!-- <link href='//fonts.useso.com/css?family=Merriweather:900,900italic,300,300italic' rel='stylesheet' type='text/css'>
+    <link href='//fonts.useso.com/css?family=Lato:900,300' rel='stylesheet' type='text/css'> -->
+    
+      <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    
+
+    <!-- Open Graph -->
+    <!-- From: https://github.com/mmistakes/hpstr-jekyll-theme/blob/master/_includes/head.html -->
+    <meta property="og:locale" content="en_US">
+    <meta property="og:type" content="article">
+    <meta property="og:title" content="Bun + Tauri + Rust：AI Agent 时代的桌面应用"新铁三角"">
+    <meta property="og:description" content="走自己的路，让别人说去吧">
+    <meta property="og:url" content="https://mengtnt.com/2026/06/02/10-44.html">
+    <meta property="og:site_name" content="mengtnt的Blog">
+    
+
+</head>
+
+<body class="">
+  <div class="site-wrap">
+    <header class="site-header px2 px-responsive">
+  <div class="mt2 wrap">
+    <div class="measure">
+      <a href="https://mengtnt.com" class="site-title">mengtnt的Blog</a>
+      <nav class="site-nav right">
+        <a href="/about/">关于</a>
+<a href="/contact/">联系</a>
+
+      </nav>
+      <div class="clearfix"></div>
+      
+        <div class="social-icons">
+  <div class="left">
+    
+      <a class="fa fa-github" href="https://github.com/animeng"></a>
+    
+    
+      <a class="fa fa-twitter" href="https://twitter.com/mengtnt"></a>
+    
+    
+      <a class="social fa fa-weibo" href="https://weibo.com/mengtnt"></a>
+    
+    
+    
+      <a class="fa fa-envelope" href="mailto:animeng68@gmail.com"></a>
+    
+    
+  </div>
+  <div class="right">
+    
+    
+    
+  </div>
+</div>
+<div class="clearfix"></div>
+
+      
+    </div>
+  </div>
+</header>
+
+
+    <div class="post p2 p-responsive wrap" role="main">
+      <div class="measure">
+        
+
+
+<div class="post-header mb2">
+  
+  <h1 class="py2">Bun + Tauri + Rust：AI Agent 时代的桌面应用"新铁三角"</h1>
+  
+  <span class="post-meta">06月 02日, 2026</span><br>
+  
+  <span class="post-meta small">3 minute read</span>
+</div>
+
+<article class="post-content">
+  <blockquote>
+  <p>2019 年，有人受够了 Electron 的体积和内存占用，决定用 Rust + 系统 Webview 做一个轻量级的替代品。六年后，这个选择正成为 AI 时代桌面开发的默认答案。</p>
+</blockquote>
+
+<h2 id="引言">引言</h2>
+
+<p>如果你最近在 GitHub 上关注跨平台开发的动态，会发现一个有趣的现象：</p>
+
+<p><strong>越来越多的人开始用同一套技术栈构建桌面应用——Bun 做前端构建，Tauri 做桥接框架，Rust 做后端运行时。</strong></p>
+
+<p>这不是偶然。这是一个正在成型的技术共识。</p>
+
+<p>让我们从头说起。</p>
+
+<h2 id="一故事的起点一个被-electron-统治的时代">一、故事的起点：一个被 Electron 统治的时代</h2>
+
+<p>2013 年，GitHub 发布了 Electron——一个”用 Web 技术写桌面应用”的框架。</p>
+
+<p>VS Code、Slack、Discord、Obsidian、Notion……过去十年，几乎所有我们日常使用的桌面应用都是 Electron 写的。</p>
+
+<p>Electron 的成功无可否认。但它也有三个所有人都知道但长期忍受的问题：</p>
+
+<p><strong>问题一：包体积巨大。</strong> 每个 Electron 应用自带一个完整的 Chromium 浏览器 + Node.js 运行时。一个”Hello World”也要 ~150MB。</p>
+
+<p><strong>问题二：内存占用高。</strong> 每个进程 200-500MB。同时开 Slack + Discord + VS Code = 1-2GB 内存被吃掉。</p>
+
+<p><strong>问题三：安全模型过于宽松。</strong> Electron 默认给前端 Node.js 的完整权限。XSS = 系统完全控制力。</p>
+
+<p>这些不是”小问题”。它们是整个 Electron 范式的结构性缺陷——因为 Electron 选择了”自带浏览器”这条路，这些问题就无法从根本上解决。</p>
+
+<h2 id="二tauri-的诞生一次根本性的反思">二、Tauri 的诞生：一次根本性的反思</h2>
+
+<p>2019 年底，Daniel Thompson-Yvetot 发起了 Tauri 项目。</p>
+
+<p>他的思路很简单但颠覆性：<strong>不自带浏览器，用系统原生的。不绑 Node.js，用 Rust 代替。</strong></p>
+
+<table>
+  <thead>
+    <tr>
+      <th>对比</th>
+      <th>Electron</th>
+      <th>Tauri</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>浏览器内核</strong></td>
+      <td>自带 Chromium</td>
+      <td>系统原生 Webview</td>
+    </tr>
+    <tr>
+      <td><strong>后端运行时</strong></td>
+      <td>Node.js</td>
+      <td>Rust</td>
+    </tr>
+    <tr>
+      <td><strong>Hello World 体积</strong></td>
+      <td>~150MB</td>
+      <td>~3MB</td>
+    </tr>
+    <tr>
+      <td><strong>内存占用</strong></td>
+      <td>200-500MB/进程</td>
+      <td>50-150MB/进程</td>
+    </tr>
+    <tr>
+      <td><strong>安全模型</strong></td>
+      <td>Node.js 全权限</td>
+      <td>白名单 + 权限沙箱</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>这个差异不是”优化”级别的。这是<strong>架构级别</strong>的差异。</p>
+
+<p>2022 年 6 月，Tauri 1.0 正式发布。2024-2025 年，Tauri 2.0 带来移动端支持。到今天，Tauri 已经成为 Rust 生态中最成功的桌面应用框架，也是 Electron 之外最被广泛采用的跨平台桌面方案。</p>
+
+<p><strong>为什么大家开始采用 Tauri？</strong></p>
+
+<ul>
+  <li><strong>包体积小 50 倍</strong>——对需要分发给终端用户的应用，这是决定性的</li>
+  <li><strong>Rust 的安全性和性能</strong>——编译期内存安全，零成本抽象，静态编译</li>
+  <li><strong>安全沙箱模型</strong>——默认拒绝一切，只开放明确授权的能力，企业安全团队友好</li>
+  <li><strong>前端框架无关</strong>——React、Vue、Svelte、原生 HTML/JS 都行</li>
+  <li><strong>开源社区驱动</strong>——不被任何大公司的商业决策绑架</li>
+</ul>
+
+<h2 id="三bun-的加入让快变得更快">三、Bun 的加入：让”快”变得更快</h2>
+
+<p>如果说 Tauri 解决了”轻”的问题，那 Bun 解决的就是”快”的问题。</p>
+
+<p>Bun 是一个 JavaScript 运行时 + 包管理器 + 打包器 + 测试运行器——<strong>一个工具替代了 npm + Node.js + Webpack + Jest 四个工具。</strong></p>
+
+<p>在 Tauri 的开发工作流中，Bun 的价值体现在：</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>操作</th>
+      <th>Bun</th>
+      <th>传统方案</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code class="highlighter-rouge">install</code></td>
+      <td>快 20-40 倍</td>
+      <td>npm/yarn/pnpm</td>
+    </tr>
+    <tr>
+      <td>冷启动</td>
+      <td>快 4 倍</td>
+      <td>Node.js</td>
+    </tr>
+    <tr>
+      <td>打包</td>
+      <td>快 10 倍+</td>
+      <td>Webpack/esbuild</td>
+    </tr>
+    <tr>
+      <td>测试</td>
+      <td>内置</td>
+      <td>Jest/Vitest</td>
+    </tr>
+  </tbody>
+</table>
+
+<p><strong>AI 编程的核心工作流是：生成 → 运行 → 审查 → 修改 → 再运行。</strong></p>
+
+<p>这个循环中，”运行”和”打包”的速度直接决定了迭代效率。Bun 把这个等待时间从”等 10 秒”压缩到”等 1 秒”。</p>
+
+<p><strong>迭代速度差了 10 倍，就意味着 AI 编程的效率差了 10 倍。</strong></p>
+
+<p>更有趣的是，Bun 在 2025 年底被 Anthropic 收购，2026 年 5 月开始从 Zig 重写为 Rust。这意味着什么？意味着 Bun 正在从一个”快的 JS 运行时”变成一个”为 AI 时代设计的开发基础设施”。</p>
+
+<h2 id="四rustai-时代的最佳搭档">四、Rust：AI 时代的”最佳搭档”</h2>
+
+<p>在这个组合中，Rust 才是真正的灵魂。</p>
+
+<p>为什么？因为 Rust 有一个其他语言没有的特性：<strong>它是 AI 编程的”最佳审查者”。</strong></p>
+
+<p>之前 Bun 从 Zig 迁移到 Rust 时，V2EX 上有人说过一句话：</p>
+
+<blockquote>
+  <p><strong>“Rust 是 AI 最严厉的父亲，编译器就尽可能地先把错误报出来，避免 AI 乱来。”</strong></p>
+</blockquote>
+
+<p>AI 生成的代码质量不稳定。在 C/C++ 里，一个空指针可能要运行时才崩溃。在 JavaScript 里，一个类型错误可能在线上才暴露。<strong>在 Rust 里，编译期就被拦截了。</strong></p>
+
+<p>这意味着：</p>
+
+<ul>
+  <li>AI 写 Rust 代码 → 编译通过 → 大概率是正确的</li>
+  <li>AI 写 C++ 代码 → 编译通过 → 可能运行时崩溃</li>
+</ul>
+
+<p><strong>Rust 的编译器本质上就是一个免费的、自动化的代码审查工具。</strong> 在 AI 大规模生成代码的时代，这个价值被放大了无数倍。</p>
+
+<p>同时，Rust 原生支持异步并发，这正是 AI Agent 所需要的——并行执行多个任务、处理流式响应、管理长连接。2026 年，已经出现了专门的 Rust AI Agent 框架（如 ADK-Rust、AgentAI），让开发者能用 Rust 构建生产级的 AI Agent。</p>
+
+<h2 id="五tauri-沙箱ai-agent-时代的天然边界">五、Tauri 沙箱：AI Agent 时代的”天然边界”</h2>
+
+<p>Tauri 的沙箱机制是这个组合在 AI 时代最被低估的优势。</p>
+
+<p>Tauri 的安全模型是：<strong>前端运行在系统 Webview 沙箱中，无权直接访问系统。所有系统操作必须通过 IPC 调用 Rust 后端。Rust 后端通过白名单机制控制哪些 API 可以被调用。</strong></p>
+
+<p>当 AI Agent 需要在桌面应用中执行操作时（读写文件、调用系统 API、启动进程），Tauri 的权限模型提供了天然的隔离层：</p>
+
+<ul>
+  <li>AI 只能调用<strong>被明确授权</strong>的 Rust 后端 API</li>
+  <li>不能直接访问文件系统、网络、进程</li>
+  <li>所有操作经过 Rust 后端的验证和过滤</li>
+</ul>
+
+<p>这比 Electron 里”AI 直接操作 Node.js”安全得多。</p>
+
+<p>对比 uni-app 等移动端跨平台框架，Tauri 提供的是<strong>真正的后端</strong>——文件系统读写、网络请求（不经过浏览器限制）、进程管理、系统托盘、数据库操作。uni-app 所有逻辑运行在前端 JS 环境中，系统能力依赖各平台的桥接插件。</p>
+
+<p><strong>Tauri 是一个完整的桌面应用框架。uni-app 是一个移动端 UI 编译框架。它们不是竞争对手，而是互补关系。</strong></p>
+
+<h2 id="六ai-agent-时代的新铁三角">六、AI Agent 时代的”新铁三角”</h2>
+
+<p>把这三个组件放在一起，我们看到的不是一个简单的技术选型，而是一个<strong>为 AI 时代量身定制的桌面应用架构</strong>：</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>┌──────────────────────────────────────┐
+│          前端（React/Vue/Svelte）       │  ← 用任意 Web 框架
+│          Bun 打包 / 运行 / 测试        │  ← 极速迭代
+├──────────────────────────────────────┤
+│           Tauri 桥接层                 │  ← 安全沙箱 + 权限控制
+│        系统原生 Webview 渲染           │  ← 3MB 起步
+├──────────────────────────────────────┤
+│          Rust 后端                    │  ← AI Agent 运行时
+│    文件系统 / 网络 / 系统调用 / AI推理  │  ← 编译期安全
+└──────────────────────────────────────┘
+</code></pre></div></div>
+
+<h3 id="这个架构在-ai-时代的优势">这个架构在 AI 时代的优势：</h3>
+
+<p><strong>1. 极致的资源效率 = 给本地 AI 模型留出空间</strong></p>
+
+<p>当桌面应用需要内置本地 AI 模型（几百 MB 到几 GB）时，框架本身的开销就变得至关重要。Tauri + Rust 的基础开销只有几十 MB，给 AI 模型留出了充足的资源空间。Electron 本身占 200MB，加上 AI 模型就直接爆内存了。</p>
+
+<p><strong>2. 编译期安全 = AI 生成代码的”保险丝”</strong></p>
+
+<p>AI Agent 会生成大量代码。在 Rust 的编译期安全检查下，这些代码在运行前就被验证。这相当于给 AI Agent 加了一道”保险丝”——编译不通过的代码，根本不会运行。</p>
+
+<p><strong>3. 极速迭代 = AI 编程的”加速器”</strong></p>
+
+<p>Bun 的包管理、打包、测试速度比传统方案快 10-40 倍。AI 每次改完代码都要重新打包运行，这个等待时间被大幅压缩。</p>
+
+<p><strong>4. 权限沙箱 = AI Agent 的”行为边界”</strong></p>
+
+<p>Tauri 的权限模型天然适合限制 AI Agent 的行为范围。AI 能做什么，不能做什么，由 Rust 后端的白名单决定，而不是由 AI 自己决定。</p>
+
+<p><strong>5. 小体积分发 = AI 应用的”可及性”</strong></p>
+
+<p>一个完整的 AI 桌面应用，框架开销只有几 MB。这意味着它可以被轻松分发到任何设备——包括低端笔记本、树莓派等边缘设备。</p>
+
+<h2 id="七未来展望">七、未来展望</h2>
+
+<p>这个组合的潜力，才刚刚开始被发掘。</p>
+
+<h3 id="趋势一本地-ai-工具成为主流">趋势一：本地 AI 工具成为主流</h3>
+
+<p>随着本地 AI 模型（如 Ollama、llama.cpp）的成熟，越来越多的桌面应用将内置 AI 能力。Tauri + Rust 的轻量级架构为这种趋势提供了最佳承载平台。</p>
+
+<h3 id="趋势二ai-agent-成为桌面应用的标配">趋势二：AI Agent 成为桌面应用的”标配”</h3>
+
+<p>未来的桌面应用不再是”人操作界面”，而是”人告诉 AI Agent 要做什么，Agent 自动完成”。Tauri 的沙箱机制为 AI Agent 提供了安全的运行环境，Rust 为 Agent 提供了高性能的执行引擎。</p>
+
+<h3 id="趋势三从桌面应用到个人-ai-工作站">趋势三：从”桌面应用”到”个人 AI 工作站”</h3>
+
+<p>当 Bun + Tauri + Rust + 本地 AI 模型组合在一起时，桌面应用的概念正在被重新定义。它不再是一个”工具”，而是一个<strong>“个人 AI 工作站”</strong>——能在本地运行 AI 模型、能安全地执行复杂任务、能在离线环境下工作、能保护你的数据隐私。</p>
+
+<h2 id="八写在最后">八、写在最后</h2>
+
+<p>回顾这个组合的演进路径：</p>
+
+<p><strong>2019 年</strong>：Tauri 诞生，解决 Electron 的体积问题。</p>
+
+<p><strong>2022 年</strong>：Tauri 1.0，证明这条路走得通。</p>
+
+<p><strong>2024 年</strong>：Tauri 2.0，扩展到移动端。</p>
+
+<p><strong>2025 年</strong>：Bun 被 Anthropic 收购，面向 AI 时代。</p>
+
+<p><strong>2026 年</strong>：Bun 用 Rust 重写，Rust 成为 AI Agent 首选语言。</p>
+
+<p>每一个节点都在指向同一个方向：</p>
+
+<p><strong>轻量、安全、快速、AI 原生。</strong></p>
+
+<p>这不是”又一个跨平台框架”的故事。这是<strong>“在 AI 时代，桌面应用应该是什么样子”</strong>的答案。</p>
+
+<p>Bun 让开发变快了。</p>
+
+<p>Tauri 让应用变轻了。</p>
+
+<p>Rust 让代码变安全了。</p>
+
+<p>当这三者结合在一起时，它们创造的不是一个工具，而是一个<strong>AI Agent 可以在上面安全、高效、自由地工作的环境。</strong></p>
+
+<p>而这，可能就是未来十年桌面应用的标准形态。</p>
+
+<hr />
+
+<p><em>📌 Tauri 官网：tauri.app</em></p>
+
+<p><em>📌 Bun 官网：bun.sh</em></p>
+
+<p><em>📌 Rust 官网：rust-lang.org</em></p>
+
+</article>
+
+
+
+
+
+<div class="pay" align="center">
+  <h3 style="color:#4DD0E1;">如果你喜欢这篇文章，谢谢你的赞赏</h3>
+  <img src="https://cdn.jsdelivr.net/gh/animeng/animeng.github.com/images/pay-me.jpeg" alt="图3" style="width:400px;">
+  <p>
+    如有疑问<a href="/contact/">请联系我</a>
+  </p>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.6.0/dist/mermaid.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
+<script>  
+$(document).ready(function () {
+  window.mermaid.initialize({
+    startOnLoad: true,
+    theme: "default",
+  });
+  window.mermaid.init(undefined, document.querySelectorAll('.language-mermaid'));
+});
+</script>
+
+<div id="gitmentContainer"></div>
+<link rel="stylesheet" href="/css/comment.css">
+<script src="https://cdn.jsdelivr.net/gh/animeng/animeng.github.com/resource/gitment.browser.v1.js"></script>
+<script>
+var gitment = new Gitment({
+    owner: 'animeng',
+    repo: 'animeng.github.com',
+    oauth: {
+        client_id: 'Iv1.e26fdd0d45ec4f26',
+        client_secret: '8d51965f69de8e300a42e151437b944f7cccf819',
+    },
+});
+gitment.render('gitmentContainer');
+</script>
+
+		
+	
+
+      	
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+  <div class="p2 wrap">
+    <div class="measure mt1 center">
+      <small>
+	<a>© 2020 Mengtnt </a> 
+  <a class="fa fa-rss" href="/feed.xml"></a>
+  <br>
+  <span>
+    Site powered by <a href="https://jekyllrb.com/">Jekyll</a> &amp; <a href="https://pages.github.com/">Github Pages</a>.
+  </span>
+    </div>
+  </div>
+</footer>
+
+
+
+</body>
+</html>
