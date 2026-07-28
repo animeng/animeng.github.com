@@ -1,4 +1,186 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2026-07-26T13:13:11+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">DeepSeek 梁文锋拆解：中美 AI 算力差距有多大？国产芯片何时追上？</title><link href="https://mengtnt.com/2026/07/26/09-14.html" rel="alternate" type="text/html" title="DeepSeek 梁文锋拆解：中美 AI 算力差距有多大？国产芯片何时追上？" /><published>2026-07-26T09:14:40+00:00</published><updated>2026-07-26T09:14:40+00:00</updated><id>https://mengtnt.com/2026/07/26/09-14</id><content type="html" xml:base="https://mengtnt.com/2026/07/26/09-14.html">&lt;blockquote&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.6">Jekyll</generator><link href="https://mengtnt.com/feed.xml" rel="self" type="application/atom+xml" /><link href="https://mengtnt.com/" rel="alternate" type="text/html" /><updated>2026-07-28T00:03:49+00:00</updated><id>https://mengtnt.com/feed.xml</id><title type="html">mengtnt的Blog</title><subtitle>走自己的路，让别人说去吧</subtitle><author><name>mengtnt</name></author><entry><title type="html">DeepSeek 梁文锋亲述 AGI 路线图的五个阶梯</title><link href="https://mengtnt.com/2026/07/27/00-03.html" rel="alternate" type="text/html" title="DeepSeek 梁文锋亲述 AGI 路线图的五个阶梯" /><published>2026-07-27T23:58:00+00:00</published><updated>2026-07-27T23:58:00+00:00</updated><id>https://mengtnt.com/2026/07/27/00-03</id><content type="html" xml:base="https://mengtnt.com/2026/07/27/00-03.html">&lt;h1 id=&quot;deepseek-梁文锋亲述agi-路线图的五个阶梯通向奇点之路&quot;&gt;DeepSeek 梁文锋亲述：AGI 路线图的五个阶梯，通向奇点之路&lt;/h1&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;来源：DeepSeek 创始人梁文锋在投资者交流会中的分享&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;h2 id=&quot;写在前面&quot;&gt;写在前面&lt;/h2&gt;
+
+&lt;p&gt;DeepSeek 的创始人梁文锋，向来低调。但在一次罕见的投资者交流会中，他详细阐述了 DeepSeek 通向通用人工智能（AGI）的核心战略与技术路线图。&lt;/p&gt;
+
+&lt;p&gt;最引人注目的，是他提出的 &lt;strong&gt;“五个阶梯”路线图&lt;/strong&gt;——从基础的思维链到终极的具身智能，每一阶都回答了 AGI 进程中一个关键问题。同时，他关于”渐进的奇点”（而非突变的奇点）的判断，以及对当前 AI 热点的取舍态度，展现了一个技术人对行业本质的清醒认知。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;deepseek-的-agi-五个阶梯&quot;&gt;DeepSeek 的 AGI 五个阶梯&lt;/h2&gt;
+
+&lt;h3 id=&quot;第一阶梯思维链chain-of-thought-cot&quot;&gt;第一阶梯：思维链（Chain of Thought, CoT）&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;逻辑推理的底层能力&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;思维链是 AI 迈向 AGI 的第一步，也是基础。模型需要学会”逐步推理”，而不是仅靠模式匹配给出答案。&lt;/p&gt;
+
+&lt;p&gt;梁文锋表示，DeepSeek &lt;strong&gt;已于去年完成了这一阶段的工作&lt;/strong&gt;。也正是基于 CoT 能力，DeepSeek 的模型才能在各种复杂推理任务中展现出令人印象深刻的表现。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;第二阶梯智能体agent&quot;&gt;第二阶梯：智能体（Agent）&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;从对话到行动的关键跨越&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;梁文锋明确指出，&lt;strong&gt;这是 DeepSeek 当前正在主攻的阶段&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;核心方向有两个：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;编码智能体（Coding Agent）&lt;/strong&gt;：优先任务。DeepSeek 相信，能写代码、能操作工具的 AI 是实现 AGI 的最快路径。&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;通用智能体（General Agent）&lt;/strong&gt;：继 Coding Agent 之后的下一个阶段。&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Agent 的本质是让 AI 从”对话系统”转变为”任务执行系统”。当前模型在提供足够上下文的情况下已经可以完成日益复杂的工作，&lt;strong&gt;但它们不像人类那样能积累经验&lt;/strong&gt;——这正是下一阶梯要解决的问题。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;第三阶梯持续学习continual-learning&quot;&gt;第三阶梯：持续学习（Continual Learning）&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;AI 能否真正替代人的分水岭&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;梁文锋认为，持续学习是 &lt;strong&gt;DeepSeek 眼中下一个需要解决的重大突破&lt;/strong&gt;，也是目前 AI 最大的瓶颈之一。&lt;/p&gt;
+
+&lt;p&gt;当前 AI 模型的困境是：每次处理新任务都需要完整上下文，模型本身不会在工作中”长记性”。它们无法像人类一样，在工作过程中持续学习、积累经验、改进方法。&lt;/p&gt;
+
+&lt;p&gt;如果 AI 能够实现持续学习，它将：&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;能够随时间积累经验，而不是每次从零开始&lt;/li&gt;
+  &lt;li&gt;加速 AI 研究，帮助自身迭代&lt;/li&gt;
+  &lt;li&gt;真正有能力替代人类员工，而不仅仅是辅助工具&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;第四阶梯ai-自我迭代--渐进的奇点ai-self-iteration--the-gradual-singularity&quot;&gt;第四阶梯：AI 自我迭代 / 渐进的奇点（AI Self-Iteration / The Gradual Singularity）&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;AI 帮助人类研发更好的 AI&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;在实现持续学习能力之后，模型将进入一个全新的阶段——&lt;strong&gt;模型能够自行开发更前沿的 AI 模型&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;这是梁文锋提出的 &lt;strong&gt;“渐进的奇点”&lt;/strong&gt; 概念。这不是一个突然爆发的技术奇点，而是一个&lt;strong&gt;相对漫长且连续的演进过程&lt;/strong&gt;。在这个阶段：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;AI 可以完成人类能做的所有事情&lt;/li&gt;
+  &lt;li&gt;AI 能够辅助甚至主导 AI 自身的研发&lt;/li&gt;
+  &lt;li&gt;技术迭代速度会进一步加快，但不会瞬间颠覆一切&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;与一些人对”奇点”的想象不同——它不是一夜之间的突变，而是渐进式的加速。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h3 id=&quot;第五阶梯具身智能embodied-intelligence&quot;&gt;第五阶梯：具身智能（Embodied Intelligence）&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;AGI 终极目标：进入物理世界&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;这是整个路线图的最终阶段——&lt;strong&gt;让 AI 融入物理实体，进入现实世界提供劳动力&lt;/strong&gt;。&lt;/p&gt;
+
+&lt;p&gt;梁文锋认为，对人类而言，最终的需求往往不是电脑里的软件，而是能够像人一样在物理世界中行动的能力。机器人、自动驾驶、智能制造——这些都是具身智能的体现。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;战略取舍deepseek-不做什么&quot;&gt;战略取舍：DeepSeek 不做什么&lt;/h2&gt;
+
+&lt;p&gt;梁文锋非常明确地陈述了 DeepSeek 的战略聚焦——&lt;strong&gt;不做什么&lt;/strong&gt;：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;❌ &lt;strong&gt;不追求 3D 生成&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;❌ &lt;strong&gt;不追求视频生成&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;❌ &lt;strong&gt;不追求世界模型&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;背后的逻辑很清晰：他认为这些方向与”智能的上限”没有太大关系，&lt;strong&gt;并非通向 AGI 的主线&lt;/strong&gt;。DeepSeek 将所有资源集中于 AGI 这一条主线上。&lt;/p&gt;
+
+&lt;p&gt;这其实也是一种”克制”——当全世界都在追视频生成、3D 生成的热点时，选择不去跟风，而是专注于自己认定的核心路径。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;商业策略克制而非利润最大化&quot;&gt;商业策略：克制而非利润最大化&lt;/h2&gt;
+
+&lt;p&gt;梁文锋在商业策略上同样展现了独特的思路：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;不以利润最大化为目标&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;只寻求合理利润&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;开源和低价是一种战略克制&lt;/strong&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;为什么这样做？因为 DeepSeek 的核心目标是 &lt;strong&gt;提高实现 AGI 的概率&lt;/strong&gt;。开源让更多人参与、使用和反馈，低价让技术触达更广的人群——这些都指向同一个目标：更快、更大概率地抵达 AGI。&lt;/p&gt;
+
+&lt;p&gt;在他看来，&lt;strong&gt;产品只是通往 AGI 过程中的副产品&lt;/strong&gt;。公司存在的唯一主线是那条技术路线图。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;唯一的不可谈判要素团队稳定性&quot;&gt;唯一的不可谈判要素：团队稳定性&lt;/h2&gt;
+
+&lt;p&gt;在谈及 DeepSeek 的组织时，梁文锋提到了一个很强的判断：&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;&lt;strong&gt;保持团队稳定性，是 DeepSeek 实现 AGI 唯一不可谈判的核心要素。&lt;/strong&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;这意味着什么？技术方向可以调整，战略可以迭代，但核心团队不能散。在 AGI 这场马拉松中，拥有一个稳定、专注、长期存在的团队，可能比选择哪个具体技术方向更重要。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;h2 id=&quot;总结梁文锋的-agi-世界观&quot;&gt;总结：梁文锋的 AGI 世界观&lt;/h2&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;阶梯&lt;/th&gt;
+      &lt;th&gt;阶段&lt;/th&gt;
+      &lt;th&gt;关键能力&lt;/th&gt;
+      &lt;th&gt;DeepSeek 状态&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt;思维链 CoT&lt;/td&gt;
+      &lt;td&gt;逐步推理&lt;/td&gt;
+      &lt;td&gt;✅ 已完成&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;2&lt;/td&gt;
+      &lt;td&gt;智能体 Agent&lt;/td&gt;
+      &lt;td&gt;任务执行&lt;/td&gt;
+      &lt;td&gt;🚧 进行中（优先 Coding Agent）&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;3&lt;/td&gt;
+      &lt;td&gt;持续学习&lt;/td&gt;
+      &lt;td&gt;积累经验&lt;/td&gt;
+      &lt;td&gt;🔜 下一个重大突破&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;4&lt;/td&gt;
+      &lt;td&gt;自我迭代&lt;/td&gt;
+      &lt;td&gt;AI 研发 AI&lt;/td&gt;
+      &lt;td&gt;→ 渐进的奇点&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;5&lt;/td&gt;
+      &lt;td&gt;具身智能&lt;/td&gt;
+      &lt;td&gt;物理世界行动&lt;/td&gt;
+      &lt;td&gt;🎯 终极目标&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;梁文锋和他的 DeepSeek 最让人印象深刻的地方，或许不在于技术实力本身，而在于一种 &lt;strong&gt;“极度聚焦的克制”&lt;/strong&gt;——知道该做什么，更知道不该做什么。&lt;/p&gt;
+
+&lt;p&gt;在 AI 行业充斥着 FOMO（错失恐惧症）的今天，这种”归零到核心目标”的能力，可能才是走完这五个阶梯的真正基石。&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;em&gt;本文基于公开信息整理，内容已尽可能保持原意。&lt;/em&gt;&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">DeepSeek 梁文锋亲述：AGI 路线图的五个阶梯，通向奇点之路</summary></entry><entry><title type="html">DeepSeek 梁文锋拆解：中美 AI 算力差距有多大？国产芯片何时追上？</title><link href="https://mengtnt.com/2026/07/26/09-14.html" rel="alternate" type="text/html" title="DeepSeek 梁文锋拆解：中美 AI 算力差距有多大？国产芯片何时追上？" /><published>2026-07-26T09:14:40+00:00</published><updated>2026-07-26T09:14:40+00:00</updated><id>https://mengtnt.com/2026/07/26/09-14</id><content type="html" xml:base="https://mengtnt.com/2026/07/26/09-14.html">&lt;blockquote&gt;
   &lt;p&gt;DeepSeek 创始人梁文锋在内部交流中罕见地披露了公司的算力现状和未来规划：两万张 H 等效卡、落后美国两年、华为 950 四张顶一张。在英伟达 GPU 被禁运的现实下，中国 AI 公司到底该何去何从？&lt;/p&gt;
 &lt;/blockquote&gt;
 
@@ -2777,242 +2959,4 @@ Metal 渲染使用的是左手坐标系，如果是OpenGL右手坐标系，Z 轴
 
 &lt;h2 id=&quot;5-总结&quot;&gt;5. 总结&lt;/h2&gt;
 
-&lt;p&gt;如果上面说的这些能力都掌握的话，开发 SwiftUI 基本就没什么问题了。虽然说 SwiftUI 可以大大节省 UI 的开发量。但是开发过程中遇到的棘手问题就是调试。在 UIKit 所有的 UIView 都有内存地址，来确定某个视图什么时候创建、销毁、以及放置到那里。所以 UIKit 调试的时候，只要看下内存地址就很方便定位是那个视图，但是 SwiftUI 中的视图 View 你无法打印内存地址，就像上文说的你只能跟踪他的模型状态，但是在 Debug 过程中，往往视图的变化堆栈不会有模型变化的堆栈，在调试一些 UI 层级问题时就会遇到很多问题。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">1. 背景 在我们开发 Vision Pro 开发之前，先大致了解下 SwiftUI 框架是非常有必要的，不然很多系统的新特性苹果往往只会提供 SwiftUI 的演示代码，甚至有些 API 只能 SwiftUI 才能使用。所以想要更好的适配 Vision Pro 最好的方式是用 SwiftUI 进行开发。</summary></entry><entry><title type="html">灵动岛按钮交互事件原理探究</title><link href="https://mengtnt.com/2024/01/01/widgets.html" rel="alternate" type="text/html" title="灵动岛按钮交互事件原理探究" /><published>2024-01-01T02:00:19+00:00</published><updated>2024-01-01T02:00:19+00:00</updated><id>https://mengtnt.com/2024/01/01/widgets</id><content type="html" xml:base="https://mengtnt.com/2024/01/01/widgets.html">&lt;h1 id=&quot;问题背景&quot;&gt;问题背景&lt;/h1&gt;
-
-&lt;p&gt;苹果 WWDC2023 Widgets 增加了新的交互能力，iOS17 以前 Widgets 只能展示，无法响应 UI 上所有的按钮事件，只能跳转到主 App 中。iOS17 之后，通过这个新的交互能力，就可以实现 Widgets 上面的按钮点击事件。如果感兴趣可以看下苹果的&lt;a href=&quot;https://developer.apple.com/videos/play/wwdc2023/10028/&quot;&gt;WWDC视频&lt;/a&gt;和&lt;a href=&quot;https://developer.apple.com/documentation/widgetkit/adding-interactivity-to-widgets-and-live-activities&quot;&gt;官方文档&lt;/a&gt;，下面会简单的介绍下苹果实现灵动岛 (LiveActivity Widget) 上按钮响应的方式和开发的过程中遇到的问题。&lt;/p&gt;
-
-&lt;h2 id=&quot;1-灵动岛如何增加按钮响应事件&quot;&gt;1. 灵动岛如何增加按钮响应事件&lt;/h2&gt;
-
-&lt;p&gt;根据苹果的 Widgets 的逻辑，也就是我们写的所有 SwiftUI 的代码会放在 Widgets Extension 的进程中，但是在 SwiftUI 代码中所有的异步事件都无法执行，例如按钮事件、下载事件等等。可以看下在 Widgets Extension 中编写下面的代码，&lt;code class=&quot;highlighter-rouge&quot;&gt;print(&quot;test&quot;)&lt;/code&gt; 这行代码是没法执行的。&lt;/p&gt;
-
-&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;kt&quot;&gt;DynamicIslandExpandedRegion&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bottom&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;Button&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;Start&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;nf&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;test&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;猜测苹果在 Extension 进程中，把所有异步事件注册的能力给拔除了。&lt;/p&gt;
-
-&lt;p&gt;那 iOS17 之后灵动岛的 Widgets 又是怎么来响应异步事件呢？苹果是用 Intent 的方式来执行的，这样需要注册一个 Intent 类，然后来执行事件的代码。示例中按钮注册的代码如下：&lt;/p&gt;
-
-&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;kt&quot;&gt;DynamicIslandExpandedRegion&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;bottom&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kt&quot;&gt;Button&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;intent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;ConfigurationAppIntent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;Image&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;systemName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;plus.circle.fill&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;在接收的模块需要实现一个 Intent 的类，如下：&lt;/p&gt;
-
-&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;kd&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;ConfigurationAppIntent&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;WidgetConfigurationIntent&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;title&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;LocalizedStringResource&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;Configuration&quot;&lt;/span&gt;
-    &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;description&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;IntentDescription&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;This is an example widget.&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    
-    &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;perform&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;async&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;throws&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;some&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;IntentResult&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;ShareData&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;updateButtonStatus&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;按照上述的方式，按钮点击时，就可以执行 &lt;code class=&quot;highlighter-rouge&quot;&gt;updateButtonStatus&lt;/code&gt; 这个方法了，下面是 &lt;code class=&quot;highlighter-rouge&quot;&gt;updateButtonStatus&lt;/code&gt; 这个方法执行的逻辑，就是在共享的 group 中存储数据，然后主进程就可以读取数据的变化了。&lt;/p&gt;
-
-&lt;div class=&quot;language-swift highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
-&lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;ShareData&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-    &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;appGroup&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;com.mengtnt.myGroup&quot;&lt;/span&gt;
-    
-    &lt;span class=&quot;kd&quot;&gt;private&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;currentActivity&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Activity&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;lt;&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;DynamicIslandAttributes&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;&amp;gt;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;?&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kc&quot;&gt;nil&lt;/span&gt;
-    
-    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&amp;gt;&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;guard&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;let&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;UserDefaults&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;suiteName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;appGroup&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)?&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;forKey&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;value&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as?&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;Int&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;else&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-            &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;
-        &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;return&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-    
-    &lt;span class=&quot;kd&quot;&gt;public&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;static&lt;/span&gt; &lt;span class=&quot;kd&quot;&gt;func&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;updateButtonStatus&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
-        &lt;span class=&quot;k&quot;&gt;var&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
-        &lt;span class=&quot;n&quot;&gt;result&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
-        &lt;span class=&quot;kt&quot;&gt;UserDefaults&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;suiteName&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;appGroup&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)?&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;setValue&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;result&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;nv&quot;&gt;forKey&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;value&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-    &lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;这里展示下运行效果。
-&lt;img src=&quot;https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/36818385-adb4-4aea-9839-5034a33edcd2.gif&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;2-遇到事件无响应的问题&quot;&gt;2. 遇到事件无响应的问题&lt;/h2&gt;
-
-&lt;p&gt;由于钉钉都是基于 Framework 开发的，并不是全源码编译。所以这里模拟了钉钉的方式，写了如下的工程。所有的 Intent 和 LiveActivity 的代码都放到了一个叫 Appintent 的 Framework 下。然后相应的类引用这个 Framework，这个工程中任何源码都没改动。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/a8d66e3a-d13a-49e7-9a91-240e07846ae5.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;然后神奇的一幕就发生了，灵动岛上的按钮事件没有任何反应。并且相应的代码也不会调用。效果如下:
-&lt;img src=&quot;https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/15b84045-781d-4763-97aa-697d238d1185.gif&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;然后推测是不是用 Framework 的方式，苹果把 Intent 的代码调用给裁剪掉了，然后用 hopper 分别打开了两种方式下生成的最终产物，分别搜索按钮响应事件调用的 &lt;code class=&quot;highlighter-rouge&quot;&gt;updateButtonStatus&lt;/code&gt; 方法.&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/b6f0b3b1-2922-4649-ae47-2f706a7ae3ad.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;然后通过 hopper 跳转到调用的函数地址，就会发现调用的函数都是 Intent 类的 perform 方法。所以 Intent 类的 perform 方法其实都已经 link 到了目标 Target 中，只是两种方式生成的符号地址不一样而已。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/cd9f1768-5fbf-4c79-988a-d67bd2ad3b09.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/2b51b1a6-71df-41ee-9b6e-9637351933be.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;所以应该不是先前的猜测，用 Framework 的方式执行的目标代码应该没有被裁剪。那么执行的代码都生成了，又会是什么原因造成按钮事件无响应呢？&lt;/p&gt;
-
-&lt;h2 id=&quot;3-找出-intent-调用的真相&quot;&gt;3. 找出 Intent 调用的真相&lt;/h2&gt;
-
-&lt;p&gt;然后就继续对比了下全源码编译的产物和 Framework 方式编译的最终产物。发现全源码编译在 Extension Target 下面多了这个文件夹 MetaData.appintents，但是 Framework 方式并没有。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/d6ed9ea9-2012-4ef8-9ef8-a459a0033e3d.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;打开这个文件，发现里面有一个 extract.actionsdata 的 json 文件，里面注册了一个 mangledTypeName 名字。&lt;/p&gt;
-
-&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;generator&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;xcode-tools&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;version&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;15.0&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;enums&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;queries&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;autoShortcuts&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;version&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;entities&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;negativePhrases&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;actions&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;ConfigurationAppIntent&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;outputFlags&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;isDiscoverable&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;typeSpecificMetadata&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;requiredCapabilities&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;effectiveBundleIdentifiers&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;parameters&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;systemProtocolMetadata&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;com.apple.link.systemProtocol.WidgetConfiguration&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;empty&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;descriptionMetadata&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;searchKeywords&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;descriptionText&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;key&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;This is an example widget.&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;mangledTypeNameByBundleIdentifier&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;title&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;key&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Configuration&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;identifier&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;ConfigurationAppIntent&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;systemProtocols&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;com.apple.link.systemProtocol.WidgetConfiguration&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;authenticationPolicy&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;presentationStyle&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;mangledTypeName&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;22DynamicIslandExtension22ConfigurationAppIntentV&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;availabilityAnnotations&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;LNPlatformNameWildcard&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;introducedVersion&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;*&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;openAppWhenRun&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;shortcutTileColor&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;14&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;mangled type name 又是什么，简单的讲就是编译器根据用户的代码生成的特殊符号，里面包含了很多信息例如类型、接收的参数，返回类型，模板的情况等等。如果感兴趣可以详细了解 Swift 语言关于 mangled type 的原理。说白了 mangledTypeName 就是在编译器 link 的时候，方便获取函数调用的真正地址。用 hopper 打开，搜索定义的符号名称 &lt;code class=&quot;highlighter-rouge&quot;&gt;22DynamicIslandExtension22ConfigurationAppIntentV&lt;/code&gt;。这个名字正是前面看到的 Intent 类的地址符号。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/5195cf4e-7a51-4832-a794-052753095045.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;通过此 mangledTypeName 就可以找到类相应的内存地址，从而找到执行的 perform 方法。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/6ba4e051-fa78-4ec7-bd3f-69cf655f5ade.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;那通过同样的方式，就寻找了下 Framework 方式下的 Extension 的产物，然后使用 hopper 打开，寻找相应的 Intent 类的符号，发现为 &lt;code class=&quot;highlighter-rouge&quot;&gt;9AppIntent013ConfigurationaB0V&lt;/code&gt;，如下图，这里可以看出来这个符号是带有 Framework 名称 AppIntent。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/8ead5539-eadf-4fa7-8986-9e8415730c8b.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;然后用类似的方式，在 Extension Target 下面创建了 metadata.appintents 文件夹，然后配置了如下数据：&lt;/p&gt;
-
-&lt;div class=&quot;language-json highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;generator&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;name&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;xcode-tools&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;version&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;15.0&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;enums&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;queries&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;autoShortcuts&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;version&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;entities&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;negativePhrases&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;actions&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;ConfigurationAppIntent&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;outputFlags&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;isDiscoverable&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;true&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;typeSpecificMetadata&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;requiredCapabilities&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;effectiveBundleIdentifiers&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;parameters&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;systemProtocolMetadata&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;com.apple.link.systemProtocol.WidgetConfiguration&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;empty&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;descriptionMetadata&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;searchKeywords&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;descriptionText&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;key&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;This is an example widget.&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;mangledTypeNameByBundleIdentifier&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;title&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;key&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;Configuration&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;identifier&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;ConfigurationAppIntent&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;systemProtocols&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;com.apple.link.systemProtocol.WidgetConfiguration&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;authenticationPolicy&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;presentationStyle&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;mangledTypeName&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;9AppIntent013ConfigurationaB0V&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;availabilityAnnotations&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;LNPlatformNameWildcard&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;introducedVersion&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;s2&quot;&gt;&quot;*&quot;&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-                &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-            &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;openAppWhenRun&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;kc&quot;&gt;false&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-        &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-    &lt;/span&gt;&lt;span class=&quot;nl&quot;&gt;&quot;shortcutTileColor&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;&lt;span class=&quot;w&quot;&gt; &lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;14&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;&lt;span class=&quot;w&quot;&gt;
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;运行后，果然按钮事件可以响应了，和全源码编译的运行结果一模一样。&lt;/p&gt;
-
-&lt;h2 id=&quot;4-总结&quot;&gt;4. 总结&lt;/h2&gt;
-
-&lt;p&gt;通过上面的尝试，我们可以总结出来苹果 Intent 的运行原理，其实有点像 patch 原理，把异步事件响应的代码，用 metaData.appintents 中定义的符号地址替换，用户运行时就执行了 metaData.appintents 中定义的 action 方法。&lt;/p&gt;
-
-&lt;p&gt;其实苹果在开发者文档的中描述过 Intent 的大致执行过程，但是具体的实现方式并没有描述。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/0393b314-2fcd-48b7-b5f7-eb0e0155a70e.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;通过进一步验证了，把 Intent 类放到了主 App 的 Target 中，编译后，在主进程的 Target 中同样会生成一个 metaData.appintents，然后运行后，事件响应的代码就在主进程的空间中执行了。&lt;/p&gt;
-
-&lt;p&gt;&lt;img src=&quot;https://ata2-img.oss-cn-zhangjiakou.aliyuncs.com/neweditor/e2796830-7ab6-499a-b3b7-cc3796c4f256.png&quot; alt=&quot;&quot; /&gt;&lt;/p&gt;
-
-&lt;p&gt;所以总结下，Widgets 的整个生命周期的事件循环，本质上都是系统托管的。然后如何执行用户的异步事件呢？就像上面说的，在编译 Widgets 代码的时候，会根据注册的异步事件，然后生成 Intent 类的符号地址，然后会把此符号地址放到 metaData.appintents 文件夹下 extract.actionsdata 这个 json 文件中。当异步事件调用时，系统就会替换为 Intent 类注册的 perform 方法。不过发现 xcode 在编译 Widgets Extension 时，如果 Target 源码中没有 Intent 这个类就不生成调用地址的符号数据了，从而造成使用 Framework 这种方式，无法响应异步事件，不知道是苹果特意这样设计的，还是给我们开发者埋的小惊喜😂。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">问题背景</summary></entry></feed>
+&lt;p&gt;如果上面说的这些能力都掌握的话，开发 SwiftUI 基本就没什么问题了。虽然说 SwiftUI 可以大大节省 UI 的开发量。但是开发过程中遇到的棘手问题就是调试。在 UIKit 所有的 UIView 都有内存地址，来确定某个视图什么时候创建、销毁、以及放置到那里。所以 UIKit 调试的时候，只要看下内存地址就很方便定位是那个视图，但是 SwiftUI 中的视图 View 你无法打印内存地址，就像上文说的你只能跟踪他的模型状态，但是在 Debug 过程中，往往视图的变化堆栈不会有模型变化的堆栈，在调试一些 UI 层级问题时就会遇到很多问题。&lt;/p&gt;</content><author><name>mengtnt</name></author><summary type="html">1. 背景 在我们开发 Vision Pro 开发之前，先大致了解下 SwiftUI 框架是非常有必要的，不然很多系统的新特性苹果往往只会提供 SwiftUI 的演示代码，甚至有些 API 只能 SwiftUI 才能使用。所以想要更好的适配 Vision Pro 最好的方式是用 SwiftUI 进行开发。</summary></entry></feed>
